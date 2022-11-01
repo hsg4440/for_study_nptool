@@ -115,7 +115,11 @@ void Plots_47Kdt(){
   cout << "==============================================" << endl;
   cout << "=============== (d,t) reaction ===============" << endl;
   cout << "==============================================" << endl;
-  cout << " - (d,t) selection: 'cutTritons'  " << endl;
-
+  cout << " (d,t) selection: 'cutTritons' && 'cutTime'   " << endl;
+  cout << "==============================================" << endl;
+  cout << ""<< endl;
+  CS();
+  cout << ""<< endl;
+  cout << "==============================================" << endl;
 
 }

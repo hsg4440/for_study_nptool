@@ -14,6 +14,12 @@ TGraph* currentThry;
 TGraphErrors* staticExp;
 int indexE;
 double globalS, globalSerr;
+int numAngleBins = 18;//10;
+int numAngleBinsBase = 18;//10;
+double widthAngleBins = 1.;//2.;
+double firstAngle = 2.;//3.;
+
+vector<int> removePoint;
 
 /* Output volume toggle */
 bool loud = 1;
@@ -88,6 +94,8 @@ void CS_Diagnosis(){
 void CS(){
 /* Overload function */
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
+  cout << "---- 1.945, p1/2 = CS(1.945, 1, 0, 0.5) "<< endl;
+  cout << "---- 1.945, d3/2 = CS(1.945, 1, 2, 1.5) "<< endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +104,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
   
-  double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
+  //double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
+  double ElasticNorm = 0.000234, ElasticNormErr = 0.000016; //18Oct22
   inputdate = "18Oct22";
 
   // Extract spin orbit name
@@ -154,6 +163,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   globalS=0.;
   globalSerr=0.;
   peakFitList->Clear();
+  numAngleBins=numAngleBinsBase;
 
   /* Retrieve array index of the entered peak energy */
   /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
@@ -165,7 +175,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
       indexE = i;
       found = 1;
       stringstream ss;
-      ss << setfill('0') << setw(4) << (int)(means[i]*1000.);
+      ss << setfill('0') << setw(4) << (int)(means_dt[i]*1000.);
       statename = ss.str();
     }
   }
@@ -249,11 +259,16 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     SA = SA*1000.;       //sr->msr
     SAerr = SAerr*1000.; //sr->msr
 
-    /* Area over Solid angle ONLY */
-    AoSA.push_back(areaArray[i][1]/SA);
-    AoSAerr.push_back((areaArray[i][1]/SA) 
-		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) 
-			    + pow(SAerr/SA,2)));
+    /* Area over Solid angle (exclude errors) */
+    if(SA<=0.){
+      SA = -20.; SAerr = -20.;
+      AoSA.push_back(-20.); AoSAerr.push_back(-20.);
+    } else {
+      AoSA.push_back(areaArray[i][1]/SA);
+      AoSAerr.push_back((areaArray[i][1]/SA) 
+		* sqrt( pow(areaArray[i][2]/areaArray[i][1],2) 
+		+ pow(SAerr/SA,2)));
+    }
 
     /* Differential Cross Section */
     /* NOTE: DON'T INCLUDE NORM ERROR IN ERR PROPAGATION AS IT IS SYSTEMATIC! */
@@ -279,9 +294,15 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 	   << setprecision(3)
 	   << endl;
     }
+
+    // Exclude bad angles
+    if(AoSA[i]<1E-6 ||AoSAerr[i]>1e2){
+      removePoint.push_back(i);
+    }
+
   }
   //delete c_SolidAngle;
-  
+ 
   /* Graph of Area/Solid Angle*/
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
   c_AoSA->SetLogy();
@@ -313,6 +334,16 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->Draw();
   c_dSdO->Update();
 
+//  for(int i=0; i<numAngleBins; i++){
+//    if(binary_search(removePoint.begin(), removePoint.end(), i)){
+//      cout << BLUE << "removing point " << i << RESET << endl;
+//      gAoSA->RemovePoint(i);
+//      gdSdO->RemovePoint(i);
+//    }
+//  }
+
+
+
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
   c_TWOFNR->SetLogy();
@@ -324,7 +355,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /** TEMP **/
   cout << "UNSCALED THEORY DIFF CROSS SECTION EVALUATED AT DATA POINTS:::" << endl;
   cout << setprecision(6);
-  for(int i=0; i<20; i++){
+  for(int i=0; i<numAngleBins; i++){
     cout << anglecentres.at(i) << "\t" << TheoryDiffCross->Eval(anglecentres.at(i)) << endl;
 
   }
@@ -375,6 +406,11 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   pad2->Draw();
   pad1->cd();
 
+
+  double graphMin = (double) floor(gdSdO->GetPointX(0));
+  double graphMax = (double) ceil(gdSdO->GetPointX(numAngleBins-1));
+  cout << RED << graphMin << " " << graphMax << RESET << endl;
+
   TGraph* Final = FindNormalisation(TheoryDiffCross,gdSdO);
   gdSdO->SetLineColor(kRed);
   gdSdO->SetMarkerColor(kRed);
@@ -400,7 +436,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetTitle(textstring.c_str());
   gdSdO->GetYaxis()->SetTitleOffset(1.3);
   gdSdO->GetYaxis()->SetTitleSize(0.042);
-  gdSdO->GetXaxis()->SetRangeUser(103.,157.);
+  gdSdO->GetXaxis()->SetRangeUser(graphMin,graphMax);
   gdSdO->Draw("AP");
   Final->Draw("SAME");
 
@@ -413,9 +449,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     gResid->SetPoint(n,x,residual);
     gResid->SetPointError(n,0,gdSdO->GetErrorY(n));
   }
-  TLine* markzero = new TLine(103.,0.,157.,0.);
+  TLine* markzero = new TLine(graphMin,0.,graphMax,0.);
   gResid->SetTitle("");
-  gResid->GetXaxis()->SetRangeUser(103.,157.);
+  gResid->GetXaxis()->SetRangeUser(graphMin,graphMax);
   gResid->GetYaxis()->SetTitle("Residuals");
   gResid->GetYaxis()->SetTitleSize(0.15);
   gResid->GetYaxis()->SetTitleOffset(0.36);
@@ -454,10 +490,6 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   cout << "========================================================" << endl;
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
-  /****CHANGE ANGLE GATING****/
-  int numAngleBins = 7;//10;
-  double widthAngleBins = 5.;//2.;
-  double firstAngle = 0.;//3.;
   /***************************/
   double x[numAngleBins], y[numAngleBins];
   //TList* list = new TList();
@@ -504,8 +536,23 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
-  if(means_dt[indexE] > 3.0){numAngleBins-=3;}
+  // TEMPORARY FIX FOR EX:THETACM PROBLEM!! 
+  // Assuming angular bins are 2-20 in 1 degree sections...
+    if(means_dt[indexE] > 4.0){
+      numAngleBins-= 4; //Up to 16 deg
+    } 
+    else if(means_dt[indexE] > 3.0){
+      numAngleBins-= 5; //Up to 15 deg
+    } 
+    else if(means_dt[indexE] > 2.0){
+      numAngleBins-= 6; //Up to 14 deg
+    } 
+    else if(means_dt[indexE] > 1.0){
+      numAngleBins-= 8; //Up to 12 deg
+    } 
+    else if(means_dt[indexE] > 0.0){
+      numAngleBins-=12; //Up to  8 deg
+    } 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
@@ -602,17 +649,15 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     delete c_peakFits; 
   }
 
-  /* Write PS-subtracted spectrum to file */
-  //TFile* outfile = new TFile("GateThetaLab_ExMinusGatePhaseSpace.root","RECREATE");
-  //list->Write("GateThetaLab_ExMinusPhaseSpace",TObject::kSingleKey);
-
   return OnePeak_AllGates;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaCMHist(int i, double minTheta, double gatesize){
   //TFile* file = new TFile("GateThetaCMHistograms_47Kdt_18Oct22_bin0p2.root","READ");
-  TFile* file = new TFile("GateThetaCMHistograms_21Oct22_47Kdt.root","READ");
+  //TFile* file = new TFile("GateThetaCMHistograms_21Oct22_47Kdt.root","READ");
+  //TFile* file = new TFile("GateThetaCMHistograms_47Kdt_18Oct22_bin0p1_10angles_0to20.root","READ");
+  TFile* file = new TFile("GateThetaCMHistograms_47Kdt_18Oct22_bin0p1.root","READ");
 
   string histname = "cThetaCMGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
@@ -623,24 +668,6 @@ TH1F* PullThetaCMHist(int i, double minTheta, double gatesize){
 //  file->Close();
   return hist;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-/*
-TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize){
-  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_ReadMe.root","READ");
-  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_2p5degAngles_26May22v2.root","READ");
-  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_11Jul22.root","READ");
-  TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
-  string histname = "cPSpaceThetaCMGate_" 
-	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
-		  + to_string((int) (minTheta+((i+1)*gatesize)));
-  cout << "Loading " << histname << endl;
-  TList *list = (TList*)file->Get("GatePhaseSpaceThetaCMHistograms");
-  TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
-  file->Close();
-  return hist;
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 void Scale(TGraph* g , TGraphErrors* ex){
@@ -809,7 +836,7 @@ double Chi2(TGraph* theory, TGraphErrors* exper){
     if(exper->GetPointY(i)>1.0e-8){ //0){
       //chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
       chi=(exper->GetPointY(i) - theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
-      //cout << "COMPARE::::: " << exper->Eval(anglecentres[i]) << " TO " << exper->GetPointY(i) << endl;
+      cout << "COMPARE::::: Thr " << theory->Eval(anglecentres[i]) << " TO Exp " << exper->GetPointY(i) << endl;
       Chi2 +=chi*chi;
     }
   }
@@ -859,10 +886,9 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
     parameter[i] = 0.8;
     char name[4];
     sprintf(name,"S%d",i+1);
-    min->SetLimitedVariable(i,name,parameter[i],0.01,0,10);
+    min->SetLimitedVariable(i,name,parameter[i],0.01,0,20);
   }
  
-
   ///// TO IMPROVE: FIND WAY OF OBTAINING NDF AND PRINT CHI2/NDF /////
 
   // Minimise

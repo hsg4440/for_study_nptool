@@ -14,9 +14,11 @@ TGraph* currentThry;
 TGraphErrors* staticExp;
 int indexE;
 double globalS, globalSerr;
+int numAngleBins = 20;
+vector<int> removePoint;
 
 /* Output volume toggle */
-bool loud = 1;
+bool loud = 0;//1;
 
 /* Scale method toggle */
 bool scaleTogether = 1;
@@ -114,9 +116,11 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   //double ElasticNorm = 2.363, ElasticNormErr = 0.000; // DeuteronNorm in elastics, reconstructed from determined thickness
   //double ElasticNorm = 3.7, ElasticNormErr = 0.000; // Estimated 'goal' normalization
 
-  double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
+  //double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
+  double ElasticNorm = 0.000234, ElasticNormErr = 0.000; //18Oct22
   inputdate = "18Oct22";
 
+  // Extract spin orbit name
   orbitalname.clear();
   orbital.clear();
   if(spdf==1){
@@ -146,13 +150,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     orbital="???";
   }
 
-  /* Reduce by factor of 10,000 */
-  //ElasticNorm /= 10000.;
-  ////ElasticNorm /= 1000.;
-  //ElasticNormErr /= 10000.;
-  ////ElasticNormErr /= 1000.;
+  // Number of nodes
   double nodes;
-
   if(spdf==1){
     nodes=1;
   }
@@ -193,16 +192,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
-  //auto file = new TFile("../SolidAngle_HistFile_47Kdp_26May22_v2_0143.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_0p000.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_1p981.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_4p393.root");
-  //auto file = new TFile("../SolidAngle_HistFile_30Jul22_47Kdp_0p000_ThetaBin0p5.root");
   //auto file = new TFile("SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root");
-
   string backupFileName = "SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root";
-
   string saFileName = "SolidAngle_HistFiles/SAHF_";
     saFileName.append(inputdate);
     saFileName.append("_47Kdp_");
@@ -224,14 +215,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     cout << BOLDRED << "FAILED TO OPEN MAIN OR BACKUP SOLID ANGLE FILE" << endl;
     cout << RED << "Check SolidAngle file exists..." << RESET << endl;
   }
-  //cout << "MADE IT OUT" << endl;
-
-
 
   //auto file = new TFile("../SolidAngle_HistFile_New.root");
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
-  //cout << BLUE << "MADE IT HERE" << endl;
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw("HIST");
   SolidAngle->GetXaxis()->SetRangeUser(100.,160.);
@@ -310,6 +296,12 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 	   << setprecision(3)
 	   << endl;
     }
+
+    // Exclude bad angles
+    if(AoSA[i]<1E-6 ||AoSAerr[i]>1e2){
+      removePoint.push_back(i);
+    }
+
   }
   //delete c_SolidAngle;
   
@@ -343,6 +335,15 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->GetYaxis()->SetTitleSize(0.04);
   gdSdO->Draw();
   c_dSdO->Update();
+
+//  for(int i=0; i<numAngleBins; i++){
+//    if(binary_search(removePoint.begin(), removePoint.end(), i)){
+//      cout << BLUE << "removing point " << i << RESET << endl;
+//      gAoSA->RemovePoint(i);
+//      gdSdO->RemovePoint(i);
+//    }
+//  }
+
 
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
@@ -431,7 +432,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetTitle(textstring.c_str());
   gdSdO->GetYaxis()->SetTitleOffset(1.3);
   gdSdO->GetYaxis()->SetTitleSize(0.042);
-  gdSdO->GetXaxis()->SetRangeUser(103.,157.);
+  gdSdO->GetXaxis()->SetRangeUser(103.,157.); 
+  //gdSdO->GetXaxis()->SetRangeUser(105.,155.);
+  gdSdO->GetXaxis()->SetNdivisions(512,kTRUE);
   gdSdO->Draw("AP");
   Final->Draw("SAME");
 
@@ -447,6 +450,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   TLine* markzero = new TLine(103.,0.,157.,0.);
   gResid->SetTitle("");
   gResid->GetXaxis()->SetRangeUser(103.,157.);
+  //gResid->GetXaxis()->SetRangeUser(105.,155.);
+  gResid->GetXaxis()->SetNdivisions(512,kTRUE);
   gResid->GetYaxis()->SetTitle("Residuals");
   gResid->GetYaxis()->SetTitleSize(0.15);
   gResid->GetYaxis()->SetTitleOffset(0.36);
@@ -486,7 +491,6 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
   /****CHANGE ANGLE GATING****/
-  int numAngleBins = 20;
   double widthAngleBins = 2.5;
   double firstAngle = 105.;
   /***************************/
@@ -536,7 +540,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
-  if(means[indexE] > 3.0){numAngleBins-=3;}
+  //if(means[indexE] > 3.0){numAngleBins-=3;}
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
