@@ -14,16 +14,22 @@ TGraph* currentThry;
 TGraphErrors* staticExp;
 int indexE;
 double globalS, globalSerr;
+int numAngleBins = 20;
+vector<int> removePoint;
 
 /* Output volume toggle */
-bool loud = 1;
+bool loud = 0;//1;
 
 /* Scale method toggle */
 bool scaleTogether = 1;
 
-/* String for image */
+/* Strings for image */
 string orbitalname;
 string orbital;
+
+/* Strings for SolidAngle input file */
+string statename;
+string inputdate;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,22 +90,6 @@ void CS_Diagnosis(){
 ////////////////////////////////////////////////////////////////////////////////
 void CS(){
 /* Overload function */
-/*
-  cout << " Inputs:\n Experimental...\n\t - Energy of state\n\t - Spin of state" << endl;
-  cout << " Theory...\n\t - Orbital l\n\t - Orbital j\n\t - Orbital n\n\n" << endl;
-
-  cout << "  0f5/2 | -----  |  --?-- |   l=3, j=2.5, n=0" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "  1p1/2 | -----  |  --?-- |   l=1, j=0.5, n=1" << endl;
-  cout << "  1p3/2 | -----  |  --?-- |   l=1, j=1.5, n=1" << endl;
-  cout << "  0f7/2 | -----  |  ===== |" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "  0d3/2 | -----  |  ===== |" << endl;
-  cout << "  1s1/2 | --x--  |  ===== |" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "        |   p    |    n   |" << endl;
-*/
-
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
   cout << "---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5) "<< endl;
   cout << "---- 0.279, p3/2 = CS(0.279, 2, 1, 1.5) "<< endl;
@@ -113,8 +103,6 @@ void CS(){
   cout << "---- 3.8  , f5/2 = CS(3.8  , 3, 3, 2.5) "<< endl;
   cout << "---- 4.1  , f5/2 = CS(4.1  , 3, 3, 2.5) "<< endl;
   cout << "---- 4.4  , f5/2 = CS(4.4  , 3, 3, 2.5) "<< endl;
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,8 +113,14 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   //double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.8 +- 1.3
   //double ElasticNorm = 2.70, ElasticNormErr = 0.46; // For thicker 
   //double ElasticNorm = 2.8, ElasticNormErr = 0.7; // DeuteronNorm in elastics, 2.8 +- 0.7
-  double ElasticNorm = 2.363, ElasticNormErr = 0.000; // DeuteronNorm in elastics, reconstructed from determined thickness
+  //double ElasticNorm = 2.363, ElasticNormErr = 0.000; // DeuteronNorm in elastics, reconstructed from determined thickness
+  //double ElasticNorm = 3.7, ElasticNormErr = 0.000; // Estimated 'goal' normalization
 
+  //double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
+  double ElasticNorm = 0.000234, ElasticNormErr = 0.000; //18Oct22
+  inputdate = "18Oct22";
+
+  // Extract spin orbit name
   orbitalname.clear();
   orbital.clear();
   if(spdf==1){
@@ -156,13 +150,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     orbital="???";
   }
 
-  /* Reduce by factor of 10,000 */
-  ElasticNorm /= 10000.;
-  //ElasticNorm /= 1000.;
-  ElasticNormErr /= 10000.;
-  //ElasticNormErr /= 1000.;
+  // Number of nodes
   double nodes;
-
   if(spdf==1){
     nodes=1;
   }
@@ -191,6 +180,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
       cout << "Identified as state #" << i << ", E = " << means[i] << endl;
       indexE = i;
       found = 1;
+      stringstream ss;
+      ss << setfill('0') << setw(4) << (int)(means[i]*1000.);
+      statename = ss.str();
     }
   }
   if(!found){
@@ -200,14 +192,31 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
-  //auto file = new TFile("../SolidAngle_HistFile_47Kdp_26May22_v2_0143.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_0p000.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_1p981.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_4p393.root");
-  auto file = new TFile("../SolidAngle_HistFile_30Jul22_47Kdp_0p000_ThetaBin0p5.root");
+  //auto file = new TFile("SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root");
+  string backupFileName = "SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root";
+  string saFileName = "SolidAngle_HistFiles/SAHF_";
+    saFileName.append(inputdate);
+    saFileName.append("_47Kdp_");
+    saFileName.append(statename);
+    saFileName.append(".root");
+
+  TFile* file;
+  ifstream infile(saFileName);
+  ifstream backup(backupFileName);
+  if(infile.good()){
+    cout << "Opening file " << saFileName << endl;
+      file = TFile::Open(saFileName.c_str());
+  } else if (backup.good()){
+    cout << BOLDRED << "FAILED TO OPEN " << saFileName << endl;
+    cout << "Open standard backup file " << backupFileName << endl;
+    cout << RESET;
+      file = TFile::Open(backupFileName.c_str());
+  } else {
+    cout << BOLDRED << "FAILED TO OPEN MAIN OR BACKUP SOLID ANGLE FILE" << endl;
+    cout << RED << "Check SolidAngle file exists..." << RESET << endl;
+  }
+
   //auto file = new TFile("../SolidAngle_HistFile_New.root");
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw("HIST");
@@ -287,6 +296,12 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 	   << setprecision(3)
 	   << endl;
     }
+
+    // Exclude bad angles
+    if(AoSA[i]<1E-6 ||AoSAerr[i]>1e2){
+      removePoint.push_back(i);
+    }
+
   }
   //delete c_SolidAngle;
   
@@ -321,6 +336,15 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->Draw();
   c_dSdO->Update();
 
+//  for(int i=0; i<numAngleBins; i++){
+//    if(binary_search(removePoint.begin(), removePoint.end(), i)){
+//      cout << BLUE << "removing point " << i << RESET << endl;
+//      gAoSA->RemovePoint(i);
+//      gdSdO->RemovePoint(i);
+//    }
+//  }
+
+
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
   c_TWOFNR->SetLogy();
@@ -328,6 +352,17 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   TheoryDiffCross->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]"); //msr set in func above
   TheoryDiffCross->GetXaxis()->SetTitle("ThetaLab [deg]");
   TheoryDiffCross->Draw();
+
+  /** TEMP **/
+  cout << "UNSCALED THEORY DIFF CROSS SECTION EVALUATED AT DATA POINTS:::" << endl;
+  cout << setprecision(6);
+  for(int i=0; i<20; i++){
+    cout << anglecentres.at(i) << "\t" << TheoryDiffCross->Eval(anglecentres.at(i)) << endl;
+
+  }
+  cout << setprecision(3);
+  cout << "......................" << endl;
+  /** **** **/
 
   /* Convert AoSA into Differential Cross Section */
   //cout << " SCALING BY NORMALIZATION = " << ElasticNorm << endl;
@@ -397,7 +432,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetTitle(textstring.c_str());
   gdSdO->GetYaxis()->SetTitleOffset(1.3);
   gdSdO->GetYaxis()->SetTitleSize(0.042);
-  gdSdO->GetXaxis()->SetRangeUser(103.,157.);
+  gdSdO->GetXaxis()->SetRangeUser(103.,157.); 
+  //gdSdO->GetXaxis()->SetRangeUser(105.,155.);
+  gdSdO->GetXaxis()->SetNdivisions(512,kTRUE);
   gdSdO->Draw("AP");
   Final->Draw("SAME");
 
@@ -413,6 +450,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   TLine* markzero = new TLine(103.,0.,157.,0.);
   gResid->SetTitle("");
   gResid->GetXaxis()->SetRangeUser(103.,157.);
+  //gResid->GetXaxis()->SetRangeUser(105.,155.);
+  gResid->GetXaxis()->SetNdivisions(512,kTRUE);
   gResid->GetYaxis()->SetTitle("Residuals");
   gResid->GetYaxis()->SetTitleSize(0.15);
   gResid->GetYaxis()->SetTitleOffset(0.36);
@@ -452,7 +491,6 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
   /****CHANGE ANGLE GATING****/
-  int numAngleBins = 20;
   double widthAngleBins = 2.5;
   double firstAngle = 105.;
   /***************************/
@@ -502,7 +540,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
-  if(means[indexE] > 3.0){numAngleBins-=3;}
+  //if(means[indexE] > 3.0){numAngleBins-=3;}
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
@@ -568,8 +606,8 @@ vector<vector<double>> GetExpDiffCross(double Energy){
      * Specific peak of interest selected from the vector by   *
      * global variable indexE                                  */
 
-    //AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0); cout << "!!!!!!! NO SLIDING SHIFT!!!!!" << endl;
-    AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0);  cout << "!!!!!!! WITH A VARIABLE SLIDING SHIFT!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0); cout << "!!!!!!! NO SLIDING SHIFT!!!!!" << endl;
+    //AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0);  cout << "!!!!!!! WITH A VARIABLE SLIDING SHIFT!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     //double slideshift = 0.00218*(((max-min)/2.)+min) - 0.29645; AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, slideshift);  cout << "!!!!!!! WITH A FIXED SLIDING SHIFT!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     
     /* Write PS-subtracted spectrum to list */
@@ -609,14 +647,12 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 ////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
   //TFile* file = new TFile("GateThetaLabHistograms.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_20May22.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_0p05BinWidth.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_ReadMe.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_26May22_v2.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_26May22_v2_bin0p02.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_2p5degAngles_26May22v2.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_11Apr22_20angles.root","READ");
-  TFile* file = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  //TFile* file = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  //TFile* file = new TFile("GateThetaLabHistograms_10Aug22_TrueStripRemoval.root","READ");
+  //TFile* file = new TFile("GateThetaLabHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
+  //TFile* file = new TFile("GateThetaLabHistograms_22Sep22_NoRun51-52.root","READ");
+  TFile* file = new TFile("GateThetaLabHistograms_47Kdp_18Oct22_bin0p2.root","READ");
+
   string histname = "cThetaLabGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
 		  + to_string((int) (minTheta+((i+1)*gatesize)));
@@ -631,7 +667,8 @@ TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
 TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize){
   //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_ReadMe.root","READ");
   //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_2p5degAngles_26May22v2.root","READ");
-  TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_11Jul22.root","READ");
+  //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_11Jul22.root","READ");
+  TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
   string histname = "cPSpaceThetaLabGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
 		  + to_string((int) (minTheta+((i+1)*gatesize)));
@@ -892,9 +929,8 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
     cout << "multip by " << xs[0] << endl;
   }
   
-  for(int i=0; i<theory->GetN(); i++){ g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]); }
-
-  //for(int i=0; i<theory->GetN(); i++){ g->SetPoint(i,X[i],xs[0]*Y[i]); }
+  //for(int i=0; i<theory->GetN(); i++){ g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]); }
+  for(int i=0; i<theory->GetN(); i++){ g->SetPoint(i,X[i],xs[0]*Y[i]); }
 
   if(loud){
     cout << "End:   X[0] = " << g->GetPointX(4) << " Y[0] = " << g->GetPointY(4) << endl;
