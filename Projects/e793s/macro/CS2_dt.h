@@ -94,8 +94,9 @@ void CS_Diagnosis(){
 void CS(){
 /* Overload function */
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
-  cout << "---- 1.945, p1/2 = CS(1.945, 1, 0, 0.5) "<< endl;
+  cout << "---- 1.945, s1/2 = CS(1.945, 1, 0, 0.5) "<< endl;
   cout << "---- 1.945, d3/2 = CS(1.945, 1, 2, 1.5) "<< endl;
+  cout << "---- 0.691, f7/2 = CS(0.691, 4, 3, 3.5) "<< endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -536,23 +537,19 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  // TEMPORARY FIX FOR EX:THETACM PROBLEM!! 
-  // Assuming angular bins are 2-20 in 1 degree sections...
-    if(means_dt[indexE] > 4.0){
-      numAngleBins-= 4; //Up to 16 deg
-    } 
-    else if(means_dt[indexE] > 3.0){
-      numAngleBins-= 5; //Up to 15 deg
-    } 
-    else if(means_dt[indexE] > 2.0){
-      numAngleBins-= 6; //Up to 14 deg
-    } 
-    else if(means_dt[indexE] > 1.0){
-      numAngleBins-= 8; //Up to 12 deg
-    } 
-    else if(means_dt[indexE] > 0.0){
-      numAngleBins-=12; //Up to  8 deg
-    } 
+  /* TEMPORARY FIX FOR EX:THETACM PROBLEM!!                   */
+    double thetaMax = 0.23*pow(means_dt[indexE],2) 
+	            + 0.76*means_dt[indexE]
+		    + 9.01;
+    thetaMax = floor(thetaMax);
+
+    double thetaMin = 0.10*pow(means_dt[indexE],2) 
+	            + 0.06*means_dt[indexE]
+		    + 1.58;
+    thetaMin = ceil(thetaMin);
+    
+    numAngleBins = (int)thetaMax - (int)thetaMin;
+    firstAngle = (int)thetaMin;
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 

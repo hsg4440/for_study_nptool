@@ -227,9 +227,11 @@ void Analysis::TreatEvent(){
 
     /**/
     if(isSim && !isPhaseSpace){
-      if(M2->Si_E[countMust2]>0 && M2->CsI_E[countMust2]<=0){
-        /* IS a count in DSSD, but NOT in CsI to exclude punch through  */
-        /* May need further gating in Si_E & _T */
+    if(M2->TelescopeNumber[countMust2]<5){
+      if(M2->Si_E[countMust2]>0 &&   // DSSD count
+    	 M2->CsI_E[countMust2]<=0 && // No CsI count
+    	 M2->Si_T[countMust2]<460    // Triton kinematic line, not punch through
+    	){
         ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
         ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
 
@@ -237,6 +239,15 @@ void Analysis::TreatEvent(){
         ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
         ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
       }
+    } else {
+        //No triton requirement for MM5
+        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
+
+        int MMX = TelescopeNumber-1;
+        ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
+    }
     }
     /**/
 
