@@ -37,8 +37,10 @@ struct TofPair
   double tof = -1000;
   double velocity = -1;
   double beta = -1;
+  double gamma = -1;
   double theta_in = -10;
   double theta_out = -10;
+  double psi = -10;
   int plastic = -1;
   //
   int isLorR  = -1;
@@ -50,6 +52,10 @@ struct TofPair
   // *** isUorD = 2 -> Down
   int section = -1;
   double Esec = -1;
+  double Z = 0;
+  int iZ = 0;
+  double AoQ = 0;
+  double A = 0;
   double DT = -100;
   double x2twim = -1000;
   double x2 = -1000;
@@ -57,10 +63,18 @@ struct TofPair
   double y3 = -1000;
   double x3lab = 0;
   double z3lab = 0;
+  double xb = 0;
   double xc = 0;
+  double xd = 0;
   double yc = 0;
+  double zb = 0;
   double zc = 0;
+  double zd = 0;
   double flight_path = 0;
+  double Leff = 0;
+  double rho = 0;
+  double Brho = 0;
+  double omega = 0;
 };
 
 
@@ -540,12 +554,6 @@ void Analysis::FissionFragmentAnalysis(){
       for(int i=0; i<2; i++){
         int section = TofHit[i].section;
 
-        /*double drift_time;
-          if(section==1) drift_time = DT1;
-          if(section==2) drift_time = DT2;
-          if(section==3) drift_time = DT3;
-          if(section==4) drift_time = DT4;*/
-
         double DT_eval;
         if(section<3) DT_eval=55;
         if(section>2) DT_eval=-55;
@@ -561,164 +569,131 @@ void Analysis::FissionFragmentAnalysis(){
       double Theta0 = 20.*deg;
       double XA = 0;
       double ZA = 2272;
-      double Zfission = 335.;
-      double ZGlad_entrance = 2694.;
+      //double ZGlad_entrance = 2694.;
+      double ZGlad_entrance = 2694.+540.5;
       double Leff_init = 2150.;
-      //double ZG = ZGlad_entrance+Leff_init/2;
-      double ZG = ZGlad_entrance+540;
+      //double ZG = ZGlad_entrance+1654.;
+      double ZG = ZGlad_entrance+1113.5;
       double ZMW3 = 8450;//8483;
       double XMW3 = -(ZMW3-ZG)*tan(Theta0);
       double ZMW2 = 2576;
       double X3lab = 0;
       double Z3lab = 0;;
       double Tilt = 14.*deg;
-      TVector3 vOut;
       TVector3 vZ = TVector3(0,0,1);
-      TVector3 vC;
-      TVector3 InitPos[2];
-      TVector3 InitDir[2];
-      TVector3 FinalPos[2];
       double XC = 0;
       double ZC = 0;
-      double Leff = 0;
+      double XB = 0;
+      double ZB = 0;
+      double XD = 0;
+      double ZD = 0;
+      double MagB = m_GladField->GetB()/1000;
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
         if(XA != -1e6){
+          // *** Extroplate to C position *** //
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
-          
-          /*int ix = (int)(XC - m_GladField->GetXmin())/50;
-          int iy = (int)(ZC - m_GladField->GetYmin())/50;
-          Leff = m_GladField->GetLeff(ix,iy);
-          ZG = ZGlad_entrance + Leff/2;
-          XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
-          ZC = ZG + XC*tan(Tilt);*/
 
           TofHit[i].xc = XC;
-          TofHit[i].yc = TofHit[i].y*0.5;
+          TofHit[i].yc = 0;//TofHit[i].y*0.5;
           TofHit[i].zc = ZC;
+
+          int ix, iy;
+          ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/50;
+          iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/50;
+          TofHit[i].Leff = m_GladField->GetLeff(ix,iy);
 
           X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
           Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
           TofHit[i].x3lab = X3lab;
           TofHit[i].z3lab = Z3lab;
+          TVector3 vC    = TVector3(TofHit[i].xc,0,TofHit[i].zc);
+          TVector3 vOut  = TVector3(X3lab-TofHit[i].xc,0,Z3lab-TofHit[i].zc);
+          double angle = -vZ.Angle(vOut);
+          TofHit[i].theta_out = angle;
+          TofHit[i].psi = TofHit[i].theta_in - TofHit[i].theta_out;
+          TofHit[i].rho = TofHit[i].Leff/(2*sin(0.5*TofHit[i].psi)*cos(Tilt-0.5*TofHit[i].psi));
+          TofHit[i].Brho = MagB*TofHit[i].rho;
 
-          InitPos[i]  = TVector3(XA,0,ZA);
-          InitDir[i]  = TVector3(sin(TofHit[i].theta_in),0,cos(TofHit[i].theta_in));
-          FinalPos[i] = TVector3(X3lab,0,Z3lab);
+          // *** Extrapolate to B position *** //
+          double ZI = ZG - TofHit[i].Leff/(2*cos(Tilt));
+          XB = (XA+(ZI-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
+          ZB = ZI + XB*tan(Tilt);
+          TofHit[i].xb = XB;
+          TofHit[i].zb = ZB;
+          TVector3 vB = TVector3(XB,0,ZB);
 
-          vC    = TVector3(TofHit[i].xc,0,TofHit[i].zc);
-          vOut  = TVector3(X3lab-TofHit[i].xc,0,Z3lab-TofHit[i].zc);
-
-          double PathLength = vC.Mag() + vOut.Mag() + 74.;
+          // *** Extrapolate to D position *** //
+          //XD = XC + TofHit[i].Leff/2*sin(angle)/cos(angle+Tilt);
+          XD = XC + TofHit[i].Leff/2*tan(angle+Tilt)*cos(Tilt);
+          //ZD = ZC + TofHit[i].Leff/2*cos(angle)/cos(angle+Tilt);
+          ZD = ZC + TofHit[i].Leff/2*cos(Tilt);
+          TofHit[i].xd = XD;
+          TofHit[i].zd = ZD;
+          TVector3 vD = TVector3(XD,0,ZD);
+      
+          TVector3 v1 = TVector3(XB,0,ZB);
+          TVector3 v3 = TVector3(X3lab-XD,0,Z3lab-ZD);
+          TofHit[i].omega = abs(2.*asin(sqrt(pow(XD-XB,2) + pow(ZD-ZB,2))/(2*TofHit[i].rho)));
+          double Path1 = v1.Mag();
+          double Path2 = TofHit[i].rho*TofHit[i].omega;
+          double Path3 = v3.Mag();
+          double PathLength = Path1 + Path2 + Path3 + 74.;
           PathLength = PathLength/1000.;
-          double angle = vZ.Angle(vOut);
 
           TofHit[i].flight_path = PathLength;
           TofHit[i].velocity = PathLength/TofHit[i].tof;
           TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
-          TofHit[i].theta_out = angle;
-          TofHit[i].x2twim = XA + (ZMW2-ZA)*tan(TofHit[i].theta_in);
+          TofHit[i].x2twim = XA;
+
+          double Z = TofHit[i].Esec;
+          Z = fZff_p0 + fZff_p1*Z + fZff_p2*Z*Z;
+          Z = sqrt(Z);
+          int iZ = (int) round(Z);
+          TofHit[i].Z = Z;
+          TofHit[i].iZ = iZ;
+        
+          TofHit[i].gamma = 1. / sqrt(1 - TofHit[i].beta*TofHit[i].beta);
+          TofHit[i].AoQ = TofHit[i].Brho / (3.10761 * TofHit[i].beta * TofHit[i].gamma);
+          TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
+
         }
       }
 
-      Z1 = TofHit[0].Esec;
-      Z2 = TofHit[1].Esec;
-
-
-      if(Z1>0 && Z2>0){
-        Z1 = fZff_p0 + fZff_p1*Z1 + fZff_p2*Z1*Z1;
-        Z2 = fZff_p0 + fZff_p1*Z2 + fZff_p2*Z2*Z2;
-
-        Z1 = sqrt(Z1);
-        Z2 = sqrt(Z2);
-
-        Zsum = Z1+Z2;
-
-        iZ1 = (int) round(Z1);
-        iZ2 = (int) round(Z2);
-        iZsum = iZ1 + iZ2;
-      }
-
-      double MagB = m_GladField->GetB()/1000;
-      int ix, iy;
-      ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/50;
-      iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/50;
-      double Leff1 = m_GladField->GetLeff(ix,iy);
-      ix = (int)(TofHit[1].xc - m_GladField->GetXmin())/50;
-      iy = (int)(TofHit[1].yc - m_GladField->GetYmin())/50;
-      double Leff2 = m_GladField->GetLeff(ix,iy);
-      double rho1 = Leff1/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
-      double rho2 = Leff2/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
-      double Brho1 = MagB*rho1;
-      double Brho2 = MagB*rho2;
-
-      /*double Brho1 = 0;
-        double Brho2 = 0;
-        Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
-        Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
-      //cout << Brho1 << " " << Brho2 << endl;*/
-
-      Beta_Z1 = TofHit[0].beta;
-      Beta_Z2 = TofHit[1].beta;
-      Gamma1 = 1. / sqrt(1 - Beta_Z1 * Beta_Z1);
-      Gamma2 = 1. / sqrt(1 - Beta_Z2 * Beta_Z2);
-
-      AoQ1 = Brho1 / (3.10761 * Beta_Z1 * Gamma1);
-      AoQ2 = Brho2 / (3.10761 * Beta_Z2 * Gamma2);
-
-      A1 = AoQ1 * iZ1;
-      A2 = AoQ2 * iZ2;
-
       // *** Filling the Fission Fragment Tree *** //
-      SofFF->SetTOF(TofHit[0].tof);
-      SofFF->SetTOF(TofHit[1].tof);
-      SofFF->SetTofPosX(TofHit[0].x);
-      SofFF->SetTofPosX(TofHit[1].x);
-      SofFF->SetTofPosY(TofHit[0].y);
-      SofFF->SetTofPosY(TofHit[1].y);
-      SofFF->SetPlastic(TofHit[0].plastic);
-      SofFF->SetPlastic(TofHit[1].plastic);
+      for(int i=0; i<2; i++){
+        SofFF->SetTOF(TofHit[i].tof);
+        SofFF->SetTofPosX(TofHit[i].x);
+        SofFF->SetTofPosY(TofHit[i].y);
+        SofFF->SetPlastic(TofHit[i].plastic);
+        SofFF->SetPosXB(TofHit[i].xb);
+        SofFF->SetPosXC(TofHit[i].xc);
+        SofFF->SetPosXD(TofHit[i].xd);
+        SofFF->SetPosZB(TofHit[i].zb);
+        SofFF->SetPosZC(TofHit[i].zc);
+        SofFF->SetPosZD(TofHit[i].zd);
+        SofFF->SetPosX3lab(TofHit[i].x3lab);
+        SofFF->SetPosZ3lab(TofHit[i].z3lab);
+        SofFF->SetThetaIn(TofHit[i].theta_in/deg);
+        SofFF->SetThetaOut(TofHit[i].theta_out/deg);
+        SofFF->SetBeta(TofHit[i].beta);
+        SofFF->SetGamma(TofHit[i].gamma);
+        SofFF->SetiZ(TofHit[i].iZ);
+        SofFF->SetZ(TofHit[i].Z);
+        SofFF->SetAoQ(TofHit[i].AoQ);
+        SofFF->SetA(TofHit[i].A);
+        SofFF->SetBrho(TofHit[i].Brho);
+        SofFF->SetRho(TofHit[i].rho);
+        SofFF->SetOmega(TofHit[i].omega);
+        SofFF->SetDT(TofHit[i].DT);
+        SofFF->SetSection(TofHit[i].section);
+        SofFF->SetLeff(TofHit[i].Leff);
+        SofFF->SetFlightPath(TofHit[i].flight_path);
 
-      SofFF->SetPosX1(TofHit[0].x2twim);
-      SofFF->SetPosX1(TofHit[1].x2twim);
-      SofFF->SetPosX2(TofHit[0].x2);
-      SofFF->SetPosX2(TofHit[1].x2);
-      SofFF->SetPosX3(TofHit[0].x3);
-      SofFF->SetPosX3(TofHit[1].x3);
-      SofFF->SetPosY3(TofHit[0].y3);
-      SofFF->SetPosY3(TofHit[1].y3);
-
-      SofFF->SetThetaIn(TofHit[0].theta_in/deg);
-      SofFF->SetThetaIn(TofHit[1].theta_in/deg);
-      SofFF->SetThetaOut(TofHit[0].theta_out/deg);
-      SofFF->SetThetaOut(TofHit[1].theta_out/deg);
-
-      SofFF->SetBeta(Beta_Z1);
-      SofFF->SetBeta(Beta_Z2);
-      SofFF->SetGamma(Gamma1);
-      SofFF->SetGamma(Gamma2);
-      SofFF->SetiZ(iZ1);
-      SofFF->SetiZ(iZ2);
-      SofFF->SetZ(Z1);
-      SofFF->SetZ(Z2);
-      SofFF->SetAoQ(AoQ1);
-      SofFF->SetAoQ(AoQ2);
-      SofFF->SetA(A1);
-      SofFF->SetA(A2);
-      SofFF->SetBrho(Brho1);
-      SofFF->SetBrho(Brho2);
-
-      SofFF->SetDT(TofHit[0].DT);
-      SofFF->SetDT(TofHit[1].DT);
-      SofFF->SetSection(TofHit[0].section);
-      SofFF->SetSection(TofHit[1].section);
-
-      SofFF->SetZsum(Zsum);
-      SofFF->SetiZsum(iZsum);
-
-      SofFF->SetFlightPath(TofHit[0].flight_path);
-      SofFF->SetFlightPath(TofHit[1].flight_path);
+      }
+      SofFF->SetZsum(TofHit[0].Z+TofHit[1].Z);
+      SofFF->SetiZsum(TofHit[0].iZ+TofHit[1].iZ);
     }
   }
 }

@@ -5,9 +5,9 @@
 Beam
  Particle= 238U
  Energy= 135660
- ExcitationEnergy= 15 MeV
+ ExcitationEnergy= 0 MeV
  SigmaEnergy= 2
- SigmaX= 6 mm
+ SigmaX= 5 mm
  SigmaY= 5 mm
  SigmaThetaX= 0 
  SigmaPhiY= 0
@@ -16,7 +16,7 @@ Beam
  MeanX= 0.0 mm
  MeanY= 0.0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%TwoBodyReaction
+TwoBodyReaction
  Beam= 238U
  Target= 208Pb
  Light= 208Pb

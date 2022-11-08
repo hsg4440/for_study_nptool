@@ -193,7 +193,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
     Theta1 = atan(p1);
-    Theta.push_back(-Theta1);
+    Theta.push_back(Theta1);
   }
   if(Esec2>0){
     Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
@@ -217,7 +217,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
     Theta2 = atan(p1); 
-    Theta.push_back(-Theta2);
+    Theta.push_back(Theta2);
   }
   if(Esec3>0){
     Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
@@ -241,7 +241,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
     Theta3 = atan(p1);
-    Theta.push_back(-Theta3);
+    Theta.push_back(Theta3);
   }
   if(Esec4>0){
     Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
@@ -265,7 +265,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
     Theta4 = atan(p1);
-    Theta.push_back(-Theta4);
+    Theta.push_back(Theta4);
   }
 
   m_Beta = -1;
