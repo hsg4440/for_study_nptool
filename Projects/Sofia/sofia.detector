@@ -12,7 +12,7 @@ SofTofW
  R= 4.5 m
  THETA= -18 deg
  PHI= 0 deg
- Yoffset= 30.0 mm
+ Yoffset= 0.0 mm
  Build_GLAD= 1
  GLAD_TiltAngle= 14 deg
  GLAD_DistanceFromTarget= 3.3 m

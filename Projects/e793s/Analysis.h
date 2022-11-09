@@ -42,7 +42,7 @@
 #include <TMath.h>
 #include <bitset>
 
-int NumThetaAngleBins = 900;// 180 = 1 deg, 360 = 0.5 deg, 900 = 0.2 deg, 1800 = 0.1 deg
+int NumThetaAngleBins = 1800;// 180 = 1 deg, 360 = 0.5 deg, 900 = 0.2 deg, 1800 = 0.1 deg
 
 auto ThetaCM_emmitted = new TH1F("ThetaCM_emmitted","ThetaCM_emmitted",NumThetaAngleBins,0,180);
 auto ThetaCM_detected_MM = new TH1F("ThetaCM_detected_MM","ThetaCM_detected_MM",NumThetaAngleBins,0,180);

@@ -24,10 +24,17 @@ array<double,numPeaks> means = { 0.000,
 			   5.82
                            };
 
-const int numPeaks_dt = 3; 
+const int numPeaks_dt = 8;//9; 
 array<double,numPeaks_dt> means_dt = { 0.000,
+	                   //0.587, //from lit
+			   0.691, //from lit
+			   //0.886, //from lit
+			   1.738, //from lit
                            1.945,
+			   2.26 , //from lit
+			   2.76 , //from lit
                            3.344,
+			   4.2
                            };
 
 
@@ -371,3 +378,9 @@ void FitKnownPeaks(TH1F* hist){
   //Shell function to call Rtrn_Arry without writing vector<vector<double>> to screen
   vector<vector<double>> shell = FitKnownPeaks_RtrnArry(hist,0.0);
 }
+
+void FitKnownPeaks_dt(TH1F* hist){
+  //Shell function to call Rtrn_Arry without writing vector<vector<double>> to screen
+  vector<vector<double>> shell = FitKnownPeaks_dt_RtrnArry(hist,0.0);
+}
+

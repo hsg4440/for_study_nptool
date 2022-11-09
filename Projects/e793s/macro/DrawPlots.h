@@ -1199,6 +1199,39 @@ void ExThetaLab(){
     Sn->Draw();
 }
 
+void ExThetaCM(){
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
+
+  TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
+  chain->Draw(
+    "Ex:ThetaCM>>thetaHistCM(360,0,180,180,-1,8)", 
+    gate.c_str(), "colz");
+  TH1F* thetaHistCM = (TH1F*) gDirectory->Get("thetaHistCM");  
+  thetaHistCM->GetXaxis()->SetTitle("#theta_{CM} [deg]");
+  thetaHistCM->GetYaxis()->SetTitle("Ex [MeV]");
+  thetaHistCM->SetTitle("Theta dependance testing");
+  
+  diagnoseTheta->Update();
+  
+  TLine *l0000 = new TLine(100., 0.000, 160., 0.000);
+    l0000->SetLineStyle(kDashed);
+    l0000->SetLineColor(kRed);
+    l0000->Draw();
+
+  if(reactionName=="47K(d,p)"){
+    TLine *Sn = new TLine(100., 4.644, 160., 4.644);
+      Sn->SetLineStyle(kDashed);
+      Sn->SetLineColor(kRed);
+      Sn->Draw();
+  }
+}
+
+
 void ExThetaLab(double gamma, double width){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
   string gate = timegate 
@@ -2864,3 +2897,120 @@ void Figure_TopGamma_BottomParticle(double gammaBinWidth, double particleBinWidt
   cFig_GGSP->Update();
 }
 
+
+void Figure_SolidAngle_dt(){
+  //string histname = "SolidAngle_CM_MM";
+  string histname = "SolidAngle_Lab_MM";
+
+  TCanvas* canv = new TCanvas("canv","canv",1000,1000);
+  gStyle->SetPadLeftMargin(0.10);
+  gStyle->SetPadRightMargin(0.03);
+  gStyle->SetOptStat(0);
+
+  TFile *file6 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_6000.root","READ");
+  TFile *file5 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_5000.root","READ");
+  TFile *file4 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_4000.root","READ");
+  TFile *file3 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_3000.root","READ");
+  TFile *file2 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_2000.root","READ");
+  TFile *file1 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_1000.root","READ");
+  TFile *file0 = new TFile("./SolidAngle_HistFiles/SAHF_18Oct22_47Kdt_0000.root","READ");
+
+  TH1F* h6 = (TH1F*)file6->Get(histname.c_str());
+  //h6->GetXaxis()->SetTitle("#theta_{CM}");
+  h6->GetXaxis()->SetTitle("#theta_{Lab}");
+  h6->GetYaxis()->SetTitle("Solid Angle [(sr)?]");
+  h6->SetTitle("Simulated triton solid angle variation with 46K state energy");
+  h6->GetXaxis()->SetRangeUser(0.,30.);
+  h6->GetYaxis()->SetRangeUser(0.,0.002);
+  h6->SetLineColor(kCyan+4);
+  h6->SetFillColor(kCyan+4);
+  h6->SetLineWidth(2);
+  h6->SetFillStyle(3002);
+  h6->Draw("hist");
+
+  TH1F* h5 = (TH1F*)file5->Get(histname.c_str());
+  h5->SetLineColor(kCyan-1);
+  h5->SetFillColor(kCyan-1);
+  h5->SetLineWidth(2);
+  h5->SetFillStyle(3002);
+  h5->Draw("hist same");
+
+  TH1F* h4 = (TH1F*)file4->Get(histname.c_str());
+  h4->SetLineColor(kCyan-5);
+  h4->SetFillColor(kCyan-5);
+  h4->SetLineWidth(2);
+  h4->SetFillStyle(3002);
+  h4->Draw("hist same");
+  
+  TH1F* h3 = (TH1F*)file3->Get(histname.c_str());
+  h3->SetLineColor(kCyan-8);
+  h3->SetFillColor(kCyan-8);
+  h3->SetLineWidth(2);
+  h3->SetFillStyle(3002);
+  h3->Draw("hist same");
+
+  TH1F* h2 = (TH1F*)file2->Get(histname.c_str());
+  h2->SetLineColor(kCyan-9);
+  h2->SetFillColor(kCyan-9);
+  h2->SetLineWidth(2);
+  h2->SetFillStyle(3002);
+  h2->Draw("hist same");
+
+  TH1F* h1 = (TH1F*)file1->Get(histname.c_str());
+  h1->SetLineColor(kCyan-7);
+  h1->SetFillColor(kCyan-7);
+  h1->SetLineWidth(2);
+  h1->SetFillStyle(3002);
+  h1->Draw("hist same");
+
+  TH1F* h0 = (TH1F*)file0->Get(histname.c_str());
+  h0->SetLineColor(kCyan-0);
+  h0->SetFillColor(kCyan-0);
+  h0->SetLineWidth(2);
+  h0->SetFillStyle(3002);
+  h0->Draw("hist same");
+
+  TLatex *n0 = new TLatex(.5,.5,"0.0 MeV");
+    n0->SetTextColor(kCyan-0);
+    n0->SetTextSize(0.05);
+    n0->SetX(22.);
+    n0->SetY(0.0018);
+    n0->Draw("same");
+  TLatex *n1 = new TLatex(.5,.5,"1.0 MeV");
+    n1->SetTextColor(kCyan-7);
+    n1->SetTextSize(0.05);
+    n1->SetX(22.);
+    n1->SetY(0.0017);
+    n1->Draw("same");
+  TLatex *n2 = new TLatex(.5,.5,"2.0 MeV");
+    n2->SetTextColor(kCyan-9);
+    n2->SetTextSize(0.05);
+    n2->SetX(22.);
+    n2->SetY(0.0016);
+    n2->Draw("same");
+  TLatex *n3 = new TLatex(.5,.5,"3.0 MeV");
+    n3->SetTextColor(kCyan-8);
+    n3->SetTextSize(0.05);
+    n3->SetX(22.);
+    n3->SetY(0.0015);
+    n3->Draw("same");
+  TLatex *n4 = new TLatex(.5,.5,"4.0 MeV");
+    n4->SetTextColor(kCyan-5);
+    n4->SetTextSize(0.05);
+    n4->SetX(22.);
+    n4->SetY(0.0014);
+    n4->Draw("same");
+  TLatex *n5 = new TLatex(.5,.5,"5.0 MeV");
+    n5->SetTextColor(kCyan-1);
+    n5->SetTextSize(0.05);
+    n5->SetX(22.);
+    n5->SetY(0.0013);
+    n5->Draw("same");
+  TLatex *n6 = new TLatex(.5,.5,"6.0 MeV");
+    n6->SetTextColor(kCyan+4);
+    n6->SetTextSize(0.05);
+    n6->SetX(22.);
+    n6->SetY(0.0012);
+    n6->Draw("same");
+
+}
