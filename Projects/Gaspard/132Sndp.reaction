@@ -1,0 +1,31 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%  Reaction file for 60Fe(d,p)61Fe reaction  %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Beam energy given in MeV ; Excitation in MeV ; emmitance in rad
+Beam
+  Particle= 132Sn
+  Energy= 1320
+  SigmaEnergy= 0 MeV
+  SigmaThetaX= 0.42 MeV
+  SigmaPhiY= 0.42 deg
+  SigmaX= 1.7 mm
+  SigmaY= 1.7 mm
+  MeanThetaX= 0.3 deg
+  MeanPhiY= 0 deg 
+  MeanX= 0.0 mm
+  MeanY= 0.0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+  Beam= 132Sn
+  Target= 2H
+  Light= 1H
+  Heavy= 133Sn
+  ExcitationEnergyLight= 0.0 MeV
+  ExcitationEnergyHeavy= 0.0 MeV 
+  CrossSectionPath= CrossSection/132Sndp_10A_MeV_2f7_ZR_FRC.lis CS
+  HalfOpenAngleMin= 0
+  HalfOpenAngleMax= 180
+  ShootLight= 1
+  ShootHeavy= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
