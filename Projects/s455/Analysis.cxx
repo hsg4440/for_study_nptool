@@ -98,12 +98,12 @@ void Analysis::Init(){
   
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(2135.);
-  m_GladField->SetZGlad(2724.);
+  m_GladField->SetZGlad(2694.+540.5);
   m_GladField->SetGladTiltAngle(14.*deg);
   m_GladField->LoadMap("GladFieldMap.dat");
   m_GladField->SetCentralTheta(20.*deg);
   m_GladField->SetX_MWPC3(-1.436*m);
-  m_GladField->SetZ_MWPC3(7.8*m);
+  m_GladField->SetZ_MWPC3(8.45*m);
   
   InitParameter();
   InitOutputBranch();
@@ -566,15 +566,14 @@ void Analysis::FissionFragmentAnalysis(){
 
 
       // *** Calculation Theta_out *** //
-      double Theta0 = 20.*deg;
+      double Theta0 = m_GladField->GetCentralTheta();
       double XA = 0;
       double ZA = 2272;
-      //double ZGlad_entrance = 2694.;
-      double ZGlad_entrance = 2694.+540.5;
-      double Leff_init = 2150.;
-      //double ZG = ZGlad_entrance+1654.;
-      double ZG = ZGlad_entrance+1113.5;
-      double ZMW3 = 8450;//8483;
+      int ix = (int) (-m_GladField->GetXmin()/50);
+      int iy = (int) (-m_GladField->GetYmin()/50);
+      double Leff_init = m_GladField->GetLeff(ix,iy);
+      double ZG = m_GladField->GetZGlad()+Leff_init/2;
+      double ZMW3 = m_GladField->GetZ_MWPC3();
       double XMW3 = -(ZMW3-ZG)*tan(Theta0);
       double ZMW2 = 2576;
       double X3lab = 0;
@@ -625,9 +624,7 @@ void Analysis::FissionFragmentAnalysis(){
           TVector3 vB = TVector3(XB,0,ZB);
 
           // *** Extrapolate to D position *** //
-          //XD = XC + TofHit[i].Leff/2*sin(angle)/cos(angle+Tilt);
           XD = XC + TofHit[i].Leff/2*tan(angle+Tilt)*cos(Tilt);
-          //ZD = ZC + TofHit[i].Leff/2*cos(angle)/cos(angle+Tilt);
           ZD = ZC + TofHit[i].Leff/2*cos(Tilt);
           TofHit[i].xd = XD;
           TofHit[i].zd = ZD;
@@ -654,8 +651,8 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].Z = Z;
           TofHit[i].iZ = iZ;
         
-          TofHit[i].gamma = 1. / sqrt(1 - TofHit[i].beta*TofHit[i].beta);
-          TofHit[i].AoQ = TofHit[i].Brho / (3.10761 * TofHit[i].beta * TofHit[i].gamma);
+          TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
+          TofHit[i].AoQ = TofHit[i].Brho / (3.10716 * TofHit[i].beta * TofHit[i].gamma);
           TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
 
         }

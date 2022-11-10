@@ -111,6 +111,7 @@ class GladFieldMap{
 
   public:
     double GetLeff(int ix, int iy) {return m_Leff[ix][iy];}
+    double GetZGlad() {return m_Z_Glad;}
     double GetB() {return m_B;}
     double GetXmin() {return m_x_min;}
     double GetXmax() {return m_x_max;}
@@ -118,7 +119,10 @@ class GladFieldMap{
     double GetYmax() {return m_y_max;}
     double GetZmin() {return m_z_min;}
     double GetZmax() {return m_z_max;}
-
+    double GetCentralTheta() {return m_CentralTheta;}
+    double GetX_MWPC3() {return m_X_MWPC3;}
+    double GetZ_MWPC3() {return m_Z_MWPC3;}
+  
   public:
     void LoadMap(string filename);
     vector<double> InterpolateB(const vector<double>& pos);
