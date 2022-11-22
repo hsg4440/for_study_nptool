@@ -48,7 +48,8 @@ GladFieldMap::GladFieldMap() {
   m_bin = 50;
   m_Current = 2135.;
   m_Scale = m_Current/3583.81;
-  m_Z_Glad = 2724.;
+  m_Glad_Entrance = TVector3(0,0,2774.);
+  m_Glad_TurningPoint = TVector3(0,0,2774.+1654);
   m_Tilt = 14.*deg;
   m_B = m_Scale*m_Bmax;
   for(int i=0; i<81; i++){
@@ -71,8 +72,7 @@ GladFieldMap::GladFieldMap() {
   m_Ny= 0;
   m_Nz= 0;
   m_CentralTheta = 20.*deg;
-  m_X_MWPC3 = -1436.;
-  m_Z_MWPC3 = 8380.;
+  m_MWPC3_POS = TVector3(-1436.,0,7852);
   m_Angle_MWPC3 = 20.*deg;
   m_R_MWPC3 = 4199.; 
 
@@ -158,7 +158,7 @@ TVector3 GladFieldMap::PropagateToMWPC(TVector3 pos, TVector3 dir){
   //pos.RotateY(-m_Angle_MWPC3);
   //dir.RotateY(-m_Angle_MWPC3);
 
-  double deltaZ = m_Z_MWPC3 - pos.Z();
+  double deltaZ = m_MWPC3_POS.Z() - pos.Z();
   dir*=deltaZ/dir.Z();
   pos+=dir;
   pos.SetX(pos.X());
@@ -302,7 +302,7 @@ TVector3 GladFieldMap::CalculateIntersectionPoint(vector<TVector3> vPos){
   // MWPC3 equation Z_MWPC = a1*X_MWPC + b1
   double a1, b1;
   a1 = tan(m_CentralTheta);
-  b1 = m_Z_MWPC3 - m_X_MWPC3*tan(m_CentralTheta);
+  b1 = m_MWPC3_POS.Z() - m_MWPC3_POS.X()*tan(m_CentralTheta);
 
   double Mx, My, Mz;
   Mx = (b0 - b1) / (a1 -a0);
@@ -361,7 +361,7 @@ void GladFieldMap::LoadMap(string filename) {
         gBy->SetPoint(iz,z,abs(By));
 
         z = z + x*sin(m_Tilt);
-        z += m_Z_Glad;
+        z += m_Glad_Entrance.Z();
 
         Bx *= -m_Scale;
         By *= -m_Scale;
@@ -522,7 +522,7 @@ vector<double> GladFieldMap::InterpolateB(const vector<double>& pos)
 //////////////////////////////////
 double GladFieldMap::GetB(TVector3 localpoint, string field_component)
 {
-  TVector3 vtrans(0,0,-m_Z_Glad);
+  TVector3 vtrans(0,0,-m_Glad_Entrance.Z());
 
   localpoint = localpoint + vtrans;
 

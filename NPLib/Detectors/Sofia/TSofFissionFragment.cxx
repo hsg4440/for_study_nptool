@@ -68,8 +68,14 @@ void TSofFissionFragment::Clear() {
   fFF_ZB.clear();
   fFF_ZC.clear();
   fFF_ZD.clear();
+  fFF_X1.clear();
+  fFF_Y1.clear();
+  fFF_X2.clear();
+  fFF_Y2.clear();
   fFF_X3lab.clear();
   fFF_Z3lab.clear();
+  fFF_deff1.clear();
+  fFF_deff2.clear();
 
   fFF_Zsum = -1;
   fFF_iZsum = -1;

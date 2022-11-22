@@ -222,7 +222,7 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         int qleft = hitX[0].second;
         int qmax = hitX[1].second;
         int qright = hitX[2].second;
-        int padmax = hitX[2].first;
+        int padmax = hitX[1].first;
         if(padmax>0 && padmax+1<288 && qmax>0 && qleft>0 && qright>0){
           x = GetPositionX(det_num, qmax, padmax, qleft, qright);
           Xpos.push_back(x);
@@ -239,7 +239,7 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         int qdown = hitY[0].second;
         int qmax = hitY[1].second;
         int qup = hitY[2].second;
-        int padmax = hitY[2].first;
+        int padmax = hitY[1].first;
         if(padmax>0 && padmax+1<120 && qmax>0 && qdown>0 && qup>0){
           y = GetPositionY(det_num, qmax, padmax, qdown, qup);
           Ypos.push_back(y);

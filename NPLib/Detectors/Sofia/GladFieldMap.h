@@ -54,7 +54,8 @@ class GladFieldMap{
     double m_Bmax;
     double m_B;
     double m_Current;
-    double m_Z_Glad;
+    TVector3 m_Glad_Entrance;
+    TVector3 m_Glad_TurningPoint;
     double m_Leff[81][41];
     double m_Tilt;
     int m_Nx;
@@ -72,8 +73,7 @@ class GladFieldMap{
   private:
     // MWPC3 paramters
     double m_CentralTheta;
-    double m_X_MWPC3;
-    double m_Z_MWPC3;
+    TVector3 m_MWPC3_POS;
     double m_R_MWPC3;
     double m_Angle_MWPC3;
   private:
@@ -88,7 +88,8 @@ class GladFieldMap{
     TVector3 m_FinalPos;
 
   public:
-    void SetZGlad(double val) {m_Z_Glad = val;}
+    void SetGladEntrance(double x, double y, double z){m_Glad_Entrance = TVector3(x,y,z);}
+    void SetGladTurningPoint(double x, double y, double z){m_Glad_TurningPoint = TVector3(x,y,z);}
     void SetLeff(int ix, int iy, double val) {m_Leff[ix][iy] = val;}
     void SetGladTiltAngle(double val) {m_Tilt = val;}
     void SetScale(double val) {m_Scale = val;}
@@ -99,8 +100,7 @@ class GladFieldMap{
     }
 
     void SetCentralTheta(double val) {m_CentralTheta = val;}
-    void SetX_MWPC3(double val) {m_X_MWPC3 = val;}
-    void SetZ_MWPC3(double val) {m_Z_MWPC3 = val;}
+    void Set_MWPC3_Position(double x, double y, double z) {m_MWPC3_POS = TVector3(x,y,z);}
   
     void SetPropagationTimeInterval(double val) {m_dt = val;}
     void SetLimit(int val) {m_Limit = val;}
@@ -111,7 +111,8 @@ class GladFieldMap{
 
   public:
     double GetLeff(int ix, int iy) {return m_Leff[ix][iy];}
-    double GetZGlad() {return m_Z_Glad;}
+    TVector3 GetGladEntrance() {return m_Glad_Entrance;}
+    TVector3 GetGladTurningPoint() {return m_Glad_TurningPoint;}
     double GetB() {return m_B;}
     double GetXmin() {return m_x_min;}
     double GetXmax() {return m_x_max;}
@@ -120,8 +121,7 @@ class GladFieldMap{
     double GetZmin() {return m_z_min;}
     double GetZmax() {return m_z_max;}
     double GetCentralTheta() {return m_CentralTheta;}
-    double GetX_MWPC3() {return m_X_MWPC3;}
-    double GetZ_MWPC3() {return m_Z_MWPC3;}
+    TVector3 Get_MWPC3_Position() {return m_MWPC3_POS;}
   
   public:
     void LoadMap(string filename);

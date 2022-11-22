@@ -57,10 +57,16 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_ZB;
     vector<double> fFF_ZC;
     vector<double> fFF_ZD;
+    vector<double> fFF_X1;
+    vector<double> fFF_Y1;
+    vector<double> fFF_X2;
+    vector<double> fFF_Y2;
     vector<double> fFF_X3lab;
     vector<double> fFF_Z3lab;
     vector<double> fFF_FlightPath;
     vector<double> fFF_Leff;
+    vector<double> fFF_deff1;
+    vector<double> fFF_deff2;
     double fFF_Zsum;
     int fFF_iZsum;
 
@@ -107,12 +113,18 @@ class TSofFissionFragment : public TObject {
     inline void SetTofPosY(double val){fFF_TofPosY.push_back(val);};//!
     inline void SetFlightPath(double val){fFF_FlightPath.push_back(val);};//!
     inline void SetLeff(double val){fFF_Leff.push_back(val);};//!
+    inline void Setdeff1(double val){fFF_deff1.push_back(val);};//!
+    inline void Setdeff2(double val){fFF_deff2.push_back(val);};//!
     inline void SetPosXB(double val){fFF_XB.push_back(val);};//!
     inline void SetPosXC(double val){fFF_XC.push_back(val);};//!
     inline void SetPosXD(double val){fFF_XD.push_back(val);};//!
     inline void SetPosZB(double val){fFF_ZB.push_back(val);};//!
     inline void SetPosZC(double val){fFF_ZC.push_back(val);};//!
     inline void SetPosZD(double val){fFF_ZD.push_back(val);};//!
+    inline void SetPosX1(double val){fFF_X1.push_back(val);};//!
+    inline void SetPosY1(double val){fFF_Y1.push_back(val);};//!
+    inline void SetPosX2(double val){fFF_X2.push_back(val);};//!
+    inline void SetPosY2(double val){fFF_Y2.push_back(val);};//!
     inline void SetPosX3lab(double val){fFF_X3lab.push_back(val);};//!
     inline void SetPosZ3lab(double val){fFF_Z3lab.push_back(val);};//!
 
@@ -144,12 +156,18 @@ class TSofFissionFragment : public TObject {
     inline double GetTofPosY(int i) const {return fFF_TofPosY[i];}//! 
     inline double GetFlightPath(int i) const {return fFF_FlightPath[i];}//! 
     inline double GetLeff(int i) const {return fFF_Leff[i];}//! 
+    inline double Getdeff1(int i) const {return fFF_deff1[i];}//! 
+    inline double Getdeff2(int i) const {return fFF_deff2[i];}//! 
     inline double GetPosXB(int i) const {return fFF_XB[i];}//! 
     inline double GetPosXC(int i) const {return fFF_XC[i];}//! 
     inline double GetPosXD(int i) const {return fFF_XD[i];}//! 
     inline double GetPosZB(int i) const {return fFF_ZB[i];}//! 
     inline double GetPosZC(int i) const {return fFF_ZC[i];}//! 
     inline double GetPosZD(int i) const {return fFF_ZD[i];}//! 
+    inline double GetPosX1(int i) const {return fFF_X1[i];}//! 
+    inline double GetPosY1(int i) const {return fFF_Y1[i];}//! 
+    inline double GetPosX2(int i) const {return fFF_X2[i];}//! 
+    inline double GetPosY2(int i) const {return fFF_Y2[i];}//! 
     inline double GetPosX3lab(int i) const {return fFF_X3lab[i];}//! 
     inline double GetPosZ3lab(int i) const {return fFF_Z3lab[i];}//! 
 

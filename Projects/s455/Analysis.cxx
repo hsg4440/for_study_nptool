@@ -58,6 +58,7 @@ struct TofPair
   double A = 0;
   double DT = -100;
   double x2twim = -1000;
+  double x1 = -1000;
   double x2 = -1000;
   double x3 = -1000;
   double y3 = -1000;
@@ -75,6 +76,8 @@ struct TofPair
   double rho = 0;
   double Brho = 0;
   double omega = 0;
+  double deff1 = 0;
+  double deff2 = 0;
 };
 
 
@@ -98,13 +101,16 @@ void Analysis::Init(){
   
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(2135.);
-  m_GladField->SetZGlad(2694.+540.5);
+  m_GladField->SetGladEntrance(0,0,2.774*m);
+  m_GladField->SetGladTurningPoint(0,0,m_GladField->GetGladEntrance().Z()  + 1.654*m);
   m_GladField->SetGladTiltAngle(14.*deg);
   m_GladField->LoadMap("GladFieldMap.dat");
   m_GladField->SetCentralTheta(20.*deg);
-  m_GladField->SetX_MWPC3(-1.436*m);
-  m_GladField->SetZ_MWPC3(8.45*m);
   
+  double Z_MWPC3 = 7.852*m;
+  double X_MWPC3 = -(Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
+  m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
+
   InitParameter();
   InitOutputBranch();
   LoadSpline();
@@ -300,6 +306,18 @@ void Analysis::FissionFragmentAnalysis(){
     ileft  = 1;
     iright = 0;
   }
+
+  if(X1.size()==2){
+    if(X1[0]>X1[1]){
+      TofHit[ileft].x1 = X1[0];
+      TofHit[iright].x1 = X1[1];
+    }
+    else if(X1[0]<X1[1]){
+      TofHit[ileft].x1 = X1[1];
+      TofHit[iright].x1 = X1[0];
+    }
+  }
+
   if(X2.size()==2){
     if(X2[0]>X2[1]){
       TofHit[ileft].x2 = X2[0];
@@ -568,14 +586,14 @@ void Analysis::FissionFragmentAnalysis(){
       // *** Calculation Theta_out *** //
       double Theta0 = m_GladField->GetCentralTheta();
       double XA = 0;
-      double ZA = 2272;
+      double ZA = 2315.5;
       int ix = (int) (-m_GladField->GetXmin()/50);
       int iy = (int) (-m_GladField->GetYmin()/50);
       double Leff_init = m_GladField->GetLeff(ix,iy);
-      double ZG = m_GladField->GetZGlad()+Leff_init/2;
-      double ZMW3 = m_GladField->GetZ_MWPC3();
-      double XMW3 = -(ZMW3-ZG)*tan(Theta0);
-      double ZMW2 = 2576;
+      double ZG = m_GladField->GetGladTurningPoint().Z();
+      double ZMW3 = m_GladField->Get_MWPC3_Position().Z();
+      double XMW3 = m_GladField->Get_MWPC3_Position().X();
+      double ZMW2 = 2651;
       double X3lab = 0;
       double Z3lab = 0;;
       double Tilt = 14.*deg;
@@ -590,6 +608,8 @@ void Analysis::FissionFragmentAnalysis(){
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
         if(XA != -1e6){
+          TVector3 vG = TVector3(0,0,ZG);
+          TVector3 vA = TVector3(XA,0,ZA);
           // *** Extroplate to C position *** //
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
@@ -624,19 +644,25 @@ void Analysis::FissionFragmentAnalysis(){
           TVector3 vB = TVector3(XB,0,ZB);
 
           // *** Extrapolate to D position *** //
-          XD = XC + TofHit[i].Leff/2*tan(angle+Tilt)*cos(Tilt);
-          ZD = ZC + TofHit[i].Leff/2*cos(Tilt);
+          //XD = XC + TofHit[i].Leff/2*tan(angle+Tilt)*cos(Tilt);
+          //ZD = ZC + TofHit[i].Leff/2*cos(Tilt);
+          double phi = -angle -Tilt;
+          double psi = TMath::Pi()/2+angle;
+          double l = TofHit[i].Leff/(2*cos(phi));
+          XD = XC - l*cos(psi);
+          ZD = ZC + l*sin(psi);
           TofHit[i].xd = XD;
           TofHit[i].zd = ZD;
           TVector3 vD = TVector3(XD,0,ZD);
-      
+     
+          TVector3 v3lab = TVector3(X3lab,0,Z3lab);
           TVector3 v1 = TVector3(XB,0,ZB);
           TVector3 v3 = TVector3(X3lab-XD,0,Z3lab-ZD);
           TofHit[i].omega = abs(2.*asin(sqrt(pow(XD-XB,2) + pow(ZD-ZB,2))/(2*TofHit[i].rho)));
           double Path1 = v1.Mag();
           double Path2 = TofHit[i].rho*TofHit[i].omega;
           double Path3 = v3.Mag();
-          double PathLength = Path1 + Path2 + Path3 + 74.;
+          double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
           PathLength = PathLength/1000.;
 
           TofHit[i].flight_path = PathLength;
@@ -650,7 +676,15 @@ void Analysis::FissionFragmentAnalysis(){
           int iZ = (int) round(Z);
           TofHit[i].Z = Z;
           TofHit[i].iZ = iZ;
-        
+
+          TVector3 vCG = vG - vC;
+          TVector3 vCA = vA - vC;
+          TofHit[i].deff1 = vCG.Angle(vCA)*180./TMath::Pi();
+          TofHit[i].deff2 = vCG.Angle(vOut)*180./TMath::Pi();
+
+          //TofHit[i].deff1 = (vC-vB).Mag();
+          //TofHit[i].deff2 = (vC-vD).Mag();
+
           TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
           TofHit[i].AoQ = TofHit[i].Brho / (3.10716 * TofHit[i].beta * TofHit[i].gamma);
           TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
@@ -670,6 +704,8 @@ void Analysis::FissionFragmentAnalysis(){
         SofFF->SetPosZB(TofHit[i].zb);
         SofFF->SetPosZC(TofHit[i].zc);
         SofFF->SetPosZD(TofHit[i].zd);
+        SofFF->SetPosX1(TofHit[i].x1);
+        SofFF->SetPosX2(TofHit[i].x2);
         SofFF->SetPosX3lab(TofHit[i].x3lab);
         SofFF->SetPosZ3lab(TofHit[i].z3lab);
         SofFF->SetThetaIn(TofHit[i].theta_in/deg);
@@ -686,6 +722,8 @@ void Analysis::FissionFragmentAnalysis(){
         SofFF->SetDT(TofHit[i].DT);
         SofFF->SetSection(TofHit[i].section);
         SofFF->SetLeff(TofHit[i].Leff);
+        SofFF->Setdeff1(TofHit[i].deff1);
+        SofFF->Setdeff2(TofHit[i].deff2);
         SofFF->SetFlightPath(TofHit[i].flight_path);
 
       }
