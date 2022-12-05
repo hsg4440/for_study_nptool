@@ -1,7 +1,7 @@
-NPTool
+nptool
 ======
 
-NPTool, which stands for Nuclear Physics Tool, is an open source and freely
+nptool, which stands for Nuclear Physics Tool, is an open source and freely
 distributed data analysis and Monte Carlo simulation package for low-energy
 nuclear physics experiments. The NPTool package aims to offer an unified
 framework for preparing and analysing complex experiments, making an efficient
