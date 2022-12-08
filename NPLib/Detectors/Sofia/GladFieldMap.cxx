@@ -44,7 +44,7 @@ GladFieldMap::GladFieldMap() {
   m_func = ROOT::Math::Functor(this,&GladFieldMap::Delta,1);
   m_min->SetFunction(m_func);
   m_min->SetPrintLevel(-1);
-  m_Bmax = 2.2;
+  m_Bmax = 2.25;
   m_bin = 50;
   m_Current = 2135.;
   m_Scale = m_Current/3583.81;
@@ -358,8 +358,11 @@ void GladFieldMap::LoadMap(string filename) {
       
         //m_Leff[ix][iy] += abs(By)*m_bin;
         // Need to fill this TGraph before scaling the field to get the proper Leff //
-        gBy->SetPoint(iz,z,abs(By));
+        gBy->SetPoint(iz,z,By);
 
+        x += m_Glad_Entrance.X();
+        y += m_Glad_Entrance.Y();
+        
         z = z + x*sin(m_Tilt);
         z += m_Glad_Entrance.Z();
 

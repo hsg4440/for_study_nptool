@@ -43,6 +43,8 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_TOF;
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
+    vector<double> fFF_Brho_X;
+    vector<double> fFF_Brho_Z;
     vector<double> fFF_Rho;
     vector<double> fFF_Omega;
     vector<double> fFF_DT;
@@ -103,6 +105,8 @@ class TSofFissionFragment : public TObject {
     inline void SetTOF(double val){fFF_TOF.push_back(val);};//!
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
+    inline void SetBrhoX(double val){fFF_Brho_X.push_back(val);};//!
+    inline void SetBrhoZ(double val){fFF_Brho_Z.push_back(val);};//!
     inline void SetRho(double val){fFF_Rho.push_back(val);};//!
     inline void SetOmega(double val){fFF_Omega.push_back(val);};//!
     inline void SetDT(double val){fFF_DT.push_back(val);};//!
@@ -146,6 +150,8 @@ class TSofFissionFragment : public TObject {
     inline double GetTOF(int i) const {return fFF_TOF[i];}//! 
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
+    inline double GetBrhoX(int i) const {return fFF_Brho_X[i];}//! 
+    inline double GetBrhoZ(int i) const {return fFF_Brho_Z[i];}//! 
     inline double GetRho(int i) const {return fFF_Rho[i];}//! 
     inline double GetOmega(int i) const {return fFF_Omega[i];}//! 
     inline double GetDT(int i) const {return fFF_DT[i];}//! 

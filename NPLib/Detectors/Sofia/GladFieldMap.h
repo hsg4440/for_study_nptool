@@ -111,6 +111,7 @@ class GladFieldMap{
 
   public:
     double GetLeff(int ix, int iy) {return m_Leff[ix][iy];}
+    double GetGladTiltAngle() {return m_Tilt;}
     TVector3 GetGladEntrance() {return m_Glad_Entrance;}
     TVector3 GetGladTurningPoint() {return m_Glad_TurningPoint;}
     double GetB() {return m_B;}
