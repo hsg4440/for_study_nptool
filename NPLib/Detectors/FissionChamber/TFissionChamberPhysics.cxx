@@ -42,30 +42,34 @@ using namespace std;
 ClassImp(TFissionChamberPhysics)
 
 
-///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 TFissionChamberPhysics::TFissionChamberPhysics()
-   : m_EventData(new TFissionChamberData),
-     m_PreTreatedData(new TFissionChamberData),
-     m_EventPhysics(this),
-     m_Spectra(0),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
-     m_NumberOfDetectors(0) {
-}
+  : m_EventData(new TFissionChamberData),
+  m_PreTreatedData(new TFissionChamberData),
+  m_EventPhysics(this),
+  m_Spectra(0),
+  m_E_RAW_Threshold(0), // adc channels
+  m_E_Threshold(0),     // MeV
+  m_NumberOfDetectors(0) {
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TFissionChamberPhysics::AddDetector(TVector3 ){
+void TFissionChamberPhysics::AddDetector(TVector3 pos) {
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
   m_NumberOfDetectors++;
+  for(int i =0; i<11; i++){
+    TVector3 AnodePos(pos.X() , pos.Y(), pos.Z() - 25 + i*5);
+    m_AnodePosition.push_back(AnodePos);
+  } 
 
-		for(int i=0; i<12; i++){
-				LastTime[i] = 0;
-				CurrentTime[i] = 0;
-				counter[i] = 0;
-		}
+  for(int i=0; i<12; i++){
+    LastTime[i] = 0;
+    CurrentTime[i] = 0;
+    counter[i] = 0;
+  }
 } 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -73,9 +77,10 @@ void TFissionChamberPhysics::AddDetector(double R, double Theta, double Phi){
   // Compute the TVector3 corresponding
   TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
   // Call the cartesian method
+  /* m_DetectorPosition.push_back(Pos); */
   AddDetector(Pos);
 } 
-  
+
 ///////////////////////////////////////////////////////////////////////////
 void TFissionChamberPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
@@ -87,19 +92,19 @@ void TFissionChamberPhysics::BuildSimplePhysicalEvent() {
 void TFissionChamberPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
-    
+
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-				
-				int A = m_EventData->GetAnodeNbr(e);
-				CurrentTime[A] = m_EventData->GetTime(e);
-				double DT = CurrentTime[A] - LastTime[A];
-				
-				LastTime[A] = m_EventData->GetTime(e);
- 
-				DT_FC.push_back(DT);
-				AnodeNumber.push_back(m_PreTreatedData->GetAnodeNbr(e));
+
+    int A = m_EventData->GetAnodeNbr(e);
+    CurrentTime[A] = m_EventData->GetTime(e);
+    double DT = CurrentTime[A] - LastTime[A];
+
+    LastTime[A] = m_EventData->GetTime(e);
+
+    DT_FC.push_back(DT);
+    AnodeNumber.push_back(m_PreTreatedData->GetAnodeNbr(e));
     Q1.push_back(m_PreTreatedData->GetQ1(e));
     Q2.push_back(m_PreTreatedData->GetQ2(e));
     Qmax.push_back(m_PreTreatedData->GetQmax(e));
@@ -108,11 +113,11 @@ void TFissionChamberPhysics::BuildPhysicalEvent() {
 
     Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
   }
-  
+
   /*unsigned int mysizeHF = m_PreTreatedData->GetHFMultiplicity();
-  for(UShort_t e =0; e < mysizeHF ; e++){  
+    for(UShort_t e =0; e < mysizeHF ; e++){  
     Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
-  }*/
+    }*/
 
 }
 
@@ -126,34 +131,34 @@ void TFissionChamberPhysics::PreTreat() {
 
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
-    
-  
+
+
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (UShort_t i = 0; i < mysize ; ++i) {
     Double_t Q1 = m_EventData->GetQ1(i);
     Double_t Q2 = m_EventData->GetQ2(i);
     Double_t Qmax = m_EventData->GetQmax(i);
 
-   
-				if (Q1 > m_E_Threshold) {
-						int AnodeNumber = m_EventData->GetAnodeNbr(i);
+
+    if (Q1 > m_E_Threshold) {
+      int AnodeNumber = m_EventData->GetAnodeNbr(i);
       double TimeOffset = Cal->GetValue("FissionChamber/ANODE"+NPL::itoa(AnodeNumber)+"_TIMEOFFSET",0);
       double Time = m_EventData->GetTime(i);// + TimeOffset;
 
-						m_PreTreatedData->SetAnodeNbr(AnodeNumber);
+      m_PreTreatedData->SetAnodeNbr(AnodeNumber);
       m_PreTreatedData->SetQ1(Q1);
       m_PreTreatedData->SetQ2(Q2);
       m_PreTreatedData->SetQmax(Qmax);
       m_PreTreatedData->SetTime(Time);
       m_PreTreatedData->SetFakeFissionStatus(m_EventData->GetFakeFissionStatus(i));
-    		m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
+      m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
     }
   }
-  
-		/*unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
-  for (UShort_t i = 0; i < mysizeHF ; ++i) {
+
+  /*unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
+    for (UShort_t i = 0; i < mysizeHF ; ++i) {
     m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
-  }*/
+    }*/
 
 }
 
@@ -232,7 +237,7 @@ void TFissionChamberPhysics::Clear() {
   Time.clear();
   Time_HF.clear();
   isFakeFission.clear();
-		DT_FC.clear();
+  DT_FC.clear();
 }
 
 

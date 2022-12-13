@@ -373,7 +373,6 @@ void FissionChamber::BuildAnode(double Zpos){
   Tv.setZ(Zpos+0.5*FissionChamber_NS::Kapton_Thickness+0.5*FissionChamber_NS::Cu_Thickness);
   m_FissionChamberVolume->AddPlacedVolume(Cu_vol, Tv, Rv);
 
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
@@ -408,6 +407,7 @@ void FissionChamber::ReadSensitive(const G4Event* ){
       m_Event->SetQ1(Energy);
       m_Event->SetQ2(Energy);
       m_Event->SetTime(Time); 
+      m_Event->SetQmax(Energy); 
       m_Event->SetTimeHF(0); 
       m_Event->SetFakeFissionStatus(0); 
     }
