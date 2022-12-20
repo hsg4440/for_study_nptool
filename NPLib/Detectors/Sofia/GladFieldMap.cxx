@@ -110,11 +110,10 @@ double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos
   m_FinalPos = Pos_final;
 
   m_InitDir = m_InitDir.Unit();
-  //BrhoScan(2,15,1,m_InitPos, m_InitDir);
+  BrhoScan(6,11,1,m_InitPos, m_InitDir);
   static double param[1];
   param[0] = m_BrhoScan->Eval(m_FinalPos.X());
-
-  //return param[0];
+  return param[0];
 
   m_min->Clear();
   m_min->SetPrecision(1e-6);
@@ -137,11 +136,11 @@ TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_ste
   unsigned int i=0;
   //TVector3 pos = TVector3(0,0,0);
   //TVector3 dir = TVector3(0,0,1);
-  pos.RotateY(m_Tilt);
-  dir.RotateY(m_Tilt);
+  //pos.RotateY(m_Tilt);
+  //dir.RotateY(m_Tilt);
   for(double Brho=Brho_min; Brho<Brho_max; Brho+=Brho_step){
     vector<TVector3> vPos = Propagate(Brho, pos, dir, false);
-    vPos.back().RotateY(-m_CentralTheta);
+    //vPos.back().RotateY(m_CentralTheta);
 
     m_BrhoScan->SetPoint(i++,vPos.back().X(),Brho);
     //cout << vPos.back().X() << " " << Brho << endl;
