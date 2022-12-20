@@ -110,10 +110,12 @@ void Analysis::Init(){
   m_GladField->SetGladTiltAngle(-14.*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
   m_GladField->SetBin(50);
+  m_GladField->SetTimeStep(0.8);
   m_GladField->SetCentralTheta(-20.*deg);
   
   //double Z_MWPC3 = 7.852*m;
-  double Z_MWPC3 = 3.402*m;
+  //double Z_MWPC3 = 3.402*m;
+  double Z_MWPC3 = 3.5*m;
   double X_MWPC3 = (Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
   m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
 
@@ -604,6 +606,7 @@ void Analysis::FissionFragmentAnalysis(){
       double Z3lab = 0;;
       double Tilt = 14.*deg;//;
       TVector3 vZ = TVector3(0,0,1);
+      TVector3 vStart = TVector3(0,0,-DistanceStartToG);
       double XC = 0;
       double ZC = 0;
       double XB = 0;
@@ -631,7 +634,7 @@ void Analysis::FissionFragmentAnalysis(){
 
           X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
           Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
-          TVector3 vE = TVector3(X3lab, 0, Z3lab);
+          TVector3 vE = TVector3(X3lab, TofHit[i].y, Z3lab);
           TVector3 dir = TVector3(sin(TofHit[i].theta_in), 0, cos(TofHit[i].theta_in));
           TofHit[i].x3lab = X3lab;
           TofHit[i].z3lab = Z3lab;
@@ -670,13 +673,14 @@ void Analysis::FissionFragmentAnalysis(){
             
 
           TVector3 v3lab = TVector3(X3lab,0,Z3lab);
-          TVector3 v1 = TVector3(XB,0,ZB);
+          TVector3 v1 = TVector3(XB,0,ZB)-vStart;
           TVector3 v3 = TVector3(X3lab-XD,0,Z3lab-ZD);
           TofHit[i].omega = abs(2.*asin(sqrt(pow(XD-XB,2) + pow(ZD-ZB,2))/(2*TofHit[i].rho)));
           double Path1 = v1.Mag();
           double Path2 = TofHit[i].rho*TofHit[i].omega;
           double Path3 = v3.Mag();
-          double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
+          //double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
+          double PathLength = m_GladField->GetFlightPath(vStart, TofHit[i].Brho, vA, dir) + 740. + 50;
           PathLength = PathLength/1000.;
 
           TofHit[i].flight_path = PathLength;

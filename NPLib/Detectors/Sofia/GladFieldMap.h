@@ -99,6 +99,7 @@ class GladFieldMap{
       m_B = 2.2*m_Scale;
     }
     void SetBin(double val) {m_bin = val;}
+    void SetTimeStep(double val) {m_dt = val;}
 
     void SetCentralTheta(double val) {m_CentralTheta = val;}
     void Set_MWPC3_Position(double x, double y, double z) {m_MWPC3_POS = TVector3(x,y,z);}
@@ -124,6 +125,7 @@ class GladFieldMap{
     double GetZmax() {return m_z_max;}
     double GetCentralTheta() {return m_CentralTheta;}
     double GetBin() {return m_bin;}
+    double GetTimeStep() {return m_dt;}
     TVector3 Get_MWPC3_Position() {return m_MWPC3_POS;}
      
   public:
@@ -137,6 +139,7 @@ class GladFieldMap{
     TGraph* BrhoScan(double Brho_min, double Brho_max, double Brho_step, TVector3 pos, TVector3 dir);
     TVector3 CalculateIntersectionPoint(vector<TVector3> vPos);
     vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store);
+    double GetFlightPath(TVector3 vStart, double Brho, TVector3 Pos, TVector3 Dir);
     TVector3 PropagateToMWPC(TVector3 pos, TVector3 dir);
     void func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& xk, TVector3& pk);
     double FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final);

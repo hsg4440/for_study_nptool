@@ -92,7 +92,7 @@ double GladFieldMap::Delta(const double* parameter){
   static vector<TVector3> pos;
 
   pos = Propagate(parameter[0], m_InitPos, m_InitDir, false);
-  pos.back().RotateY(-m_CentralTheta+m_Tilt);
+  //pos.back().RotateY(-m_CentralTheta+m_Tilt);
 
   diff = pos.back() - m_FinalPos;
   //cout << pos.back().X() << " " << pos.back().Z() << endl;
@@ -110,10 +110,10 @@ double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos
   m_FinalPos = Pos_final;
 
   m_InitDir = m_InitDir.Unit();
-  BrhoScan(6,11,1,m_InitPos, m_InitDir);
+  //BrhoScan(6,11,1,m_InitPos, m_InitDir);
   static double param[1];
   param[0] = m_BrhoScan->Eval(m_FinalPos.X());
-  return param[0];
+  //return param[0];
 
   m_min->Clear();
   m_min->SetPrecision(1e-6);
@@ -149,6 +149,28 @@ TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_ste
   m_BrhoScan->Sort();
 
   return m_BrhoScan;
+}
+
+//////////////////////////////////////////////////////////////////////
+double GladFieldMap::GetFlightPath(TVector3 vStart, double Brho, TVector3 Pos, TVector3 Dir){
+
+  double FlightPath = 0;
+
+  vector<TVector3> track;
+  track = Propagate(Brho, Pos, Dir, true);
+
+  FlightPath += (Pos - vStart).Mag();
+
+  unsigned int vsize = track.size();
+  for(unsigned int i=0; i<vsize-1; i++){
+    TVector3 point1 = track[i];
+    TVector3 point2 = track[i+1];
+
+    TVector3 v12 = point2 - point1;
+    FlightPath += v12.Mag();
+  }
+
+  return FlightPath;
 }
 
 //////////////////////////////////////////////////////////////////////
