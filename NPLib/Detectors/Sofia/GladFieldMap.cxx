@@ -48,9 +48,9 @@ GladFieldMap::GladFieldMap() {
   m_bin = 50;
   m_Current = 2135.;
   m_Scale = m_Current/3583.81;
-  m_Glad_Entrance = TVector3(0,0,2774.);
-  m_Glad_TurningPoint = TVector3(0,0,2774.+1654);
-  m_Tilt = 14.*deg;
+  m_Glad_Entrance = TVector3(0,0,-1.135*m);
+  m_Glad_TurningPoint = TVector3(0,0,0);
+  m_Tilt = -14.*deg;
   m_B = m_Scale*m_Bmax;
   for(int i=0; i<81; i++){
     for(int j=0; j<41; j++){
@@ -71,9 +71,9 @@ GladFieldMap::GladFieldMap() {
   m_Nx= 0;
   m_Ny= 0;
   m_Nz= 0;
-  m_CentralTheta = 20.*deg;
-  m_MWPC3_POS = TVector3(-1436.,0,7852);
-  m_Angle_MWPC3 = 20.*deg;
+  m_CentralTheta = -20.*deg;
+  m_MWPC3_POS = TVector3(-1436.,0,3402);
+  m_Angle_MWPC3 = -20.*deg;
   m_R_MWPC3 = 4199.; 
 
   m_InitPos = TVector3(0,0,0);
@@ -92,7 +92,7 @@ double GladFieldMap::Delta(const double* parameter){
   static vector<TVector3> pos;
 
   pos = Propagate(parameter[0], m_InitPos, m_InitDir, false);
-  //pos.back().RotateY(-m_Angle_MWPC3+m_Tilt);
+  pos.back().RotateY(-m_CentralTheta+m_Tilt);
 
   diff = pos.back() - m_FinalPos;
   //cout << pos.back().X() << " " << pos.back().Z() << endl;
@@ -103,7 +103,7 @@ double GladFieldMap::Delta(const double* parameter){
 double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final){
 
   if(!m_BrhoScan)
-    BrhoScan(1.,20,0.2,TVector3(0,0,0), TVector3(0,0,1));
+    BrhoScan(6,11,0.1,TVector3(0,0,-2500), TVector3(0,0,1));
 
   m_InitPos  = Pos_init;
   m_InitDir  = Dir_init;
@@ -119,7 +119,7 @@ double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos
   m_min->Clear();
   m_min->SetPrecision(1e-6);
   m_min->SetMaxFunctionCalls(1000);
-  m_min->SetLimitedVariable(0,"B",param[0],0.1,1,20);
+  m_min->SetLimitedVariable(0,"B",param[0],0.1,6,11);
   m_min->Minimize();
 
   return m_min->X()[0];
@@ -137,11 +137,11 @@ TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_ste
   unsigned int i=0;
   //TVector3 pos = TVector3(0,0,0);
   //TVector3 dir = TVector3(0,0,1);
-  //pos.RotateY(m_Tilt);
-  //dir.RotateY(m_Tilt);
+  pos.RotateY(m_Tilt);
+  dir.RotateY(m_Tilt);
   for(double Brho=Brho_min; Brho<Brho_max; Brho+=Brho_step){
     vector<TVector3> vPos = Propagate(Brho, pos, dir, false);
-    //vPos.back().RotateY(-m_Angle_MWPC3);
+    vPos.back().RotateY(-m_CentralTheta);
 
     m_BrhoScan->SetPoint(i++,vPos.back().X(),Brho);
     //cout << vPos.back().X() << " " << Brho << endl;
