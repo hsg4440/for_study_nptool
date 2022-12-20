@@ -25,19 +25,19 @@ void FitTofGammaPeak(){
   ofstream ofile;
   ofile.open(Form("Vendeta_Time_run%i.cal",run));
 
-		TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
+  TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
 
   for(int i=0; i<NumberOfAnodes; i++){
-			sigma_anode[i]=0;
+    sigma_anode[i]=0;
   }
 
   Double_t* mean = new Double_t[1];
   Double_t* sigma = new Double_t[1];
-		TGraph* gSigma_LG = new TGraph();
-		TGraph* gSigma_HG = new TGraph();
+  TGraph* gSigma_LG = new TGraph();
+  TGraph* gSigma_HG = new TGraph();
 
-		int countLG=0;
-		int countHG=0;
+  int countLG=0;
+  int countHG=0;
   for(int i=0; i<NumberOfDetectors; i++){
     for(int j=0; j<NumberOfAnodes; j++){
       // LG //
@@ -52,12 +52,12 @@ void FitTofGammaPeak(){
       TString LG_token = Form("Vendeta_DET%i_LG_ANODE%i_TIMEOFFSET",i+1,j+1);
       if(Finder(h, mean, sigma)){
         ofile << LG_token << " " << -mean[0]+PosGammaPeak << endl;
-								gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
+        gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
 
-								sigma_anode[j] += sigma[0];
+        sigma_anode[j] += sigma[0];
 
-								countLG++;
-								h->Write();
+        countLG++;
+        h->Write();
       }
       else{
         ofile << LG_token << " 0" << endl;
@@ -75,9 +75,9 @@ void FitTofGammaPeak(){
       TString HG_token = Form("Vendeta_DET%i_HG_ANODE%i_TIMEOFFSET",i+1,j+1);
       if(Finder(h, mean, sigma)){
         ofile << HG_token << " " << -mean[0]+PosGammaPeak << endl;
-								gSigma_HG->SetPoint(countHG,countHG+1,sigma[0]);
-								countHG++;
-								h->Write();
+        gSigma_HG->SetPoint(countHG,countHG+1,sigma[0]);
+        countHG++;
+        h->Write();
       }
       else{
         ofile << HG_token << " 0" << endl;
@@ -85,29 +85,29 @@ void FitTofGammaPeak(){
     }
   }
 
-		TCanvas* c1 = new TCanvas("Sigma","Sigma",1200,600);
-		c1->Divide(2,1);
+  TCanvas* c1 = new TCanvas("Sigma","Sigma",1200,600);
+  c1->Divide(2,1);
 
-		gSigma_LG->SetMarkerStyle(8);
-		gSigma_HG->SetMarkerStyle(8);
+  gSigma_LG->SetMarkerStyle(8);
+  gSigma_HG->SetMarkerStyle(8);
 
-		c1->cd(1);
-		gSigma_LG->Draw();
-		c1->cd(2);
-		gSigma_HG->Draw();
+  c1->cd(1);
+  gSigma_LG->Draw();
+  c1->cd(2);
+  gSigma_HG->Draw();
 
-		gSigma_LG->SetName("sigma_LG");
-		gSigma_HG->SetName("sigma_HG");
-		
-		gSigma_LG->Write();
-		gSigma_HG->Write();
+  gSigma_LG->SetName("sigma_LG");
+  gSigma_HG->SetName("sigma_HG");
 
-		orootfile->Write();
-		orootfile->Close();
+  gSigma_LG->Write();
+  gSigma_HG->Write();
 
-		for(int i=0; i<NumberOfAnodes; i++){
-			cout << "Anode= " << i+1 << " / " << sigma_anode[i]/NumberOfDetectors << endl; 
-		}
+  orootfile->Write();
+  orootfile->Close();
+
+  for(int i=0; i<NumberOfAnodes; i++){
+    cout << "Anode= " << i+1 << " / " << sigma_anode[i]/NumberOfDetectors << endl; 
+  }
 
 }
 
@@ -139,7 +139,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
     return true;
   }
 
-		else if(nfound != m_NumberOfGammaPeak){
+  else if(nfound != m_NumberOfGammaPeak){
     cout << "Warning. Number of peak different of " << m_NumberOfGammaPeak << " !! / nfound = " << nfound << endl; 
     return false;
   }

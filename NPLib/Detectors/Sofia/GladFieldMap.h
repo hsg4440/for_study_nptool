@@ -98,6 +98,7 @@ class GladFieldMap{
       m_Scale = m_Current/3583.81;
       m_B = 2.2*m_Scale;
     }
+    void SetBin(double val) {m_bin = val;}
 
     void SetCentralTheta(double val) {m_CentralTheta = val;}
     void Set_MWPC3_Position(double x, double y, double z) {m_MWPC3_POS = TVector3(x,y,z);}
@@ -122,8 +123,9 @@ class GladFieldMap{
     double GetZmin() {return m_z_min;}
     double GetZmax() {return m_z_max;}
     double GetCentralTheta() {return m_CentralTheta;}
+    double GetBin() {return m_bin;}
     TVector3 Get_MWPC3_Position() {return m_MWPC3_POS;}
-  
+     
   public:
     void LoadMap(string filename);
     vector<double> InterpolateB(const vector<double>& pos);
