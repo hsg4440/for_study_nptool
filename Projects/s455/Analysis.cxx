@@ -115,7 +115,7 @@ void Analysis::Init(){
   
   //double Z_MWPC3 = 7.852*m;
   //double Z_MWPC3 = 3.402*m;
-  double Z_MWPC3 = 3.5*m;
+  double Z_MWPC3 = 3.65*m;
   double X_MWPC3 = (Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
   m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
 
