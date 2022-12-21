@@ -4,7 +4,8 @@ TChain* chain=NULL;
 void LoadRootFile(string nucleus){
   chain = new TChain("SimulatedTree");
 
-  string rootfilename = "../../../Outputs/Simulation/sofia_simu_" + nucleus + "_*";
+  //string rootfilename = "../../../Outputs/Simulation/sofia_simu_" + nucleus + "_*";
+  string rootfilename = "../../../Outputs/Simulation/sofia_simu_1.root";
 
   chain->Add(rootfilename.c_str());
 }

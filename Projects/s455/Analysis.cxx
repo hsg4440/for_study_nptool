@@ -103,14 +103,20 @@ void Analysis::Init(){
   
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(2135.);
-  m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
-  m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.135*m);
-  m_GladField->SetGladTiltAngle(14.*deg);
-  m_GladField->LoadMap("GladFieldMap.dat");
-  m_GladField->SetCentralTheta(20.*deg);
+  //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
+  m_GladField->SetGladEntrance(0, 0, -1.135*m);
+  //m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.135*m);
+  m_GladField->SetGladTurningPoint(0, 0, 0);
+  m_GladField->SetGladTiltAngle(-14.*deg);
+  m_GladField->LoadMap("GladFieldMap_50mm.dat");
+  m_GladField->SetBin(50);
+  m_GladField->SetTimeStep(0.8);
+  m_GladField->SetCentralTheta(-20.*deg);
   
-  double Z_MWPC3 = 7.852*m;
-  double X_MWPC3 = -(Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
+  //double Z_MWPC3 = 7.852*m;
+  //double Z_MWPC3 = 3.402*m;
+  double Z_MWPC3 = 3.65*m;
+  double X_MWPC3 = (Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
   m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
 
   InitParameter();
@@ -586,17 +592,21 @@ void Analysis::FissionFragmentAnalysis(){
 
 
       // *** Calculation Theta_out *** //
-      double Theta0 = m_GladField->GetCentralTheta();
+      double DistanceStartToG = 2.774*m + 0.5405*m +1.135*m;
+      double DistanceStartToA = 2.3155*m;
+      double DistanceStartToMW2 = 2.651*m;
+      double Theta0 = 20.*deg;//m_GladField->GetCentralTheta();
       double XA = 0;
-      double ZA = 2315.5;
+      double ZA = DistanceStartToA - DistanceStartToG;
       double ZG = m_GladField->GetGladTurningPoint().Z();
       double ZMW3 = m_GladField->Get_MWPC3_Position().Z();
       double XMW3 = m_GladField->Get_MWPC3_Position().X();
-      double ZMW2 = 2651;
+      double ZMW2 = DistanceStartToMW2 - DistanceStartToG;
       double X3lab = 0;
       double Z3lab = 0;;
-      double Tilt = m_GladField->GetGladTiltAngle();;//14.*deg;
+      double Tilt = 14.*deg;//;
       TVector3 vZ = TVector3(0,0,1);
+      TVector3 vStart = TVector3(0,0,-DistanceStartToG);
       double XC = 0;
       double ZC = 0;
       double XB = 0;
@@ -613,18 +623,19 @@ void Analysis::FissionFragmentAnalysis(){
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
           TVector3 vC    = TVector3(XC,0,ZC);
-          
           TofHit[i].xc = XC;
           TofHit[i].yc = (ZC/8592.)*TofHit[i].y;
           TofHit[i].zc = ZC;
 
           int ix, iy;
-          ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/50;
-          iy = (int)(TofHit[0].yc -20. - m_GladField->GetYmin())/50;
+          ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/m_GladField->GetBin();
+          iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/m_GladField->GetBin();
           TofHit[i].Leff = m_GladField->GetLeff(ix,iy);
 
           X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
           Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
+          TVector3 vE = TVector3(X3lab, TofHit[i].y, Z3lab);
+          TVector3 dir = TVector3(sin(TofHit[i].theta_in), 0, cos(TofHit[i].theta_in));
           TofHit[i].x3lab = X3lab;
           TofHit[i].z3lab = Z3lab;
           TVector3 vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
@@ -632,7 +643,8 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].theta_out = angle;
           TofHit[i].psi = TofHit[i].theta_in - TofHit[i].theta_out;
           TofHit[i].rho = TofHit[i].Leff/(2*sin(0.5*TofHit[i].psi)*cos(Tilt-0.5*TofHit[i].psi));
-          TofHit[i].Brho = MagB*TofHit[i].rho;
+          //TofHit[i].Brho = MagB*TofHit[i].rho;
+          TofHit[i].Brho = m_GladField->FindBrho(vA,dir,vE);
 
           // *** Extrapolate to B position *** //
           double ZI = ZG - TofHit[i].Leff/(2*cos(Tilt));
@@ -661,13 +673,14 @@ void Analysis::FissionFragmentAnalysis(){
             
 
           TVector3 v3lab = TVector3(X3lab,0,Z3lab);
-          TVector3 v1 = TVector3(XB,0,ZB);
+          TVector3 v1 = TVector3(XB,0,ZB)-vStart;
           TVector3 v3 = TVector3(X3lab-XD,0,Z3lab-ZD);
           TofHit[i].omega = abs(2.*asin(sqrt(pow(XD-XB,2) + pow(ZD-ZB,2))/(2*TofHit[i].rho)));
           double Path1 = v1.Mag();
           double Path2 = TofHit[i].rho*TofHit[i].omega;
           double Path3 = v3.Mag();
-          double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
+          //double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
+          double PathLength = m_GladField->GetFlightPath(vStart, TofHit[i].Brho, vA, dir) + 740. + 50;
           PathLength = PathLength/1000.;
 
           TofHit[i].flight_path = PathLength;
