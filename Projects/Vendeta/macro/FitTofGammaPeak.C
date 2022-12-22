@@ -30,10 +30,10 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
 /////////////////////////////////////////////////////
 int main(int argc, char** argv){
-    
+
   int run = atof(argv[1]);
   TString Append = argv[2];
-  
+
   auto ifile = new TFile(Form("histos_ToF/histo_tof_file_run%d"+Append+".root",run));
   auto gFlyPath = (TGraph*)ifile->Get("gFlyPath");
 
@@ -41,123 +41,114 @@ int main(int argc, char** argv){
   TCanvas *cHG[11];
 
   ofstream ofile;
-<<<<<<< HEAD
   ofile.open(Form("ToF_calibs/Vendeta_Time_run%d.cal",run));
   TFile* orootfile = new TFile(Form("histos_ToF/histo_tof_fitted_run%d"+Append+".root",run),"recreate");
 
   for(int i=0; i<NumberOfAnodes; i++){
     sigma_anode[i]=0;
     sigma_anode_HG[i]=0;
-=======
-  ofile.open(Form("Vendeta_Time_run%i.cal",run));
+    ofile.open(Form("Vendeta_Time_run%i.cal",run));
 
-  TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
+    TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
 
-  for(int i=0; i<NumberOfAnodes; i++){
-    sigma_anode[i]=0;
->>>>>>> 1f5a4966c35bb110ec3e906e38ea506f92dad29d
-  }
+    for(int i=0; i<NumberOfAnodes; i++){
+      sigma_anode[i]=0;
+    }
 
-  Double_t* mean = new Double_t[1];
-  Double_t* sigma = new Double_t[1];
-  TGraph* gSigma_LG = new TGraph();
-  TGraph* gSigma_HG = new TGraph();
+    Double_t* mean = new Double_t[1];
+    Double_t* sigma = new Double_t[1];
+    TGraph* gSigma_LG = new TGraph();
+    TGraph* gSigma_HG = new TGraph();
 
-  int countLG=0;
-  int countHG=0;
-  for(int i=0; i<NumberOfDetectors; i++){
-    for(int j=0; j<NumberOfAnodes; j++){
-      // LG //
-      TString histo_name = Form("hLG_Det%i_Anode%i",i+1,j+1);
-      TH1F* h = (TH1F*) ifile->FindObjectAny(histo_name);
+    int countLG=0;
+    int countHG=0;
+    for(int i=0; i<NumberOfDetectors; i++){
+      for(int j=0; j<NumberOfAnodes; j++){
+        // LG //
+        TString histo_name = Form("hLG_Det%i_Anode%i",i+1,j+1);
+        TH1F* h = (TH1F*) ifile->FindObjectAny(histo_name);
 
-      //cLG[j]->cd(i+1);
-      h->Draw();
-      
-      int index = j + i*11;
-      double FlyPath = gFlyPath->GetPointY(index);
-      PosGammaPeak = FlyPath/c ; 
-      
-      mean[0] = 0;
-      sigma[0] = 0;
-      TString LG_token = Form("Vendeta_DET%i_LG_ANODE%i_TIMEOFFSET",i+1,j+1);
-      if(Finder(h, mean, sigma)){
-        ofile << LG_token << " " << -mean[0]+PosGammaPeak << endl;
-        gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
+        //cLG[j]->cd(i+1);
+        h->Draw();
 
-        sigma_anode[j] += sigma[0];
+        int index = j + i*11;
+        double FlyPath = gFlyPath->GetPointY(index);
+        PosGammaPeak = FlyPath/c ; 
 
-        countLG++;
-        h->Write();
-      }
-      else{
-        ofile << LG_token << " 0" << endl;
-      }
+        mean[0] = 0;
+        sigma[0] = 0;
+        TString LG_token = Form("Vendeta_DET%i_LG_ANODE%i_TIMEOFFSET",i+1,j+1);
+        if(Finder(h, mean, sigma)){
+          ofile << LG_token << " " << -mean[0]+PosGammaPeak << endl;
+          gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
 
-      // HG //
-      histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
-      h = (TH1F*) ifile->FindObjectAny(histo_name);
+          sigma_anode[j] += sigma[0];
 
-      //cHG[j]->cd(i+1);
-      h->Draw();
+          countLG++;
+          h->Write();
+        }
+        else{
+          ofile << LG_token << " 0" << endl;
+        }
 
-      mean[0] = 0;
-      sigma[0] = 0; 
-      TString HG_token = Form("Vendeta_DET%i_HG_ANODE%i_TIMEOFFSET",i+1,j+1);
-      if(Finder(h, mean, sigma)){
-        ofile << HG_token << " " << -mean[0]+PosGammaPeak << endl;
-        gSigma_HG->SetPoint(countHG,countHG+1,sigma[0]);
-<<<<<<< HEAD
-        sigma_anode_HG[j] += sigma[0];
-=======
->>>>>>> 1f5a4966c35bb110ec3e906e38ea506f92dad29d
-        countHG++;
-        h->Write();
-      }
-      else{
-        ofile << HG_token << " 0" << endl;
+        // HG //
+        histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
+        h = (TH1F*) ifile->FindObjectAny(histo_name);
+
+        //cHG[j]->cd(i+1);
+        h->Draw();
+
+        mean[0] = 0;
+        sigma[0] = 0; 
+        TString HG_token = Form("Vendeta_DET%i_HG_ANODE%i_TIMEOFFSET",i+1,j+1);
+        if(Finder(h, mean, sigma)){
+          ofile << HG_token << " " << -mean[0]+PosGammaPeak << endl;
+          gSigma_HG->SetPoint(countHG,countHG+1,sigma[0]);
+          sigma_anode_HG[j] += sigma[0];
+          countHG++;
+          h->Write();
+        }
+        else{
+          ofile << HG_token << " 0" << endl;
+        }
       }
     }
+
+    TCanvas* c1 = new TCanvas("Sigma","Sigma",1200,600);
+    c1->Divide(2,1);
+
+    gSigma_LG->SetMarkerStyle(8);
+    gSigma_HG->SetMarkerStyle(8);
+
+    c1->cd(1);
+    gSigma_LG->Draw();
+    c1->cd(2);
+    gSigma_HG->Draw();
+
+    gSigma_LG->SetName("sigma_LG");
+    gSigma_HG->SetName("sigma_HG");
+
+    gSigma_LG->Write();
+    gSigma_HG->Write();
+
+    orootfile->Write();
+    orootfile->Close();
+
+    for(int i=0; i<NumberOfAnodes; i++){
+      cout << "Anode= " << i+1 << " / " << sigma_anode[i]/NumberOfDetectors << endl; 
+    }
+
+    double totLG = 0, totHG=0;
+    for(int i=0; i<NumberOfAnodes; i++){
+      cout << "Anode= " << i+1 << " |  LG: " << sigma_anode[i]/NumberOfDetectors << " HG: " << sigma_anode_HG[i]/NumberOfDetectors  << endl; 
+      totLG += sigma_anode[i];
+      totHG += sigma_anode_HG[i];
+    }
+    totLG = totLG/NumberOfDetectors/11.;
+    totHG = totHG/NumberOfDetectors/11.;
+    cout  << "<sigma> LG: "<< totLG << "  HG: "<<totHG << endl;
   }
-
-  TCanvas* c1 = new TCanvas("Sigma","Sigma",1200,600);
-  c1->Divide(2,1);
-
-  gSigma_LG->SetMarkerStyle(8);
-  gSigma_HG->SetMarkerStyle(8);
-
-  c1->cd(1);
-  gSigma_LG->Draw();
-  c1->cd(2);
-  gSigma_HG->Draw();
-
-  gSigma_LG->SetName("sigma_LG");
-  gSigma_HG->SetName("sigma_HG");
-
-  gSigma_LG->Write();
-  gSigma_HG->Write();
-
-  orootfile->Write();
-  orootfile->Close();
-<<<<<<< HEAD
-=======
-
-  for(int i=0; i<NumberOfAnodes; i++){
-    cout << "Anode= " << i+1 << " / " << sigma_anode[i]/NumberOfDetectors << endl; 
-  }
->>>>>>> 1f5a4966c35bb110ec3e906e38ea506f92dad29d
-
-  double totLG = 0, totHG=0;
-  for(int i=0; i<NumberOfAnodes; i++){
-    cout << "Anode= " << i+1 << " |  LG: " << sigma_anode[i]/NumberOfDetectors << " HG: " << sigma_anode_HG[i]/NumberOfDetectors  << endl; 
-    totLG += sigma_anode[i];
-    totHG += sigma_anode_HG[i];
-  }
-  totLG = totLG/NumberOfDetectors/11.;
-  totHG = totHG/NumberOfDetectors/11.;
-  cout  << "<sigma> LG: "<< totLG << "  HG: "<<totHG << endl;
 }
-
 
 /////////////////////////////////////////////////////
 bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
