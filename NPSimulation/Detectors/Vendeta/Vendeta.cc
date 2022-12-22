@@ -40,6 +40,7 @@
 
 // NPTool header
 #include "Vendeta.hh"
+#include "ProcessScorers.hh"
 #include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
@@ -75,7 +76,7 @@ Vendeta::Vendeta(){
   m_VendetaDetector = 0;
   m_SensitiveCell = 0;
   m_MecanicalStructure = 0;  
-  m_Build_MecanicalStructure = 1;
+  m_Build_MecanicalStructure = 0;
 
   // RGB Color + Transparency
   m_VisAl      = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));   
@@ -351,7 +352,6 @@ void Vendeta::ReadSensitive(const G4Event* ){
       m_Event->SetHGQ2(Energy);
       m_Event->SetHGTime(Time); 
       m_Event->SetHGQmax(0); 
-      m_Event->SetHGIsSat(0); 
 
       // Filling LG
       m_Event->SetLGDetectorNbr(DetectorNbr);
@@ -359,11 +359,32 @@ void Vendeta::ReadSensitive(const G4Event* ){
       m_Event->SetLGQ2(Energy);
       m_Event->SetLGTime(Time); 
       m_Event->SetLGQmax(0); 
-      m_Event->SetLGIsSat(0); 
 
     }
   }
+
+  ///////////
+  // Process scorer
+  ProcessScorers::PS_Process* Process_scorer = (ProcessScorers::PS_Process*) m_VendetaScorer->GetPrimitive(2);
+  unsigned int ProcessMult = Process_scorer->GetMult();
+  if(ProcessMult>0){
+    string particle_name = Process_scorer->GetParticleName(0);
+    if(particle_name=="gamma"){
+      m_Event->SetHGIsSat(1); 
+      m_Event->SetLGIsSat(1); 
+    }
+
+    if(particle_name=="neutron"){
+      m_Event->SetHGIsSat(0); 
+      m_Event->SetLGIsSat(0); 
+    }
+ 
+  }
+  //for(unsigned int i=0; i<ProcessMult; i++){
+  //  string particle_name = Process_scorer->GetParticleName(i);
+  //}
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
@@ -379,9 +400,11 @@ void Vendeta::InitializeScorers() {
   vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* Process= new ProcessScorers::PS_Process("Process", 0) ;
   //and register it to the multifunctionnal detector
   m_VendetaScorer->RegisterPrimitive(Calorimeter);
   m_VendetaScorer->RegisterPrimitive(Interaction);
+  m_VendetaScorer->RegisterPrimitive(Process);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_VendetaScorer) ;
 }
 

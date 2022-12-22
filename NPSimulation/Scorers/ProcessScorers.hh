@@ -59,6 +59,7 @@ namespace ProcessScorers {
       //double t_Time;
       //vector<unsigned int> t_Level;
       vector<G4String> t_processname;
+      vector<G4String> t_particlename;
       vector<double> t_processtime;
       vector<double> t_gamma_energy;
       vector<double> t_proton_energy;
@@ -69,6 +70,7 @@ namespace ProcessScorers {
     public:
       inline unsigned int  GetMult() {return t_processname.size();};
       inline string GetProcessName(const unsigned int& i) {return t_processname[i];};
+      inline string GetParticleName(const unsigned int& i) {return t_particlename[i];};
       inline double GetProcessTime(const unsigned int& i) {return t_processtime[i];};
       inline vector<double> GetGammaEnergy() {return t_gamma_energy;};
       inline vector<double> GetProtonEnergy() {return t_proton_energy;};
