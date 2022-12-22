@@ -1,0 +1,5 @@
+TTreeName
+  SimulatedTree
+RootFileName
+  ../../Outputs/Simulation/vendeta_sim_1.root 
+  ../../Outputs/Simulation/vendeta_sim_2.root 

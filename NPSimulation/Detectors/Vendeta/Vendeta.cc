@@ -61,7 +61,7 @@ namespace Vendeta_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 0.6*ns ;
-  const double ResoEnergy = 1.0*MeV ;
+  const double ResoEnergy = 0.1*MeV ;
   const double Thickness = 51.*mm ;
   const double Radius = 127./2*mm ;
 }
@@ -345,22 +345,21 @@ void Vendeta::ReadSensitive(const G4Event* ){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Vendeta_NS::ResoTime);
       int DetectorNbr = level[0]-1;
 
-      if(Energy < 1) {  
-        m_Event->SetHGDetectorNbr(DetectorNbr);
-        m_Event->SetHGQ1(0.2*Energy);
-        m_Event->SetHGQ2(Energy);
-        m_Event->SetHGTime(Time); 
-        m_Event->SetHGQmax(0); 
-        m_Event->SetHGIsSat(0); 
-      }
-      else if(Energy > 1){
-        m_Event->SetLGDetectorNbr(DetectorNbr);
-        m_Event->SetLGQ1(0.2*Energy);
-        m_Event->SetLGQ2(Energy);
-        m_Event->SetLGTime(Time); 
-        m_Event->SetLGQmax(0); 
-        m_Event->SetLGIsSat(0); 
-      }
+      // Filling HG
+      m_Event->SetHGDetectorNbr(DetectorNbr);
+      m_Event->SetHGQ1(Energy);
+      m_Event->SetHGQ2(Energy);
+      m_Event->SetHGTime(Time); 
+      m_Event->SetHGQmax(0); 
+      m_Event->SetHGIsSat(0); 
+
+      // Filling LG
+      m_Event->SetLGDetectorNbr(DetectorNbr);
+      m_Event->SetLGQ1(Energy);
+      m_Event->SetLGQ2(Energy);
+      m_Event->SetLGTime(Time); 
+      m_Event->SetLGQmax(0); 
+      m_Event->SetLGIsSat(0); 
 
     }
   }
