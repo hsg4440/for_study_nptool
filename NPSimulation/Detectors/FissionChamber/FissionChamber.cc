@@ -427,10 +427,10 @@ void FissionChamber::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  //G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_FissionChamberScorer->RegisterPrimitive(Calorimeter);
-  m_FissionChamberScorer->RegisterPrimitive(Interaction);
+  //m_FissionChamberScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_FissionChamberScorer) ;
 }
 
