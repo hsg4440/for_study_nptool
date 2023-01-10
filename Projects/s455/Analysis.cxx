@@ -104,8 +104,8 @@ void Analysis::Init(){
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(2135.);
   //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
-  m_GladField->SetGladEntrance(0, 0, -1.135*m);
-  //m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.135*m);
+  m_GladField->SetGladEntrance(0, 0, -1.1135*m);
+  //m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.1135*m);
   m_GladField->SetGladTurningPoint(0, 0, 0);
   m_GladField->SetGladTiltAngle(-14.*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
@@ -610,11 +610,8 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
         }
       }
 
-      // *** Calculation Theta_out *** //
-      double DistanceStartToG = 2.774*m + 0.5405*m +1.135*m;
-      double DistanceATToG = 2.774*m + 0.5405*m +1.135*m - DistancePlasticToCathode[which_cathode-1];
-      double DistanceStartToA = 2.3155*m;
-      double DistanceStartToMW2 = 2.651*m;
+  
+      DistanceATToG = DistanceStartToG - DistancePlasticToCathode[which_cathode-1];
       double Theta0 = 20.*deg;//m_GladField->GetCentralTheta();
       double XA = 0;
       double ZA = DistanceStartToA - DistanceStartToG;
@@ -900,6 +897,10 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
   
+  DistanceStartToG = 2.774*m + 0.5405*m + 1.1135*m;
+  DistanceStartToA = 2.3155*m;
+  DistanceStartToMW2 = 2.651*m;
+
   DistancePlasticToCathode[0] = 285;//Distance to Pb1 
   DistancePlasticToCathode[1] = 385;//Distance to Pb2 
   DistancePlasticToCathode[2] = 335.;//Distance to C 

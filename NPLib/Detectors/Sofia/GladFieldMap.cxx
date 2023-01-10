@@ -48,7 +48,7 @@ GladFieldMap::GladFieldMap() {
   m_bin = 50;
   m_Current = 2135.;
   m_Scale = m_Current/3583.81;
-  m_Glad_Entrance = TVector3(0,0,-1.135*m);
+  m_Glad_Entrance = TVector3(0,0,-1.1135*m);
   m_Glad_TurningPoint = TVector3(0,0,0);
   m_Tilt = -14.*deg;
   m_B = m_Scale*m_Bmax;

@@ -88,6 +88,10 @@ class Analysis: public NPL::VAnalysis{
     double fZBeta_p1;
 
     double DistancePlasticToCathode[3];
+    double DistanceStartToG;
+    double DistanceStartToA;
+    double DistanceStartToMW2;
+    double DistanceATToG;
 
     TCutG* cut_Pb1[14];
     TCutG* cut_Pb2[14];
