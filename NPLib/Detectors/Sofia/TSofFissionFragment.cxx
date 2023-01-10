@@ -81,6 +81,7 @@ void TSofFissionFragment::Clear() {
 
   fFF_Zsum = -1;
   fFF_iZsum = -1;
+  fFF_Cathode = -1;
 }
 
 

@@ -50,8 +50,9 @@ class Analysis: public NPL::VAnalysis{
     void InitParameter();
     void ReInitValue();
     void BeamAnalysis();
-    void FissionFragmentAnalysis();
+    void FissionFragmentAnalysis(int which_cathode);
     void BeamFragmentAnalysis();
+    void LoadActiveTargetCuts();
 
     static NPL::VAnalysis* Construct();
 
@@ -85,6 +86,12 @@ class Analysis: public NPL::VAnalysis{
     double fZff_p2;
     double fZBeta_p0;
     double fZBeta_p1;
+
+    double DistancePlasticToCathode[3];
+
+    TCutG* cut_Pb1[14];
+    TCutG* cut_Pb2[14];
+    TCutG* cut_C[14];
 
     TRandom3 rand;
     

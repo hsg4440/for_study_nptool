@@ -110,7 +110,7 @@ void Analysis::Init(){
   m_GladField->SetGladTiltAngle(-14.*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
   m_GladField->SetBin(50);
-  m_GladField->SetTimeStep(0.8);
+  m_GladField->SetTimeStep(0.4);
   m_GladField->SetCentralTheta(-20.*deg);
   
   //double Z_MWPC3 = 7.852*m;
@@ -122,7 +122,7 @@ void Analysis::Init(){
   InitParameter();
   InitOutputBranch();
   LoadSpline();
-
+  LoadActiveTargetCuts();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,8 +139,28 @@ void Analysis::TreatEvent(){
     SofTofW->SetStartTime(start_time);
     SofTofW->BuildPhysicalEvent();
 
-    FissionFragmentAnalysis();
-    //BeamFragmentAnalysis();
+    if(SofAt->Energy.size()==3 || SofAt->Energy.size()==4){ 
+      double Anode1 = SofAt->Energy[0];
+      double Anode2 = SofAt->Energy[1];
+      double Anode3 = SofAt->Energy[2];
+      int k= fRunID-1;
+      int which_cathode = 0;
+      
+      if(cut_Pb1[k]->IsInside(Anode1,Anode2)){
+        which_cathode = 1;
+      }
+      else if(cut_Pb2[k]->IsInside(Anode2,Anode3)){
+        which_cathode = 2;
+      }  
+      else if(cut_C[k]->IsInside(Anode2,Anode3)){
+        which_cathode = 3;
+      }
+      else
+        return;
+
+      FissionFragmentAnalysis(which_cathode);
+      //BeamFragmentAnalysis();
+    }
   }
 }
 
@@ -180,7 +200,7 @@ void Analysis::BeamFragmentAnalysis(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Analysis::FissionFragmentAnalysis(){
+void Analysis::FissionFragmentAnalysis(int which_cathode){
   unsigned int softofw_size = SofTofW->PlasticNbr.size();
   unsigned int softwim_size = SofTwim->SectionNbr.size();
 
@@ -590,9 +610,9 @@ void Analysis::FissionFragmentAnalysis(){
         }
       }
 
-
       // *** Calculation Theta_out *** //
       double DistanceStartToG = 2.774*m + 0.5405*m +1.135*m;
+      double DistanceATToG = 2.774*m + 0.5405*m +1.135*m - DistancePlasticToCathode[which_cathode-1];
       double DistanceStartToA = 2.3155*m;
       double DistanceStartToMW2 = 2.651*m;
       double Theta0 = 20.*deg;//m_GladField->GetCentralTheta();
@@ -606,7 +626,8 @@ void Analysis::FissionFragmentAnalysis(){
       double Z3lab = 0;;
       double Tilt = 14.*deg;//;
       TVector3 vZ = TVector3(0,0,1);
-      TVector3 vStart = TVector3(0,0,-DistanceStartToG);
+      //TVector3 vStart = TVector3(0,0,-DistanceStartToG);
+      TVector3 vStart = TVector3(0,0,-DistanceATToG);
       double XC = 0;
       double ZC = 0;
       double XB = 0;
@@ -615,8 +636,9 @@ void Analysis::FissionFragmentAnalysis(){
       double ZD = 0;
       double MagB = m_GladField->GetB()/1000;
       for(int i=0; i<2; i++){
-        XA = TofHit[i].DT;
-        if(XA != -1e6){
+       XA = TofHit[i].DT;
+        if(XA != -1e6 && SofBeamID->GetBeta()>0){
+      
           TVector3 vG = TVector3(0,0,ZG);
           TVector3 vA = TVector3(XA,0,ZA);
           // *** Extroplate to C position *** //
@@ -665,12 +687,11 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].xd = XD;
           TofHit[i].zd = ZD;
           TVector3 vD = TVector3(XD,0,ZD);
-    
+
           // *** Extrapolate position of the rho point *** //
           TofHit[i].BrhoX = XB - TofHit[i].rho*cos(TofHit[i].theta_in); 
           TofHit[i].BrhoZ = ZB + TofHit[i].rho*sin(TofHit[i].theta_in); 
           TVector3 vBrho = TVector3(TofHit[i].BrhoX, 0, TofHit[i].BrhoZ);
-            
 
           TVector3 v3lab = TVector3(X3lab,0,Z3lab);
           TVector3 v1 = TVector3(XB,0,ZB)-vStart;
@@ -680,12 +701,19 @@ void Analysis::FissionFragmentAnalysis(){
           double Path2 = TofHit[i].rho*TofHit[i].omega;
           double Path3 = v3.Mag();
           //double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
+          
           double PathLength = m_GladField->GetFlightPath(vStart, TofHit[i].Brho, vA, dir) + 740. + 50;
           PathLength = PathLength/1000.;
 
+          double BeamTimeOffset = DistancePlasticToCathode[which_cathode-1]/(SofBeamID->GetBeta()*NPUNITS::c_light);
+          
+          TofHit[i].tof = TofHit[i].tof - BeamTimeOffset;
           TofHit[i].flight_path = PathLength;
           TofHit[i].velocity = PathLength/TofHit[i].tof;
           TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
+          TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
+          TofHit[i].AoQ = TofHit[i].Brho / (3.10716 * TofHit[i].beta * TofHit[i].gamma);
+          TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
           TofHit[i].x2twim = XA;
 
           double Z = TofHit[i].Esec;
@@ -708,10 +736,6 @@ void Analysis::FissionFragmentAnalysis(){
           TVector3 vO = TVector3(XO,0,ZO);
           TofHit[i].deff1 = (vO-vB).Mag();
           TofHit[i].deff2 = (vD-vO).Mag();
-
-          TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
-          TofHit[i].AoQ = TofHit[i].Brho / (3.10716 * TofHit[i].beta * TofHit[i].gamma);
-          TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
 
         }
       }
@@ -753,6 +777,7 @@ void Analysis::FissionFragmentAnalysis(){
         SofFF->SetFlightPath(TofHit[i].flight_path);
 
       }
+      SofFF->SetCathode(which_cathode);
       SofFF->SetZsum(TofHit[0].Z+TofHit[1].Z);
       SofFF->SetiZsum(TofHit[0].iZ+TofHit[1].iZ);
     }
@@ -874,6 +899,11 @@ void Analysis::End(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
+  
+  DistancePlasticToCathode[0] = 285;//Distance to Pb1 
+  DistancePlasticToCathode[1] = 385;//Distance to Pb2 
+  DistancePlasticToCathode[2] = 335.;//Distance to C 
+
   fLS2_0 = 135.614;
   fDS2   = 8000;
   fDCC   = -10000;
@@ -1010,6 +1040,38 @@ void Analysis::InitParameter(){
     fBrho0 = 12.3352;
   }
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadActiveTargetCuts()
+{
+  TString element[14] = {"180Hg_1", "180Hg_2", "182Hg", "184Hg", "187Pb", "189Pb", "175Pt", "204Fr", "207Fr", "199At_1", "199At_2", "197At", "216Th", "221Pa"};
+
+  TFile* file;
+  TString filename1[14];
+  TString filename2[14];
+  TString filename3[14];
+  cout << "/// Loading Active Target cuts..." << endl;
+  for(int i=0; i<14; i++){
+    filename1[i]= "./macro/cuts/"+element[i]+"/cut_Pb1.root";
+    filename2[i]= "./macro/cuts/"+element[i]+"/cut_Pb2.root";
+    filename3[i]= "./macro/cuts/"+element[i]+"/cut_C.root";
+
+    file = new TFile(filename1[i],"read");
+    cout << "- " << filename1[i] << endl;
+    cut_Pb1[i] = (TCutG*) file->FindObjectAny("cut_Pb1");
+    cut_Pb1[i]->SetName(element[i]+"_Pb1");
+
+    file = new TFile(filename2[i],"read");
+    cout << "- " << filename2[i] << endl;
+    cut_Pb2[i] = (TCutG*) file->FindObjectAny("cut_Pb2");
+    cut_Pb2[i]->SetName(element[i]+"_Pb2");
+
+    file = new TFile(filename3[i],"read");
+    cout << "- " << filename3[i] << endl;
+    cut_C[i] = (TCutG*) file->FindObjectAny("cut_C");
+    cut_C[i]->SetName(element[i]+"_C");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
