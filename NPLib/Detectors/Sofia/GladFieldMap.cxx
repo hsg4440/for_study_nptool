@@ -59,7 +59,6 @@ GladFieldMap::GladFieldMap() {
   }
 
 
-  m_Zmax = 8.5*m;
   m_Limit = 1000;
   m_dt = 0.1*nanosecond;
   m_x_min=1e6;
@@ -72,11 +71,10 @@ GladFieldMap::GladFieldMap() {
   m_Ny= 0;
   m_Nz= 0;
   m_CentralTheta = -20.*deg;
-  m_MWPC3_POS = TVector3(-1436.,0,3402);
+  m_MWPC3_POS = TVector3(-1257.52,0,3455);
   m_Angle_MWPC3 = -20.*deg;
-  m_R_MWPC3 = 4199.; 
 
-  m_InitPos = TVector3(0,0,0);
+  m_InitPos = TVector3(0,0,-3000);
   m_InitDir = TVector3(0,0,1);
 }
 
@@ -118,7 +116,7 @@ double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos
   m_min->Clear();
   m_min->SetPrecision(1e-6);
   m_min->SetMaxFunctionCalls(1000);
-  m_min->SetLimitedVariable(0,"B",param[0],0.1,6,11);
+  m_min->SetLimitedVariable(0,"B",param[0],0.1,2,15);
   m_min->Minimize();
 
   return m_min->X()[0];

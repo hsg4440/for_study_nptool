@@ -44,6 +44,7 @@ class Analysis: public NPL::VAnalysis{
 
   public: 
     void Init();
+    void ReadAnalysisConfig();
     void TreatEvent();
     void End();
     void InitOutputBranch();
@@ -77,6 +78,7 @@ class Analysis: public NPL::VAnalysis{
     double fBrho0;
     double fDS2;
     double fDCC;
+    double fGladCurrent;
     double fK_LS2;
     double fZbeam_p0; 
     double fZbeam_p1; 
@@ -87,11 +89,13 @@ class Analysis: public NPL::VAnalysis{
     double fZBeta_p0;
     double fZBeta_p1;
 
-    double DistancePlasticToCathode[3];
-    double DistanceStartToG;
-    double DistanceStartToA;
-    double DistanceStartToMW2;
-    double DistanceATToG;
+    double fDistancePlasticToCathode[3];
+    double fDistanceBetweenCathode;
+    double fDistanceStartToFirstATCathode;
+    double fDistanceStartToG;
+    double fDistanceStartToA;
+    double fDistanceMW3ToToF;
+    double fDistanceGToMW3;
 
     TCutG* cut_Pb1[14];
     TCutG* cut_Pb2[14];
