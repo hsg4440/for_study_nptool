@@ -6,27 +6,29 @@ Target
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
- Z= 0 m
+ Z= -4093 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SofTofW
- R= 4.5 m
- THETA= -18 deg
- PHI= 0 deg
- Yoffset= 0.0 mm
- Build_GLAD= 1
- GLAD_TiltAngle= 14 deg
- GLAD_DistanceFromTarget= 3.3 m
- Build_MagneticField= 1
- GLAD_MagField= 1.75 T 
- Build_VacuumPipe= 1
- VacuumPipeX= 0 cm
- VacuumPipeY= 0 cm
- VacuumPipeZ= 0.9 m
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SofTwim
- R= 2.00 m
+%SofTwim
+ R= -1850 mm
  THETA= 0
  PHI= 0
  TwimGas= MixTwinMusic
  Pressure= 1 bar
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SofTofW
+ R= 4440 mm
+ THETA= -20 deg
+ PHI= 0 deg
+ Build_VacuumPipe= 0
+ VacuumPipeX= 0 cm
+ VacuumPipeY= 0 cm
+ VacuumPipeZ= -3250 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Glad
+ POS= 0 0 386.5 mm
+ TILT_ANGLE= 0 deg
+ FIELDMAP= GladFieldMap_50mm.dat
+ CURRENT= 2185
+ STEPSIZE= 50 mm

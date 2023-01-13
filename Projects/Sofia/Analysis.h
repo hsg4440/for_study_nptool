@@ -21,8 +21,13 @@
  *                                                                           *
  *****************************************************************************/
 
-#include"NPVAnalysis.h"
-#include"TSofiaPhysics.h"
+#include "NPVAnalysis.h"
+#include "TInitialConditions.h"
+#include "TInteractionCoordinates.h"
+#include "TFissionConditions.h"
+#include "GladFieldMap.h"
+#include "TRandom3.h"
+
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -30,13 +35,28 @@ class Analysis: public NPL::VAnalysis{
 
   public: 
     void Init();
+    void InitInputBranch();
+    void InitOutputBranch();
     void TreatEvent();
+    void ReInit();
     void End();
 
-   static NPL::VAnalysis* Construct();
+    static NPL::VAnalysis* Construct();
 
   private:
-   TSofiaPhysics* Sofia;
+    vector<double> m_TOF;
+    vector<double> m_Brho;
+    vector<int> m_A;
+    vector<double> m_Brho_calc;
+    vector<int> m_A_calc;
+    vector<double> m_FlightPath;
 
+  private:
+    TInitialConditions* InitialConditions;
+    TInteractionCoordinates* InteractionCoordinates;
+    TFissionConditions* FissionConditions;
+
+    TRandom3 ran;
+    GladFieldMap* m_GladField;
 };
 #endif
