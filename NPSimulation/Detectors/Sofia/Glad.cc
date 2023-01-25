@@ -88,6 +88,8 @@ Glad::Glad(){
   m_GLAD_Y = 0;
   m_GLAD_Z = -1113.5*mm;
 
+  m_MW3_R = 4440*mm;
+
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0.53, 0.81, 0.98, 1));   
   m_VisGLAD = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.9));   
@@ -99,28 +101,18 @@ Glad::Glad(){
 Glad::~Glad(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Glad::AddMagnet(G4ThreeVector POS, double Tilt_Angle, string fieldmap){
+void Glad::AddMagnet(G4ThreeVector POS, string fieldmap){
   // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
+  m_X = POS.x();
+  m_Y = POS.y();
+  m_Z = POS.z();
   m_R = POS.mag();
   m_Theta = POS.theta();
   m_Phi = POS.phi();
 
-  m_GLAD_TiltAngle = Tilt_Angle;
   m_FieldMapFile = fieldmap;
 
-  return;
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Glad::AddMagnet(double  R, double  Theta, double  Phi, double Tilt_Angle, string fieldmap){
-  m_R = R;
-  m_Theta = Theta;
-  m_Phi = Phi;
-
-  m_GLAD_TiltAngle= Tilt_Angle;
-  m_FieldMapFile = fieldmap;
-
+  m_MW3_POS = TVector3(-m_MW3_R*sin(20*deg),0,m_MW3_R*cos(20*deg));
   return;
 }
 
@@ -174,7 +166,6 @@ void Glad::ReadConfiguration(NPL::InputParser parser){
     cout << "//// GLAD Magnet found ////" << endl; 
 
   vector<string> cart = {"POS","TILT_ANGLE","FIELDMAP","CURRENT","STEPSIZE"};
-  vector<string> sphe = {"R","Theta","Phi","TILT_ANGLE","FIELDMAP","CURRENT","STEPSIZE"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -186,22 +177,9 @@ void Glad::ReadConfiguration(NPL::InputParser parser){
       string fieldmap = blocks[i]->GetString("FIELDMAP");
       m_Current = blocks[i]->GetDouble("CURRENT","A");
       m_StepSize = blocks[i]->GetDouble("STEPSIZE","mm");
+      m_MW3_R = blocks[i]->GetDouble("MW3_DISTANCE","mm");
 
-      AddMagnet(Pos,m_GLAD_TiltAngle,fieldmap);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Glad information: " <<  endl;
-
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      m_GLAD_TiltAngle = blocks[i]->GetDouble("TILT_ANGLE","deg");
-      string fieldmap = blocks[i]->GetString("FIELDMAP");
-      m_Current = blocks[i]->GetDouble("CURRENT","A");
-      m_StepSize = blocks[i]->GetDouble("STEPSIZE","mm");
-
-      AddMagnet(R,Theta,Phi,m_GLAD_TiltAngle,fieldmap);
+      AddMagnet(Pos,fieldmap);
     }
     else{
       cout << "ERROR: check your GLAD input file formatting " << endl;
@@ -217,9 +195,12 @@ void Glad::ReadConfiguration(NPL::InputParser parser){
 // Called After DetecorConstruction::AddDetector Method
 void Glad::ConstructDetector(G4LogicalVolume* world){
 
-  G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
-  G4double wY = m_R * sin(m_Theta) * sin(m_Phi);
-  G4double wZ = m_R * cos(m_Theta);
+  //G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
+  //G4double wY = m_R * sin(m_Theta) * sin(m_Phi);
+  //G4double wZ = m_R * cos(m_Theta);
+  G4double wX = m_X - 1500*sin(m_GLAD_TiltAngle);
+  G4double wY = m_Y;
+  G4double wZ = m_Z - 1500*(1-cos(m_GLAD_TiltAngle));
   G4ThreeVector Mag_pos = G4ThreeVector(wX,wY,wZ);
 
   G4ThreeVector u (cos(m_GLAD_TiltAngle), 0, -sin(m_GLAD_TiltAngle));
@@ -265,9 +246,11 @@ void Glad::SetPropagationRegion()
   G4VFastSimulationModel* fsm;
   fsm = new NPS::GladFieldPropagation("GladFieldPropagation", m_PropagationRegion);
   ((NPS::GladFieldPropagation*) fsm)->SetGladEntrance(m_GLAD_X, m_GLAD_Y, m_GLAD_Z);
+  ((NPS::GladFieldPropagation*) fsm)->SetGladTiltAngle(m_GLAD_TiltAngle);
   ((NPS::GladFieldPropagation*) fsm)->SetCurrent(m_Current);
   ((NPS::GladFieldPropagation*) fsm)->SetStepSize(m_StepSize);
   ((NPS::GladFieldPropagation*) fsm)->SetFieldMap(m_FieldMapFile);
+  ((NPS::GladFieldPropagation*) fsm)->Set_MWPC3_Position(m_MW3_POS.X(),m_MW3_POS.Y(),m_MW3_POS.Z());
   /*if(m_Method == NPS::RungeKutta){
     double r_max = sqrt( 
     Glad_NS::GLAD_Width * Glad_NS::GLAD_Width /4. + 

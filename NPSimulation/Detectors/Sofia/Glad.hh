@@ -54,9 +54,7 @@ class Glad : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddMagnet(G4ThreeVector POS, double Tilt_Angle, string fieldmap);
-    // Spherical
-    void AddMagnet(double R,double Theta,double Phi, double Tilt_Angle, string fieldmap);  
+    void AddMagnet(G4ThreeVector POS, string fieldmap);
 
     G4LogicalVolume* BuildGLADFromSTL();
     G4LogicalVolume* BuildMagnet();
@@ -106,6 +104,9 @@ class Glad : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
+    double m_X;
+    double m_Y; 
+    double m_Z;
     double m_R; 
     double m_Theta;
     double m_Phi; 
@@ -118,6 +119,8 @@ class Glad : public NPS::VDetector{
     double m_Current;
     int m_StepSize;
     string m_FieldMapFile;
+    TVector3 m_MW3_POS;
+    double m_MW3_R;
 
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;

@@ -40,21 +40,28 @@ class Analysis: public NPL::VAnalysis{
     void TreatEvent();
     void ReInit();
     void End();
+    void FFAnalysis();
+    void BeamAnalysis();
 
     static NPL::VAnalysis* Construct();
 
   private:
     vector<double> m_TOF;
+    vector<double> m_ThetaIn;
     vector<double> m_Brho;
-    vector<int> m_A;
+    vector<int> m_Asim;
+    vector<int> m_Adet;
     vector<double> m_Brho_calc;
     vector<int> m_A_calc;
     vector<double> m_FlightPath;
-
+    vector<double> m_XE;
+    vector<double> m_YE;
+    vector<double> m_ZE;
+    bool beam_ana=false;
   private:
     TInitialConditions* InitialConditions;
     TInteractionCoordinates* InteractionCoordinates;
-    TFissionConditions* FissionConditions;
+    //TFissionConditions* FissionConditions;
 
     TRandom3 ran;
     GladFieldMap* m_GladField;

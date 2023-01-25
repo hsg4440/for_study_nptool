@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Target
- THICKNESS= 3 mm
+%Target
+ THICKNESS= 0.03 mm
  RADIUS= 100 mm
- MATERIAL= Pb
+ MATERIAL= CD2
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
@@ -27,8 +27,10 @@ SofTofW
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Glad
- POS= 0 0 386.5 mm
+ %POS= 0 0 386.5 mm
+ POS= 0 0 0 mm
  TILT_ANGLE= 0 deg
+ MW3_DISTANCE= 4440 mm
  FIELDMAP= GladFieldMap_50mm.dat
  CURRENT= 2185
  STEPSIZE= 50 mm

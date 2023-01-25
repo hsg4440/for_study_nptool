@@ -101,7 +101,7 @@ double GladFieldMap::Delta(const double* parameter){
 double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final){
 
   if(!m_BrhoScan)
-    BrhoScan(6,11,0.1,TVector3(0,0,-2500), TVector3(0,0,1));
+    BrhoScan(6,11,0.1,TVector3(0,0,-5000), TVector3(0,0,1));
 
   m_InitPos  = Pos_init;
   m_InitDir  = Dir_init;
@@ -177,21 +177,21 @@ TVector3 GladFieldMap::PropagateToMWPC(TVector3 pos, TVector3 dir){
   pos.RotateY(-m_CentralTheta);
   dir.RotateY(-m_CentralTheta);
 
-  double deltaZ = m_MWPC3_POS.Z() - pos.Z();
+  double deltaZ = m_MWPC3_POS.Mag() - pos.Z();
   dir*=deltaZ/dir.Z();
   pos+=dir;
   pos.SetX(pos.X());
   pos.RotateY(m_CentralTheta);
-
+ 
   return pos;
 
 }
 //////////////////////////////////////////////////////////////////////
 vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store){
+  
   Pos.RotateY(m_Tilt);
   Dir.RotateY(m_Tilt);
   Dir = Dir.Unit();
-
   static NPL::Particle N("90Zr");
   N.SetBrho(Brho);
   
@@ -256,7 +256,6 @@ vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir
 
     Pos += (m_dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4);
     Imp += (m_dt/6)*(pk1 + 2*pk2 + 2*pk3 + pk4);
-
     if(store){
       Pos.RotateY(-m_Tilt);
       track.push_back(Pos);
@@ -303,6 +302,7 @@ void GladFieldMap::func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& 
   Bx = GetB(Pos,"X");
   By = GetB(Pos,"Y");
   Bz = GetB(Pos,"Z");
+
 
   q = N.GetZ()*eplus;
   pk.SetX(q*(vy*Bz - vz*By));
@@ -404,7 +404,7 @@ void GladFieldMap::LoadMap(string filename) {
     }
   }
 
-  m_R_max = m_x_max;
+  m_R_max = m_z_max;
   cout << endl;
   cout << "///////// ASCII file loaded"<< endl;
   cout << "m_field size= " << m_By.size() << endl;
@@ -544,10 +544,10 @@ vector<double> GladFieldMap::InterpolateB(const vector<double>& pos)
 //////////////////////////////////
 double GladFieldMap::GetB(TVector3 localpoint, string field_component)
 {
-  TVector3 vtrans(0,0,-m_Glad_Entrance.Z());
+  TVector3 vtrans(m_Glad_Entrance.X(),m_Glad_Entrance.Y(),m_Glad_Entrance.Z());
 
-  localpoint = localpoint + vtrans;
-
+  localpoint = localpoint - vtrans;
+  
   static int ix, iy, iz;
   static double dx, dy, dz;
   double val = 0;

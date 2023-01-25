@@ -57,7 +57,9 @@ namespace NPS{
       double m_StepSize;  
       double m_Rmax;    
       double m_Current;
+      double m_GladTiltAngle;
       TVector3 m_GladEntrance;
+      TVector3 m_MW3_POS;
       string m_FieldMap;  
       GladFieldMap* m_Map; 
 
@@ -70,7 +72,9 @@ namespace NPS{
       void SetFieldMap(string fieldmap){m_FieldMap=fieldmap;};
       void SetRmax(double r_max){m_Rmax=r_max;};
       void SetCurrent(double val){m_Current=val;}
+      void SetGladTiltAngle(double val){m_GladTiltAngle=val;}
       void SetGladEntrance(double x, double y, double z){m_GladEntrance=TVector3(x,y,z);}
+      void Set_MWPC3_Position(double x, double y, double z){m_MW3_POS=TVector3(x,y,z);}
   };
 }
 
