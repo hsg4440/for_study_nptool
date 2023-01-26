@@ -6,18 +6,18 @@ Beam
  Particle= 190Pb
  Energy= 100276
  ExcitationEnergy= 0 MeV
- SigmaEnergy= 10000
+ SigmaEnergy= 0
  SigmaX= 0 mm
  SigmaY= 0 mm
- SigmaThetaX= 0 
- SigmaPhiY= 0
+ SigmaThetaX= 0 deg
+ SigmaPhiY= 0 deg
  MeanThetaX= 0
  MeanPhiY= 0 deg
  MeanX= 0 mm
  MeanY= 0 mm
  ZEmission= -5000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%TwoBodyReaction
+TwoBodyReaction
  Beam= 190Pb
  Target= 208Pb
  Light= 190Pb
@@ -29,7 +29,7 @@ Beam
  ShootHeavy= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FissionDecay 
- CompoundNucleus= 191Pb
+ CompoundNucleus= 190Pb
  FissionModel= GEF
  VamosChargeStates= 0
  Shoot_FF= 1

@@ -50,9 +50,10 @@ class Analysis: public NPL::VAnalysis{
     vector<double> m_ThetaIn;
     vector<double> m_Brho;
     vector<int> m_Asim;
+    vector<int> m_Zsim;
     vector<int> m_Adet;
     vector<double> m_Brho_calc;
-    vector<int> m_A_calc;
+    vector<double> m_A_calc;
     vector<double> m_FlightPath;
     vector<double> m_XE;
     vector<double> m_YE;
@@ -61,7 +62,7 @@ class Analysis: public NPL::VAnalysis{
   private:
     TInitialConditions* InitialConditions;
     TInteractionCoordinates* InteractionCoordinates;
-    //TFissionConditions* FissionConditions;
+    TFissionConditions* FissionConditions;
 
     TRandom3 ran;
     GladFieldMap* m_GladField;

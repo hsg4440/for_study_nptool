@@ -41,9 +41,7 @@ void Analysis::Init(){
   InitialConditions = new TInitialConditions();
   InteractionCoordinates = new TInteractionCoordinates();
   
-  /*if(beam_ana==false)
-    FissionConditions = new TFissionConditions();
-*/
+  FissionConditions = new TFissionConditions();
 
   InitInputBranch();
   InitOutputBranch();
@@ -69,16 +67,14 @@ void Analysis::TreatEvent(){
 
   ReInit();
 
-  if(beam_ana==true)
-    BeamAnalysis();
-  else 
-    FFAnalysis();
+  //BeamAnalysis();
+  FFAnalysis();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::FFAnalysis(){
 
-  /*int mult = InteractionCoordinates->GetDetectedMultiplicity();
+  int mult = InteractionCoordinates->GetDetectedMultiplicity();
   if(mult==2){
     int A_CN = FissionConditions->GetA_CN();
     int Z_CN = FissionConditions->GetZ_CN();
@@ -92,10 +88,10 @@ void Analysis::FFAnalysis(){
     double beta = beam->GetBeta();
     double BeamTimeOffset = v1.Mag()*mm/(beta*NPUNITS::c_light);
     for(int i=0; i<mult; i++){
-      double Time = ran.Gaus(InteractionCoordinates->GetTime(i) - BeamTimeOffset,0.);
-      m_XE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionX(i),0));
+      double Time = ran.Gaus(InteractionCoordinates->GetTime(i) - BeamTimeOffset,0.02);
+      m_XE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionX(i),1));
       m_YE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionY(i),0));
-      m_ZE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionZ(i),0));
+      m_ZE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionZ(i),1));
       TVector3 vE = TVector3(m_XE[i],m_YE[i],m_ZE[i]);
       //TVector3 vE = TVector3(m_XE[i],0,m_ZE[i]);
       TVector3 vA = TVector3(0,0,z_target);
@@ -104,8 +100,8 @@ void Analysis::FFAnalysis(){
       //int Z = FissionConditions->GetFragmentZ(i);
       int Z = InteractionCoordinates->GetZ(i);
       double ThetaIn = FissionConditions->GetFragmentTheta(i);
-      if(FissionConditions->GetFragmentMomentumX(i)<0)
-        ThetaIn = -ThetaIn;
+      //if(FissionConditions->GetFragmentMomentumX(i)<0)
+        //ThetaIn = -ThetaIn;
       double Phi = FissionConditions->GetFragmentPhi(i);
       double Brho = FissionConditions->GetFragmentBrho(i);
  
@@ -114,6 +110,7 @@ void Analysis::FFAnalysis(){
       m_TOF.push_back(Time);
       m_Adet.push_back(Adet);
       m_Asim.push_back(Asim);
+      m_Zsim.push_back(Z);
       m_Brho.push_back(Brho);
       m_ThetaIn.push_back(ThetaIn);
  
@@ -124,14 +121,13 @@ void Analysis::FFAnalysis(){
       double beta = velocity * m/ns / NPUNITS::c_light;
       double gamma = 1. / sqrt(1 - beta*beta);
       double AoQ = Brho_calc / (3.107 * beta * gamma);
-      double A_calc = AoQ*Z;
+      double A_calc = AoQ*(double)Z;
 
       m_Brho_calc.push_back(Brho_calc);
       m_FlightPath.push_back(PathLength);
       m_A_calc.push_back(A_calc);
     }
-  }*/
-    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,11 +188,9 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchStatus("fDetecetd_*",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&InteractionCoordinates);
 
-  /*if(beam_ana==false){
-    RootInput::getInstance()->GetChain()->SetBranchStatus("FissionConditions",true);
-    RootInput::getInstance()->GetChain()->SetBranchStatus("fFC_*",true);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("FissionConditions",&FissionConditions);
-  }*/
+  RootInput::getInstance()->GetChain()->SetBranchStatus("FissionConditions",true);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("fFC_*",true);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("FissionConditions",&FissionConditions);
 
 }
 
@@ -206,6 +200,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("ThetaIn",&m_ThetaIn);
   RootOutput::getInstance()->GetTree()->Branch("Brho",&m_Brho);
   RootOutput::getInstance()->GetTree()->Branch("Asim",&m_Asim);
+  RootOutput::getInstance()->GetTree()->Branch("Zsim",&m_Zsim);
   RootOutput::getInstance()->GetTree()->Branch("Adet",&m_Adet);
   RootOutput::getInstance()->GetTree()->Branch("Brho_calc",&m_Brho_calc);
   RootOutput::getInstance()->GetTree()->Branch("A_calc",&m_A_calc);
@@ -221,6 +216,7 @@ void Analysis::ReInit(){
   m_TOF.clear();
   m_Brho.clear();
   m_Asim.clear();
+  m_Zsim.clear();
   m_Adet.clear();
   m_ThetaIn.clear();
   m_XE.clear();

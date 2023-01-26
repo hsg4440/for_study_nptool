@@ -158,7 +158,6 @@ double GladFieldMap::GetFlightPath(TVector3 vStart, double Brho, TVector3 Pos, T
   track = Propagate(Brho, Pos, Dir, true);
 
   FlightPath += (Pos - vStart).Mag();
-
   unsigned int vsize = track.size();
   for(unsigned int i=0; i<vsize-1; i++){
     TVector3 point1 = track[i];
@@ -404,7 +403,8 @@ void GladFieldMap::LoadMap(string filename) {
     }
   }
 
-  m_R_max = m_z_max;
+  m_R_max = m_x_max;
+  //m_R_max = m_z_max;
   cout << endl;
   cout << "///////// ASCII file loaded"<< endl;
   cout << "m_field size= " << m_By.size() << endl;
