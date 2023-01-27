@@ -90,7 +90,7 @@ void Analysis::FFAnalysis(){
     for(int i=0; i<mult; i++){
       double Time = ran.Gaus(InteractionCoordinates->GetTime(i) - BeamTimeOffset,0.02);
       m_XE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionX(i),1));
-      m_YE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionY(i),0));
+      m_YE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionY(i),1));
       m_ZE.push_back(ran.Gaus(InteractionCoordinates->GetDetectedPositionZ(i),1));
       TVector3 vE = TVector3(m_XE[i],m_YE[i],m_ZE[i]);
       //TVector3 vE = TVector3(m_XE[i],0,m_ZE[i]);
@@ -99,10 +99,12 @@ void Analysis::FFAnalysis(){
       int Adet = InteractionCoordinates->GetA(i);
       //int Z = FissionConditions->GetFragmentZ(i);
       int Z = InteractionCoordinates->GetZ(i);
-      double ThetaIn = FissionConditions->GetFragmentTheta(i);
+      double dtheta = 0.2e-3*180./3.1415; // 0.2 mrad
+      double dphi = 10e-3*180./3.1415; // 10 mrad
+      double ThetaIn = ran.Gaus(FissionConditions->GetFragmentTheta(i),dtheta);
       //if(FissionConditions->GetFragmentMomentumX(i)<0)
         //ThetaIn = -ThetaIn;
-      double Phi = FissionConditions->GetFragmentPhi(i);
+      double Phi = ran.Gaus(FissionConditions->GetFragmentPhi(i),dphi);
       double Brho = FissionConditions->GetFragmentBrho(i);
  
       TVector3 dir = TVector3(sin(ThetaIn*deg)*cos(Phi*deg), sin(ThetaIn*deg)*sin(Phi*deg), cos(ThetaIn*deg));

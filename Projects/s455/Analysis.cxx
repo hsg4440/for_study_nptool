@@ -39,6 +39,7 @@ struct TofPair
   double beta = -1;
   double gamma = -1;
   double theta_in = -10;
+  double phi_in = -10;
   double theta_out = -10;
   double psi = -10;
   int plastic = -1;
@@ -118,17 +119,17 @@ void Analysis::Init(){
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(fGladCurrent);
   //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
-  m_GladField->SetGladEntrance(0, 0, -1.1135*m);
-  //m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.1135*m);
+  m_GladField->SetGladEntrance(0, 0, -1113.5*mm);
   m_GladField->SetGladTurningPoint(0, 0, 0);
   m_GladField->SetGladTiltAngle(-14.*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
   m_GladField->SetBin(50);
   m_GladField->SetTimeStep(0.8);
   m_GladField->SetCentralTheta(-20.*deg);
-  
-  double Z_MWPC3 = fDistanceGToMW3;// * cos(m_GladField->GetCentralTheta());
-  double X_MWPC3 = (Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
+ 
+  double R_MWPC3 = fDistanceGToMW3;
+  double Z_MWPC3 = R_MWPC3 * cos(m_GladField->GetCentralTheta());
+  double X_MWPC3 = R_MWPC3 * sin(m_GladField->GetCentralTheta());
   m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
 
 }
@@ -620,8 +621,12 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
 
   
       double ATToG = fDistanceStartToG - fDistancePlasticToCathode[which_cathode-1];
+      double ATToA = fDistanceStartToA - fDistancePlasticToCathode[which_cathode-1];
+      double GToTof = (fDistanceGToMW3 + fDistanceMW3ToToF) * cos(20*deg);
+      double Zdistance = ATToG + GToTof;
       double Theta0 = 20.*deg;//m_GladField->GetCentralTheta();
       double XA = 0;
+      double YA = 0;
       double ZA = fDistanceStartToA - fDistanceStartToG;
       double ZG = m_GladField->GetGladTurningPoint().Z();
       double ZMW3 = m_GladField->Get_MWPC3_Position().Z();
@@ -640,10 +645,13 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
       double MagB = m_GladField->GetB()/1000;
       for(int i=0; i<2; i++){
        XA = TofHit[i].DT;
-        if(XA != -1e6 && SofBeamID->GetBeta()>0){
+       YA = (ATToA/Zdistance)*TofHit[i].y;
+       TofHit[i].phi_in = atan(TofHit[i].y/Zdistance);
       
+       if(XA != -1e6 && SofBeamID->GetBeta()>0){
+     
           TVector3 vG = TVector3(0,0,ZG);
-          TVector3 vA = TVector3(XA,0,ZA);
+          TVector3 vA = TVector3(XA,YA,ZA);
           // *** Extroplate to C position *** //
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
@@ -652,15 +660,15 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
           TofHit[i].yc = (ZC/8592.)*TofHit[i].y;
           TofHit[i].zc = ZC;
 
-          int ix, iy;
+          /*int ix, iy;
           ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/m_GladField->GetBin();
           iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/m_GladField->GetBin();
-          TofHit[i].Leff = m_GladField->GetLeff(ix,iy);
+          TofHit[i].Leff = m_GladField->GetLeff(ix,iy);*/
 
           X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
           Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
           TVector3 vE = TVector3(X3lab, TofHit[i].y, Z3lab);
-          TVector3 dir = TVector3(sin(TofHit[i].theta_in), 0, cos(TofHit[i].theta_in));
+          TVector3 dir = TVector3(sin(TofHit[i].theta_in)*cos(TofHit[i].phi_in), sin(TofHit[i].theta_in)*sin(TofHit[i].phi_in), cos(TofHit[i].theta_in));
           TofHit[i].x3lab = X3lab;
           TofHit[i].z3lab = Z3lab;
           TVector3 vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
@@ -670,6 +678,7 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
           TofHit[i].rho = TofHit[i].Leff/(2*sin(0.5*TofHit[i].psi)*cos(Tilt-0.5*TofHit[i].psi));
           //TofHit[i].Brho = MagB*TofHit[i].rho;
           TofHit[i].Brho = m_GladField->FindBrho(vA,dir,vE);
+
 
           // *** Extrapolate to B position *** //
           double ZI = ZG - TofHit[i].Leff/(2*cos(Tilt));
@@ -757,8 +766,6 @@ void Analysis::FissionFragmentAnalysis(int which_cathode){
           
           TVector3 vCG = vG - vC;
           TVector3 vCA = vA - vC;
-          //TofHit[i].deff1 = vCG.Angle(vCA)*180./TMath::Pi();
-          //TofHit[i].deff2 = vCG.Angle(vOut)*180./TMath::Pi();
 
           TVector3 vBD = vD-vB;
           double vBD_angle = vZ.Angle(vBD);
