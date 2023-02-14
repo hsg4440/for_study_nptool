@@ -74,8 +74,8 @@ namespace PISTA_NS{
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
   const double DistanceBetweenSi = 5*mm;
-  //const double FirstStageNbrOfStrips = 97;
-  //const double SecondStageNbrOfStrips = 122;
+  const double FirstStageNbrOfStrips = 91;
+  const double SecondStageNbrOfStrips = 57;
 }
 using namespace PISTA_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -346,11 +346,11 @@ void PISTA::InitializeScorers() {
   G4VPrimitiveScorer* FirstStageScorer = new DSSDScorers::PS_Rectangle("FirstStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      1,97);
+      1,FirstStageNbrOfStrips);
   G4VPrimitiveScorer* SecondStageScorer = new DSSDScorers::PS_Rectangle("SecondStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      62,1);
+      SecondStageNbrOfStrips,1);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);
