@@ -60,7 +60,15 @@ RecoVisu= 1
 If this is the case run the hclient.C macro in another terminal's window.
 A canvas should appear with the found tracks and their 3D fit.
 
-3. MACRO
+3. PARRALLEL SIMULATION AND ANALYSIS
+
+On a multicore machine the simulation and analysis could be run using the provided Snakefile.
+The top section of the Snakefile create a given number of output target file. Adding more file will 
+run the simulation on more cores. Each file is created with a different random generator seed
+
+The analysis is run as soon as the simulation is finished.
+
+4. MACRO
 Sevaral root macro are located in Example4/macro to check the result of the analysis
 and the obtained vertex, angular and energy resolution.
 
