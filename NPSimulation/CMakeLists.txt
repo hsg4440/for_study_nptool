@@ -38,9 +38,9 @@ string(REPLACE "${NPS_GEANT4_VERSION_MINOR}." "" G4Version "${G4Version}")
 set(NPS_GEANT4_VERSION_PATCH "${G4Version}")
 
 message ("Geant4 found, Version : ${NPS_GEANT4_VERSION_MAJOR}.${NPS_GEANT4_VERSION_MINOR}.${NPS_GEANT4_VERSION_PATCH}")
-
 include(${Geant4_USE_FILE}) 
 add_definitions(${Geant4_DEFINITIONS})    
+include_directories(${Geant4_INCLUDE_DIRS})
 
 configure_file(Core/NPSimulationVersion.hh.in Core/NPSimulationVersion.hh @ONLY) 
 
