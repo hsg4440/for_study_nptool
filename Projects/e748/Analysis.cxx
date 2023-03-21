@@ -145,6 +145,7 @@ void Analysis::TreatEvent(){
         //     TreatBeam();
         //     computeBeam = true;
         // }
+        ///////////// BEAM
         mThetaBeam = ComputeXYZVectorAngle(beamDirection, XYZVector(0, 0, 1));
         //--> Beam energy CALIBRATION
         mCATS1Calibrated = fModularLeaf->GetCalibratedValue("T_CATS1_CAV");
@@ -182,7 +183,8 @@ void Analysis::TreatEvent(){
     
         XYZVector trackDirection {must2Point - vertex};
         // Angles computation
-        mThetaLab.push_back( ComputeXYZVectorAngle(trackDirection, beamDirection) );             
+        //mThetaLab.push_back( ComputeXYZVectorAngle(trackDirection, beamDirection) );
+        mThetaLab = ComputeXYZVectorAngle(trackDirection, beamDirection);
         double mNormalThetaTarget = ComputeXYZVectorAngle(trackDirection, XYZVector(0, 0, 1));
         double mNormalThetaM2 = ComputeXYZVectorAngle(trackDirection,
                                                       -1 * XYZVector(fM2->GetTelescopeNormal(hit)));
@@ -201,25 +203,25 @@ void Analysis::TreatEvent(){
         mMust2SiT.push_back( fM2->Si_T.at(hit) );
         
         //Backpropagate to vertex
-        double ELabIni {fHe3Al.EvaluateInitialEnergy(EAtDetector, 0.4 * micrometer, mNormalThetaM2)};
+        mELab = fHe3Al.EvaluateInitialEnergy(EAtDetector, 0.4 * micrometer, mNormalThetaM2);
         //Assume reaction at the middle of target and correct energy
-        mELab.push_back( fHe3CD2.EvaluateInitialEnergy(ELabIni, fTargetThickness / 2., mNormalThetaTarget) );
+        mELab = fHe3CD2.EvaluateInitialEnergy(mELab, fTargetThickness / 2., mNormalThetaTarget);
         //Compute Excitation Energy
-        mEx.push_back( fReaction->ReconstructRelativistic(mELab.back(), mThetaLab.back()) );
+        mEx = fReaction->ReconstructRelativistic(mELab, mThetaLab);
         //std::cout<<" Ex = "<<mEx.back()<< "MeV"<<'\n';
         // Back to CM
-        mThetaCM.push_back( fReaction->EnergyLabToThetaCM(mELab.back(), mThetaLab.back()) / deg );//in degrees
-        mThetaLab.back() =  mThetaLab.back() / deg ;//store in degrees!
+        mThetaCM = fReaction->EnergyLabToThetaCM(mELab, mThetaLab) / deg;//in degrees
+        mThetaLab =  mThetaLab / deg ;//store in degrees!
         //debug
-        std::cout<<" EAtSil = "<<EAtDetector<<'\n';
-        std::cout<<" E1     = "<<ELabIni<<'\n';
-        std::cout<<" EVert  = "<<mELab.back()<<'\n';
-        std::cout<<" Theta  = "<<mThetaLab.back() * TMath::RadToDeg()<<'\n';
-        std::cout<<" Ex     = "<<mEx.back()<<'\n';
+        // std::cout<<" EAtSil = "<<EAtDetector<<'\n';
+        // std::cout<<" E1     = "<<ELabIni<<'\n';
+        // std::cout<<" EVert  = "<<mELab.back()<<'\n';
+        // std::cout<<" Theta  = "<<mThetaLab.back() * TMath::RadToDeg()<<'\n';
+        // std::cout<<" Ex     = "<<mEx.back()<<'\n';
     }
-    //ensure
-    if(!(mEx.size() == mThetaLab.size()))
-        throw std::runtime_error("Mismatching sizes for Eex && thetaLab vectors!");
+    // //ensure
+    // if(!(mEx.size() == mThetaLab.size()))
+    //     throw std::runtime_error("Mismatching sizes for Eex && thetaLab vectors!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,10 +346,14 @@ void Analysis::ResetMVariables()
 {
     int initVal {-1000};
     ////////////
-    mEx.clear();
-    mELab.clear();
-    mThetaLab.clear();
-    mThetaCM.clear();
+    mEx = initVal;
+    mELab = initVal;
+    mThetaLab = initVal;
+    mThetaCM = initVal;
+    // mEx.clear();
+    // mELab.clear();
+    // mThetaLab.clear();
+    // mThetaCM.clear();
     mEBeam = initVal;
     mThetaBeam = initVal;
     ////////////////////////

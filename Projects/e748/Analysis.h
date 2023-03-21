@@ -67,10 +67,10 @@ private:
     //-- f members just used in the class
     //////////////////////////////////////
     // Kinematic variables for each track
-    std::vector<double> mEx;
-    std::vector<double> mELab;
-    std::vector<double> mThetaLab;
-    std::vector<double> mThetaCM;
+    double mEx;
+    double mELab;
+    double mThetaLab;
+    double mThetaCM;
     //std::vector<double> mNormalThetaM2;
     // Kinematics and variables for beam
     double mEBeam;
