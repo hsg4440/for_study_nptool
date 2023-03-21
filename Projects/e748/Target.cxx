@@ -1,7 +1,7 @@
 void Target(){
   
   // Load the Main Tree
-  TFile* file = new TFile("../../Outputs/Analysis/e748_Mask.root");
+  TFile* file = new TFile("./Data/Analysis/e748_Mask.root");
   TTree* tree = (TTree*) file->FindObjectAny("PhysicsTree");
 
 

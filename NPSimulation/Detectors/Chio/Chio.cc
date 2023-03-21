@@ -154,19 +154,19 @@ G4LogicalVolume* Chio::BuildDetector(){
     G4Material* Mylar= MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
 
     G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();      
-    MPT->AddConstProperty("DE_PAIRENERGY",30*eV);
+    MPT->AddConstProperty("DE_PAIRENERGY",30*eV, true);
     //  MPT->AddConstProperty("DE_AMPLIFICATION",1e4);
-    MPT->AddConstProperty("DE_ABSLENGTH",1*pc);
-    MPT->AddConstProperty("DE_DRIFTSPEED",11*cm/microsecond);
-    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",6e-5*mm2/ns);
-    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",4e-5*mm2/ns);
+    MPT->AddConstProperty("DE_ABSLENGTH",1*pc, true);
+    MPT->AddConstProperty("DE_DRIFTSPEED",11*cm/microsecond, true);
+    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",6e-5*mm2/ns, true);
+    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",4e-5*mm2/ns, true);
 
     CF4->SetMaterialPropertiesTable(MPT);
 
     G4MaterialPropertiesTable* MPT2 = new G4MaterialPropertiesTable();      
-    MPT2->AddConstProperty("DE_YIELD",1);
-    MPT2->AddConstProperty("DE_AMPLIFICATION",2);
-    MPT2->AddConstProperty("DE_ABSLENGTH",1*pc);
+    MPT2->AddConstProperty("DE_YIELD",1, true);
+    MPT2->AddConstProperty("DE_AMPLIFICATION",2, true);
+    MPT2->AddConstProperty("DE_ABSLENGTH",1*pc, true);
 
     Al->SetMaterialPropertiesTable(MPT2);
 

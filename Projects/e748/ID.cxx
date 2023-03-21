@@ -1,35 +1,35 @@
 void ID(){
 
   // Load the Main Tree
-  TFile* file = new TFile("../../Outputs/Analysis/e748_Physics_12Be.root");
+  TFile* file = new TFile("./Data/Analysis/e748_Physics_12Be.root");
   TTree* tree = (TTree*) file->FindObjectAny("PhysicsTree");
 
-  TFile* fileR = new TFile("../../Outputs/Analysis/e748_12Be.root");
+  TFile* fileR = new TFile("./Data/Analysis/e748_12Be.root");
   TTree* treeR = (TTree*) fileR->FindObjectAny("ResultTree");
   tree->AddFriend(treeR);
 
   // Load the IC chain
   TChain* IC = new TChain("Numexo2");
-  IC->Add("/data/Transfert/e748/Merged/run_0315.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0316.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0317.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0318.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0320.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0321.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0323.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0325.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0326.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0327.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0328.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0329.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0330.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0331.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0339.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0341.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0342.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0346.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0347.root");
-  IC->Add("/data/Transfert/e748/Merged/run_0348.root");
+  IC->Add("./Data/Merged/run_0315.root");
+  IC->Add("./Data/Merged/run_0316.root");
+  IC->Add("./Data/Merged/run_0317.root");
+  IC->Add("./Data/Merged/run_0318.root");
+  IC->Add("./Data/Merged/run_0320.root");
+  IC->Add("./Data/Merged/run_0321.root");
+  IC->Add("./Data/Merged/run_0323.root");
+  IC->Add("./Data/Merged/run_0325.root");
+  IC->Add("./Data/Merged/run_0326.root");
+  IC->Add("./Data/Merged/run_0327.root");
+  IC->Add("./Data/Merged/run_0328.root");
+  IC->Add("./Data/Merged/run_0329.root");
+  IC->Add("./Data/Merged/run_0330.root");
+  IC->Add("./Data/Merged/run_0331.root");
+  IC->Add("./Data/Merged/run_0339.root");
+  IC->Add("./Data/Merged/run_0341.root");
+  IC->Add("./Data/Merged/run_0342.root");
+  IC->Add("./Data/Merged/run_0346.root");
+  IC->Add("./Data/Merged/run_0347.root");
+  IC->Add("./Data/Merged/run_0348.root");
   /*
   // Check that the number of entry is the same
   if( tree->GetEntries() != IC->GetEntries() ){
@@ -67,7 +67,7 @@ void ID(){
   TFile* cutTOF = new TFile("TOF.root");
   TCutG* cutt = (TCutG*) cutTOF->FindObjectAny("TOF");
 
-  tree->Draw("Si_T+TimeCorr+((TelescopeNumber==1)*-2.521+(TelescopeNumber==2)*0.148+(TelescopeNumber==3)*-1.922+(TelescopeNumber==4)*-7.176):Si_E>>hTOFc(1000,0,30,1000,460,580)","","colz");
+  tree->Draw("Si_T + TimeCorr + ((TelescopeNumber==1)*-2.521+(TelescopeNumber==2)*0.148+(TelescopeNumber==3)*-1.922+(TelescopeNumber==4)*-7.176):Si_E>>hTOFc(1000,0,30,1000,460,580)","","colz");
   cutt->Draw("same");
 
   /*new TCanvas();
