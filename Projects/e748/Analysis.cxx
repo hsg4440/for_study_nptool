@@ -139,18 +139,53 @@ void Analysis::TreatEvent(){
         if(!(vertex.X() > -1000 && vertex.Y() > -1000))
             continue;
 
-        // Beam computation (ONCE per event)
-        if(computeBeam)
-        {
-            TreatBeam();
-            computeBeam = true;
-        }
+        // // Beam computation (ONCE per event)
+        // if(computeBeam)
+        // {
+        //     TreatBeam();
+        //     computeBeam = true;
+        // }
+        mThetaBeam = ComputeXYZVectorAngle(beamDirection, XYZVector(0, 0, 1));
+        //--> Beam energy CALIBRATION
+        mCATS1Calibrated = fModularLeaf->GetCalibratedValue("T_CATS1_CAV");
+        double beamSpeed { 11.0476 + mCATS1Calibrated * 0.278917}; // mm/ns
+        //work in SI units
+        beamSpeed *= 1.E6; //1.E9 * 1.E-3 m/s
+        // Beam Energy before CATS1
+        static double kCSquared {TMath::Power(TMath::C(), 2)};
+        auto gamma0 {ComputeGamma(beamSpeed)}; 
+        mEBeam = kBeamMass * (gamma0 - 1);
+
+        //debug
+        // std::cout<<"Beam speed  = "<<BeamSpeed<<'\n';
+        // std::cout<<"Beta        = "<<beta<<'\n';
+        // std::cout<<"Gamma       = "<<gamma<<'\n';
+        // std::cout<<"Beam energy = "<<BeamEnergy<<'\n';
+                
+        // Energy Loss in CATS1         
+        double beamAfterCATS1 {ComputeELossInCATS(mEBeam, mThetaBeam)};
+        XYZPoint pointCATS1 {fCATS->PositionX.at(0), fCATS->PositionY.at(0), fCATS->PositionZ.at(0)};
+        XYZPoint pointCATS2 {fCATS->PositionX.at(1), fCATS->PositionY.at(1), fCATS->PositionZ.at(1)};
+        //Time correction in space between CATS1 to CATS2
+        mTimeCorr = ComputeTimeCorrectionInCATS(beamAfterCATS1, kBeamMass, pointCATS1, pointCATS2);
+          
+        // ELoss in CATS2
+        double beamAfterCATS2 {ComputeELossInCATS(beamAfterCATS1, mThetaBeam)};
+        //Time correction
+        mTimeCorr += ComputeTimeCorrectionInCATS(beamAfterCATS2, kBeamMass, pointCATS2, vertex);
+
+        // Slow down beam inside the target
+        mEBeam = fBeamCD2.Slow(beamAfterCATS2, fTargetThickness * 0.5, mThetaBeam);
+
+        //--> Set kinematic calculator
+        fReaction->SetBeamEnergy(mEBeam);
+    
         XYZVector trackDirection {must2Point - vertex};
         // Angles computation
         mThetaLab.push_back( ComputeXYZVectorAngle(trackDirection, beamDirection) );             
         double mNormalThetaTarget = ComputeXYZVectorAngle(trackDirection, XYZVector(0, 0, 1));
         double mNormalThetaM2 = ComputeXYZVectorAngle(trackDirection,
-                                               -1 * XYZVector(fM2->GetTelescopeNormal(hit)));
+                                                      -1 * XYZVector(fM2->GetTelescopeNormal(hit)));
         
         // Save hit position (can't be accessed afterwards if not done here)
         mMust2Telescopes.push_back( telescopeNumber );
