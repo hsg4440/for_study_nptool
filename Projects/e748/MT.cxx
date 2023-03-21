@@ -1,32 +1,32 @@
 void MT(){
-
+using namespace ROOT::Experimental; // TDataFrame's namespace
 //ROOT::EnableImplicitMT();
   // Load the Main Tree
-  TChain chain("ResultTree");
-  chain.Add("./Data/Analysis/e748_12Be.root");
+  TChain chain("PhysicsTree");
+  chain.Add("../../Outputs/Analysis/e748_12Be.root");
 
   // Load the IC chain
   TChain IC("Numexo2");
-  IC.Add("./Data/Merged/run_0315.root");
-  IC.Add("./Data/Merged/run_0316.root");
-  IC.Add("./Data/Merged/run_0317.root");
-  IC.Add("./Data/Merged/run_0318.root");
-  IC.Add("./Data/Merged/run_0320.root");
-  IC.Add("./Data/Merged/run_0321.root");
-  IC.Add("./Data/Merged/run_0323.root");
-  IC.Add("./Data/Merged/run_0325.root");
-  IC.Add("./Data/Merged/run_0326.root");
-  IC.Add("./Data/Merged/run_0327.root");
-  IC.Add("./Data/Merged/run_0328.root");
-  IC.Add("./Data/Merged/run_0329.root");
-  IC.Add("./Data/Merged/run_0330.root");
-  IC.Add("./Data/Merged/run_0331.root");
-  IC.Add("./Data/Merged/run_0339.root");
-  IC.Add("./Data/Merged/run_0341.root");
-  IC.Add("./Data/Merged/run_0342.root");
-  IC.Add("./Data/Merged/run_0346.root");
-  IC.Add("./Data/Merged/run_0347.root");
-  IC.Add("./Data/Merged/run_0348.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0315.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0316.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0317.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0318.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0320.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0321.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0323.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0325.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0326.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0327.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0328.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0329.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0330.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0331.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0339.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0341.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0342.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0346.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0347.root");
+  IC.Add("/data/Transfert/e748/Merged/run_0348.root");
 /*
   // Check that the number of entry is the same
   if( tree->GetEntries() != IC->GetEntries() ){
@@ -47,7 +47,7 @@ void MT(){
   }
   chain.SetEntryList(elist);
 
-  ROOT::RDataFrame DF(chain);
+  TDataFrame DF(chain);
 
 
   // TOF per telescope
