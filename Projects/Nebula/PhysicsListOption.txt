@@ -1,11 +1,13 @@
-EmPhysicsList Option4
-DefaultCutOff 1
+EmPhysicsList Option4 
+DefaultCutOff 10
 IonBinaryCascadePhysics 0
 NPIonInelasticPhysics 0
 EmExtraPhysics 0
 HadronElasticPhysics 0
+HadronPhysicsQGSP_BIC_HP 0
+HadronPhysicsQGSP_BERT_HP 0
+HadronPhysicsQGSP_INCLXX_HP 1
+HadronPhysicsINCLXX 0
 StoppingPhysics 0
 OpticalPhysics 0
-HadronPhysicsINCLXX 0
-HadronPhysicsQGSP_BIC_HP 1
 Decay 0
