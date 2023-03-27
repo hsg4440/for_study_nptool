@@ -49,30 +49,33 @@ namespace ProcessScorers {
       void DrawAll();
       void PrintAll();
 
-    private: // How much level of volume nesting should be considered
+    private: 
+      // How much level of volume nesting should be considered
       // Give the list of the nesting level at which the copy number should be return.
       // 0 is the lowest level possible (the actual volume copy number in which the interaction happen)
 
     private: 
-      //CalorimeterDataVector m_Data;
-      //double t_Energy;
       //double t_Time;
       //vector<unsigned int> t_Level;
-      vector<G4String> t_processname;
-      vector<G4String> t_particlename;
+      vector<string> t_particlename;
+      vector<string> t_processname;
       vector<double> t_processtime;
       vector<double> t_gamma_energy;
       vector<double> t_proton_energy;
       vector<double> t_proton_time;
       vector<int> t_FC_process;
+      vector<int> t_efficiency;
+      vector<double> t_pos_Z;
+      vector<double> t_kinetic_energy;
 
-      int HasBeenTracked[100];
+      std::set<int> HasBeenTracked; //map<ID,HasBeenTrackedStatus>
     public:
-      inline unsigned int  GetMult() {return t_processname.size();};
+      inline unsigned int GetMult() {return t_processname.size();};
       inline string GetProcessName(const unsigned int& i) {return t_processname[i];};
       inline string GetParticleName(const unsigned int& i) {return t_particlename[i];};
       inline double GetProcessTime(const unsigned int& i) {return t_processtime[i];};
       inline vector<double> GetGammaEnergy() {return t_gamma_energy;};
+      inline vector<double> GetKinEnergy() {return t_kinetic_energy;};
       inline vector<double> GetProtonEnergy() {return t_proton_energy;};
       inline vector<double> GetProtonTime() {return t_proton_time;};
       inline vector<int> GetFCProcess() {return t_FC_process;};
