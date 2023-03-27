@@ -58,6 +58,8 @@ class Nebula : public NPS::VDetector{
   private:
     G4LogicalVolume* m_Module;
     G4LogicalVolume* m_Veto;
+    double Energy;
+    double Light;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -99,6 +101,7 @@ class Nebula : public NPS::VDetector{
     // Detector Coordinate 
     vector<G4ThreeVector>  m_Pos; 
     vector<int>  m_NbrModule;
+    int m_TotalModule = 0;
     vector<bool> m_HasVeto; 
     vector<bool> m_HasFrame; 
     
