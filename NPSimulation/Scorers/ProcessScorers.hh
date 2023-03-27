@@ -25,6 +25,7 @@
 //#include "NPSecondaries.hh"
 
 #include <map>
+#include <set>
 using namespace std;
 using namespace CLHEP;
 
