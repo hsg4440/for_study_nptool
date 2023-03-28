@@ -24,6 +24,7 @@
 // C++ header
 #include <string>
 #include <vector>
+#include <map>
 using namespace std;
 
 // G4 headers
@@ -36,6 +37,7 @@ using namespace std;
 #include "NPSVDetector.hh"
 #include "TNebulaData.h"
 #include "NPInputParser.h"
+#include "NPXmlParser.h"
 
 class Nebula : public NPS::VDetector{
   ////////////////////////////////////////////////////
@@ -51,11 +53,14 @@ class Nebula : public NPS::VDetector{
   public:
     // Cartesian
     void AddWall(G4ThreeVector POS, int NbrModule,bool veto,bool frame);
+    void ReadXML(std::string xml_file,G4ThreeVector offset, bool InvertX,bool InvertY); 
 
     G4LogicalVolume* BuildModule();
     G4LogicalVolume* BuildVeto();
   
   private:
+    std::map<unsigned int , G4ThreeVector> m_PositionBar;
+    std::map<unsigned int , bool> m_IsVetoBar;
     G4LogicalVolume* m_Module;
     G4LogicalVolume* m_Veto;
     double Energy;

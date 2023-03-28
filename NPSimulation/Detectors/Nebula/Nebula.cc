@@ -151,10 +151,14 @@ void Nebula::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"Pos","NumberOfModule","Veto","Frame"};
+  // define an entire wall
+  vector<string> wall = {"Pos","NumberOfModule","Veto","Frame"};
+
+  // use an experiment xml file to position bars individually
+  vector<string> xml= {"XML","Offset","InvertX","InvertY"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+    if(blocks[i]->HasTokenList(wall)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Nebula " << i+1 <<  endl;
     
@@ -163,6 +167,15 @@ void Nebula::ReadConfiguration(NPL::InputParser parser){
       bool Veto = blocks[i]->GetInt("Veto");
       bool Frame= blocks[i]->GetInt("Frame");
       AddWall(Pos,NbrModule,Veto,Frame);
+    }
+    else if(blocks[i]->HasTokenList(xml)){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Nebula XML file" << i+1 <<  endl;
+      std::string xml_file = blocks[i]->GetString("XML"); 
+      G4ThreeVector Offset = NPS::ConvertVector(blocks[i]->GetTVector3("Offset","mm"));
+      bool InvertX = blocks[i]->GetInt("InvertX"); 
+      bool InvertY = blocks[i]->GetInt("InvertY"); 
+      ReadXML(xml_file,Offset,InvertX,InvertY);
     }
       else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -176,15 +189,60 @@ void Nebula::ReadConfiguration(NPL::InputParser parser){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Nebula::ReadXML(std::string xml_file,G4ThreeVector offset, bool InvertX,bool InvertY){ 
+  NPL::XmlParser xml;
+  xml.LoadFile(xml_file);
+  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName("NEBULA");  
+  int NumberOfBars=0;
+  for(unsigned int i = 0 ; i < b.size() ; i++){
+    NumberOfBars++;
+    unsigned int id = b[i]->AsInt("ID");
+    // position
+    auto PositionX = b[i]->AsDouble("PosX"); 
+    auto PositionY = b[i]->AsDouble("PosY"); 
+    auto PositionZ = b[i]->AsDouble("PosZ"); 
+    // SubLayer 0 is use for Veto
+    auto SubLayer  = b[i]->AsInt("SubLayer");
+    // Name "NoUseX" is used to silence bars
+    auto nousestr  = b[i]->AsString("NAME");
+    // Remove unused bar
+    if(nousestr.find("NoUse")==std::string::npos && PositionX!=PositionZ){
+      if(InvertX)
+        PositionX*=-1;
+      if(InvertY)
+        PositionY*=-1;
+      m_PositionBar[id]= G4ThreeVector(PositionX,PositionY,PositionZ)+offset;
+      if(SubLayer)
+        m_IsVetoBar[id]= false;
+      else
+        m_IsVetoBar[id]=true;
+    }
+  } 
+  cout << " -> " << NumberOfBars << " bars found" << endl;
+} 
 
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Nebula::ConstructDetector(G4LogicalVolume* world){
+  // Start with XML case
+  G4RotationMatrix* Rot = new G4RotationMatrix();
+  for(auto pos : m_PositionBar){
+    if(!m_IsVetoBar[pos.first]){
+      new G4PVPlacement(G4Transform3D(*Rot,pos.second),
+            BuildModule(),
+            "NebulaModule",world,false,pos.first);
+    }
+    else{
+      new G4PVPlacement(G4Transform3D(*Rot,pos.second),
+            BuildVeto(),
+            "NebulaModule",world,false,pos.first);
+      }
+    }
+
   unsigned int nbrM = 1 ;
   unsigned int nbrV = 1 ;
   for (unsigned short i = 0 ; i < m_Pos.size() ; i++) {
     for (unsigned short m = 0 ; m < m_NbrModule[i] ; m++) {
-      G4RotationMatrix* Rot = new G4RotationMatrix();
       double offset = (Nebula_NS::ModuleWidth+Nebula_NS::InterModule)*(-m_NbrModule[i]*0.5+m)+Nebula_NS::ModuleWidth*0.5;
       G4ThreeVector Offset(offset,0,0);
       new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
@@ -195,7 +253,6 @@ void Nebula::ConstructDetector(G4LogicalVolume* world){
     if(m_HasVeto[i]){
       if(m_NbrModule[i] > 15){
         for (unsigned short m = 0 ; m < Nebula_NS::VetoPerWall ; m++) {
-          G4RotationMatrix* Rot = new G4RotationMatrix();
           double offset = (Nebula_NS::VetoWidth+Nebula_NS::InterVeto)*(-Nebula_NS::VetoPerWall*0.5+m)+Nebula_NS::VetoWidth*0.5;
           G4ThreeVector Offset(offset,0,-Nebula_NS::WallToVeto);
           new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
@@ -205,7 +262,6 @@ void Nebula::ConstructDetector(G4LogicalVolume* world){
       }
       else{
         for (unsigned short m = 0 ; m < Nebula_NS::VetoPerExpand ; m++) {
-          G4RotationMatrix* Rot = new G4RotationMatrix();
           double offset = (Nebula_NS::VetoWidth+Nebula_NS::InterVeto)*(-Nebula_NS::VetoPerExpand*0.5+m)+Nebula_NS::VetoWidth*0.5;
           G4ThreeVector Offset(offset,0,-Nebula_NS::WallToVeto);
           new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),

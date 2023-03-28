@@ -15,6 +15,7 @@ NEBULA
  NumberOfModule= 15
  Veto= 1
  Frame= 1
+ XML= ./db/NEBULA.xml
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NEBULA
  POS= 0 0 12.15 m

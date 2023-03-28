@@ -116,7 +116,6 @@ void TNebulaPhysics::BuildPhysicalEvent() {
   static double threshold;
   // loop on Qup
   for (unsigned int qup = 0; qup < QUsize ; qup++) {
-
     rawQup = m_EventData->GetChargeUp(qup);
     rawTup=-1;
     rawQdown=-1;
@@ -158,6 +157,7 @@ void TNebulaPhysics::BuildPhysicalEvent() {
       }
       // Got everything, do the math
       if(rawTup>0){
+        //std::cout << "Hello 2"  << std::endl;
         // cal Q Up and Down
         calQup=aQu[ID]*(rawQup-bQu[ID]);
         calQdown=aQd[ID]*(rawQdown-bQd[ID]);
@@ -176,7 +176,10 @@ void TNebulaPhysics::BuildPhysicalEvent() {
         calTdown -= slwTd[ID]/sqrt(rawQdown-bQd[ID]);
 
         
+        //std::cout << calQ  << " " << threshold << std::endl;
         if(calQ>threshold){
+
+        //std::cout << "Hello 3"  << std::endl;
           calT= (calTdown+calTup)*0.5+avgT0[ID]+Cal->GetPedestal("NEBULA_T_ID"+NPL::itoa(ID)); 
           Y=(calTdown-calTup)*DTa[ID]+DTb[ID]+Cal->GetPedestal("NEBULA_Y_ID"+NPL::itoa(ID));
 
