@@ -32,7 +32,7 @@ void hclient()
     m_Sock = new TSocket("localhost", m_Port);
     
     //hXYZ = new TH3F("hXYZ","hXYZ",128,0,128,128,0,128,512,0,512);
-    hXYZ = new TH3F("hXYZ","hXYZ",128,0,128,128,0,128,128,0,128);
+    hXYZ = new TH3F("hXYZ","hXYZ",128,0,128,128,0,128,256,0,256);
     hXYZ->SetStats(0);
     hXYZ->SetTitle(0);
     hXYZ->GetXaxis()->SetTitle("Pad X");
@@ -54,7 +54,7 @@ void hclient()
     h2Dxy->GetYaxis()->SetTitle("Pad Y");
     h2Dxy->GetYaxis()->CenterTitle();
     
-    h2Dxz = new TH2F("h2Dxz","h2Dxz",128,0,128,128,0,128);
+    h2Dxz = new TH2F("h2Dxz","h2Dxz",128,0,128,256,0,256);
     h2Dxz->SetStats(0);
     h2Dxz->SetTitle(0);
     h2Dxz->GetXaxis()->SetTitle("Pad X");
@@ -130,9 +130,9 @@ void Sync()
             
             for(int i=0; i<vg3.size(); i++){
                 //h3D = new TH3F("h3D","h3D",128,0,128,128,0,128,512,0,512);
-                h3D = new TH3F("h3D","h3D",128,0,128,128,0,128,128,0,128);
+                h3D = new TH3F("h3D","h3D",128,0,128,128,0,128,256,0,256);
                 hXY = new TH2F("hXY","hXY",128,0,128,128,0,128);
-                hXZ = new TH2F("hXZ","hXZ",128,0,128,128,0,128);
+                hXZ = new TH2F("hXZ","hXZ",128,0,128,256,0,256);
                 
                 double *X = vg3[i]->GetX();
                 double *Y = vg3[i]->GetY();
