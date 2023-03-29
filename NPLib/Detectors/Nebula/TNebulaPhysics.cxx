@@ -66,27 +66,53 @@ void TNebulaPhysics::ReadXML(NPL::XmlParser xml){
     PositionX[id] = b[i]->AsDouble("PosX"); 
     PositionY[id] = b[i]->AsDouble("PosY"); 
     PositionZ[id] = b[i]->AsDouble("PosZ"); 
-    // linear cal
-    aQu[id] = b[i]->AsDouble("QUCal");
-    bQu[id] = b[i]->AsDouble("QUPed");
-    aQd[id] = b[i]->AsDouble("QDCal");
-    bQd[id] = b[i]->AsDouble("QDPed");
-    aTu[id] = b[i]->AsDouble("TUCal");
-    bTu[id] = b[i]->AsDouble("TUOff");
-    aTd[id] = b[i]->AsDouble("TDCal");
-    bTd[id] = b[i]->AsDouble("TDOff");
+    std::string tree_name = RootInput::getInstance()->GetChain()->GetName();
+    if(tree_name!="SimulatedTree"){
+      // linear cal
+      aQu[id] = b[i]->AsDouble("QUCal");
+      bQu[id] = b[i]->AsDouble("QUPed");
+      aQd[id] = b[i]->AsDouble("QDCal");
+      bQd[id] = b[i]->AsDouble("QDPed");
+      aTu[id] = b[i]->AsDouble("TUCal");
+      bTu[id] = b[i]->AsDouble("TUOff");
+      aTd[id] = b[i]->AsDouble("TDCal");
+      bTd[id] = b[i]->AsDouble("TDOff");
 
-    // T average offset
-    avgT0[id] = b[i]->AsDouble("TAveOff");
+      // T average offset
+      avgT0[id] = b[i]->AsDouble("TAveOff");
 
-    // slew correction T= tcal +slwT/sqrt(Qcal)
-    slwTu[id] = b[i]->AsDouble("TUSlw");
-    slwTd[id] = b[i]->AsDouble("TDSlw");
+      // slew correction T= tcal +slwT/sqrt(Qcal)
+      slwTu[id] = b[i]->AsDouble("TUSlw");
+      slwTd[id] = b[i]->AsDouble("TDSlw");
 
-    // DT position cal
-    DTa[id] = b[i]->AsDouble("DTCal");//!
-    DTb[id] = b[i]->AsDouble("DTOff");//!
+      // DT position cal
+      DTa[id] = b[i]->AsDouble("DTCal");//!
+      DTb[id] = b[i]->AsDouble("DTOff");//!
+    }
+    else{
+      // linear cal
+      aQu[id] =1; 
+      bQu[id] =0; 
+      aQd[id] =1;
+      bQd[id] =0; 
+      aTu[id] =1; 
+      bTu[id] =0; 
+      aTd[id] =1; 
+      bTd[id] =0; 
 
+      // T average offset
+      avgT0[id]= 0;
+
+      // slew correction T= tcal +slwT/sqrt(Qcal)
+      slwTu[id] = 0;
+      slwTd[id] = 0;
+
+      // DT position cal
+      DTa[id] = 0;//!
+      DTb[id] = 0;//!
+
+
+      }
 
   } 
   cout << " -> " << m_NumberOfBars << " bars found" << endl;;
@@ -157,11 +183,10 @@ void TNebulaPhysics::BuildPhysicalEvent() {
       }
       // Got everything, do the math
       if(rawTup>0){
-        //std::cout << "Hello 2"  << std::endl;
         // cal Q Up and Down
         calQup=aQu[ID]*(rawQup-bQu[ID]);
         calQdown=aQd[ID]*(rawQdown-bQd[ID]);
-        
+
         // average value of Up and Down
         calQ=sqrt(calQup*calQdown); 
 
@@ -176,10 +201,7 @@ void TNebulaPhysics::BuildPhysicalEvent() {
         calTdown -= slwTd[ID]/sqrt(rawQdown-bQd[ID]);
 
         
-        //std::cout << calQ  << " " << threshold << std::endl;
         if(calQ>threshold){
-
-        //std::cout << "Hello 3"  << std::endl;
           calT= (calTdown+calTup)*0.5+avgT0[ID]+Cal->GetPedestal("NEBULA_T_ID"+NPL::itoa(ID)); 
           Y=(calTdown-calTup)*DTa[ID]+DTb[ID]+Cal->GetPedestal("NEBULA_Y_ID"+NPL::itoa(ID));
 

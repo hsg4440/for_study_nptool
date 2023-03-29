@@ -323,22 +323,19 @@ void Nebula::ReadSensitive(const G4Event* ){
     Light = RandGauss::shoot(Light_tmp, Light_tmp*Nebula_NS::ResoLight);
 
     if(Light>Nebula_NS::LightThreshold){
-      double Time = RandGauss::shoot(PlasticScorer_Module->GetTime(i),Nebula_NS::ResoTime);
-      //cout << "Time is " << Time << endl;
-      double Position = RandGauss::shoot(PlasticScorer_Module->GetPosition(i),Nebula_NS::ResoPosition);
-      //cout << "Position is " << Position << endl;
       int DetectorNbr = level[0];
-      //cout << "Detector ID: " << DetectorNbr << endl;
+      double Position = RandGauss::shoot(PlasticScorer_Module->GetPosition(i),Nebula_NS::ResoPosition);
 
       m_Event->SetChargeUp(DetectorNbr,Light*exp(-(Nebula_NS::ModuleHeight/2-Position)/Nebula_NS::Attenuation));
       m_Event->SetChargeDown(DetectorNbr,Light*exp(-(Nebula_NS::ModuleHeight/2+Position)/Nebula_NS::Attenuation));
-      
+     
+      // Take TOF and Position and compute Tup and Tdown
+      double Time = RandGauss::shoot(PlasticScorer_Module->GetTime(i),Nebula_NS::ResoTime);
+
       Time_up = (Nebula_NS::ModuleHeight/2-Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
-      //cout << "Time_up is " << Time_up << endl;
       m_Event->SetTimeUp(DetectorNbr,Time_up);
       
       Time_down = (Nebula_NS::ModuleHeight/2+Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
-      //cout << "Time_down is " << Time_down << endl;
       m_Event->SetTimeDown(DetectorNbr,Time_down);
     }
   }
