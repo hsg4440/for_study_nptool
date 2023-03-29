@@ -11,44 +11,11 @@ Target
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NEBULA
- POS= 0 0 12 m
- NumberOfModule= 15
- Veto= 1
- Frame= 1
- XML= ./db/NEBULA.xml
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 12.15 m
- NumberOfModule= 15
- Veto= 0
- Frame= 0
+  XML= db/NEBULA.xml
+  Offset= 0 0 0 mm
+  InvertX= 0
+  InvertY= 0
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 16 m
- NumberOfModule= 30
- Veto= 1
- Frame= 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 16.15 m
- NumberOfModule= 30
- Veto= 0
- Frame= 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 18 m
- NumberOfModule= 30
- Veto= 1
- Frame= 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 18.15 m
- NumberOfModule= 30
- Veto= 0
- Frame= 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Samurai
 % POS= 0 0 0 mm
