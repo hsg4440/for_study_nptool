@@ -108,7 +108,7 @@ void TNebulaPhysics::ReadXML(NPL::XmlParser xml){
       slwTd[id] = 0;
 
       // DT position cal
-      DTa[id] = 0;//!
+      DTa[id] = 1;//!
       DTb[id] = 0;//!
 
 
@@ -235,8 +235,6 @@ void TNebulaPhysics::PreTreat() {
 void TNebulaPhysics::ReadAnalysisConfig() {
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::Clear() {
   DetectorNumber.clear();
@@ -247,8 +245,6 @@ void TNebulaPhysics::Clear() {
   PosZ.clear();
   IsVeto.clear();
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::ReadConfiguration(NPL::InputParser parser) {
