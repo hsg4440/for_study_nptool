@@ -1,7 +1,7 @@
 ConfigActar
 RecoRansac= 1
 RecoCluster= 0 
-RecoVisu= 0
+RecoVisu= 1
 HIT_THRESHOLD= 2
 Q_THRESHOLD= 0
 T_THRESHOLD= 0

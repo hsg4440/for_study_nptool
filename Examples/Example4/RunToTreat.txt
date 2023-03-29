@@ -1,4 +1,4 @@
 TTreeName
-	SimulatedTree
+  SimulatedTree
 RootFileName
-	../../Outputs/Simulation/Example4.root
+  ../../Outputs/Simulation/Example4_*.root
