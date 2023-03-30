@@ -112,21 +112,12 @@ void TPISTASpectra::FillRawSpectra(TPISTAData* RawData) {
   static string family;
 
   // Energy 
-  unsigned int sizeE = RawData->GetFirstStageMultXEnergy();
+  unsigned int sizeE = RawData->GetPISTADEMult();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "PISTA"+NPL::itoa(RawData->GetFirstStage_XE_DetectorNbr(i))+"_ENERGY_RAW";
+    name = "PISTA"+NPL::itoa(RawData->GetPISTA_DE_DetectorNbr(i))+"_ENERGY_RAW";
     family = "PISTA/RAW";
 
-    FillSpectra(family,name,RawData->GetFirstStage_XE_Energy(i));
-  }
-
-  // Time
-  unsigned int sizeT = RawData->GetFirstStageMultXTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "PISTA"+NPL::itoa(RawData->GetFirstStage_XT_DetectorNbr(i))+"_TIME_RAW";
-    family = "PISTA/RAW";
-
-    FillSpectra(family,name,RawData->GetFirstStage_XT_Time(i));
+    FillSpectra(family,name,RawData->GetPISTA_DE_StripEnergy(i));
   }
 }
 
@@ -138,21 +129,12 @@ void TPISTASpectra::FillPreTreatedSpectra(TPISTAData* PreTreatedData) {
   static string family;
   
   // Energy 
-  unsigned int sizeE = PreTreatedData->GetFirstStageMultXEnergy();
+  unsigned int sizeE = PreTreatedData->GetPISTADEMult();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "PISTA"+NPL::itoa(PreTreatedData->GetFirstStage_XE_DetectorNbr(i))+"_ENERGY_CAL";
+    name = "PISTA"+NPL::itoa(PreTreatedData->GetPISTA_DE_DetectorNbr(i))+"_ENERGY_CAL";
     family = "PISTA/CAL";
 
-    FillSpectra(family,name,PreTreatedData->GetFirstStage_XE_Energy(i));
-  }
-
-  // Time
-  unsigned int sizeT = PreTreatedData->GetFirstStageMultXTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "PISTA"+NPL::itoa(PreTreatedData->GetFirstStage_XT_DetectorNbr(i))+"_TIME_CAL";
-    family = "PISTA/CAL";
-
-    FillSpectra(family,name,PreTreatedData->GetFirstStage_XT_Time(i));
+    FillSpectra(family,name,PreTreatedData->GetPISTA_DE_StripEnergy(i));
   }
 }
 

@@ -1,0 +1,26 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= p
+ Energy= 196 MeV
+ SigmaEnergy= 0 MeV
+ SigmaThetaX= 1 deg
+ SigmaPhiY= 1 deg
+ SigmaX= 5 mm
+ SigmaY= 5 mm
+ MeanThetaX= 0 deg
+ MeanPhiY= 0 deg
+ MeanX= 0 mm
+ MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= p
+ Target= 7Li
+ Light= n
+ Heavy= 7Be
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.43 MeV
+ CrossSectionPath= flat.txt CSR
+ ShootLight= 0
+ ShootHeavy= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
