@@ -21,8 +21,8 @@
  *                                                                           *
  *****************************************************************************/
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 // NPS
 #include "PhysicsList.hh"
 // NPL
@@ -38,40 +38,40 @@
 #include "NPIonIonInelasticPhysic.hh"
 #endif
 // G4
-#include "G4Material.hh"
-#include "G4MaterialTable.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4RunManager.hh"
-#include "G4PhysListFactory.hh"
-#include "G4VPhysicsConstructor.hh"
-#include "G4LossTableManager.hh"
-#include "G4UnitsTable.hh"
-#include "G4ProcessManager.hh"
-#include "G4ProcessVector.hh"
-#include "G4FastSimulationManagerProcess.hh"
-#include "G4StepLimiter.hh"
-#include "G4BraggIonGasModel.hh"
 #include "G4BetheBlochIonGasModel.hh"
-#include "G4IonFluctuations.hh"
-#include "G4IonParametrisedLossModel.hh"
-#include "G4UniversalFluctuation.hh"
-#include "G4NuclearLevelData.hh"
-#include "G4LevelManager.hh"
-#include "G4PAIModel.hh"
-#include "G4PAIPhotModel.hh"
-#include "G4RadioactiveDecay.hh"
-#include "G4ParticleTypes.hh"
-#include "G4ParticleTable.hh"
+#include "G4BraggIonGasModel.hh"
 #include "G4DecayPhysics.hh"
-#include "G4RadioactiveDecayPhysics.hh"
-#include "G4EmStandardPhysics.hh"
 #include "G4EmExtraPhysics.hh"
-#include "G4IonINCLXXPhysics.hh"
-#include "G4StoppingPhysics.hh"
+#include "G4EmStandardPhysics.hh"
+#include "G4FastSimulationManagerProcess.hh"
 #include "G4HadronElasticPhysics.hh"
 #include "G4HadronElasticPhysicsHP.hh"
-#include "G4NeutronTrackingCut.hh"
 #include "G4HadronPhysicsINCLXX.hh"
+#include "G4IonFluctuations.hh"
+#include "G4IonINCLXXPhysics.hh"
+#include "G4IonParametrisedLossModel.hh"
+#include "G4LevelManager.hh"
+#include "G4LossTableManager.hh"
+#include "G4Material.hh"
+#include "G4MaterialTable.hh"
+#include "G4NeutronTrackingCut.hh"
+#include "G4NuclearLevelData.hh"
+#include "G4PAIModel.hh"
+#include "G4PAIPhotModel.hh"
+#include "G4ParticleTable.hh"
+#include "G4ParticleTypes.hh"
+#include "G4PhysListFactory.hh"
+#include "G4ProcessManager.hh"
+#include "G4ProcessVector.hh"
+#include "G4RadioactiveDecay.hh"
+#include "G4RadioactiveDecayPhysics.hh"
+#include "G4RunManager.hh"
+#include "G4StepLimiter.hh"
+#include "G4StoppingPhysics.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
+#include "G4UniversalFluctuation.hh"
+#include "G4VPhysicsConstructor.hh"
 #ifdef USE_NEUTRONHP
 #include "NeutronHPphysics.hh"
 #endif
@@ -102,53 +102,54 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList() {
   // Using the more accurate option4
 
   emPhysicsList = NULL;
-  if (m_EmList == "INCLXX_EM"){
+  if (m_EmList == "INCLXX_EM") {
     cout << "Choosing to use INCLXX included EMList (probably standard)" << endl;
   }
-  else if(m_EmList== "Option1"){
-    emPhysicsList=new G4EmStandardPhysics_option1();
+  else if (m_EmList == "Option1") {
+    emPhysicsList = new G4EmStandardPhysics_option1();
     cout << "//// Using G4EmStandardPhysics_option1 Physics List ////" << endl;
   }
-  else if(m_EmList== "Option2"){
-    emPhysicsList=new G4EmStandardPhysics_option2();
+  else if (m_EmList == "Option2") {
+    emPhysicsList = new G4EmStandardPhysics_option2();
     cout << "//// Using G4EmStandardPhysics_option2 Physics List ////" << endl;
   }
-  else if(m_EmList== "Option3"){
-    emPhysicsList=new G4EmStandardPhysics_option3();
+  else if (m_EmList == "Option3") {
+    emPhysicsList = new G4EmStandardPhysics_option3();
     cout << "//// Using G4EmStandardPhysics_option3 Physics List ////" << endl;
   }
-  else if(m_EmList == "Option4"){
-    emPhysicsList=new G4EmStandardPhysics_option4();
+  else if (m_EmList == "Option4") {
+    emPhysicsList = new G4EmStandardPhysics_option4();
     cout << "//// Using G4EmStandardPhysics_option4 Physics List ////" << endl;
   }
-  else if(m_EmList== "Standard"){
-    emPhysicsList=new G4EmStandardPhysics();
+  else if (m_EmList == "Standard") {
+    emPhysicsList = new G4EmStandardPhysics();
     cout << "//// Using G4EmStandardPhysics default EM constructor Physics List ////" << endl;
   }
-  else if(m_EmList== "Livermore"){
-    emPhysicsList=new G4EmLivermorePhysics();
+  else if (m_EmList == "Livermore") {
+    emPhysicsList = new G4EmLivermorePhysics();
     cout << "//// Using G4EmLivermorePhysics Physics List ////" << endl;
   }
-  else if( m_EmList == "Penelope"){
-    emPhysicsList=new G4EmPenelopePhysics();
+  else if (m_EmList == "Penelope") {
+    emPhysicsList = new G4EmPenelopePhysics();
     cout << "//// Using G4EmPenelopePhysics Physics List ////" << endl;
   }
-  else{
-    std::cout << "\r\033[1;31mERROR: User given physics list " << m_EmList << " is not supported, option are Option4 Livermore Penelope\033[0m" <<std::endl;
+  else {
+    std::cout << "\r\033[1;31mERROR: User given physics list " << m_EmList
+              << " is not supported, option are Option4 Livermore Penelope\033[0m" << std::endl;
     exit(1);
   }
 
   RegisterPhysics(emPhysicsList);
 
   // Hadronic physics
-  if(m_IonBinaryCascadePhysics){
+  if (m_IonBinaryCascadePhysics) {
     RegisterPhysics(new G4IonBinaryCascadePhysics());
     cout << "//// Using G4IonBinaryCascadePhysics Physics List ////" << endl;
   }
-  if(m_EmExtraPhysics){
+  if (m_EmExtraPhysics) {
     RegisterPhysics(new G4EmExtraPhysics());
   }
-  if(m_HadronElasticPhysics){
+  if (m_HadronElasticPhysics) {
     RegisterPhysics(new G4HadronElasticPhysics());
     RegisterPhysics(new G4IonElasticPhysics());
     cout << "//// Using G4HadronElasticPhysics Physics List ////" << endl;
@@ -156,94 +157,102 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList() {
   }
 
 #ifndef GEANT4_11
-  if(m_NPIonInelasticPhysics){
+  if (m_NPIonInelasticPhysics) {
     RegisterPhysics(new NPIonIonInelasticPhysic());
     cout << "//// Using NPIonIonInelasticPhysic Physics List ////" << endl;
   }
 #endif
 
 #ifdef USE_NEUTRONHP
-  if(m_NeutronHP){
+  if (m_NeutronHP) {
     RegisterPhysics(new NeutronHPphysics("neutronHP"));
     cout << "//// Using NeutronHPPhysics ////" << endl;
   }
 #endif
-  if(m_StoppingPhysics){
+  if (m_StoppingPhysics) {
     RegisterPhysics(new G4StoppingPhysics());
     cout << "//// Using G4StoppingPhysics Physics List ////" << endl;
   }
 
-  if(m_HadronPhysicsINCLXX){
+  if (m_HadronPhysicsINCLXX) {
     RegisterPhysics(new G4HadronPhysicsINCLXX());
     RegisterPhysics(new G4IonINCLXXPhysics());
     cout << "//// Using INCLXX Physics List ////" << endl;
   }
 
-  if(m_HadronPhysicsQGSP_BERT_HP){
+  if (m_HadronPhysicsQGSP_BERT_HP) {
     RegisterPhysics(new G4HadronPhysicsQGSP_BERT_HP());
     cout << "//// Using QGSP_BERT_HP Physics List ////" << endl;
   }
 
-  if(m_HadronPhysicsQGSP_BIC_HP){
+  if (m_HadronPhysicsQGSP_BIC_HP) {
 #if NPS_GEANT4_VERSION_MAJOR > 9
     RegisterPhysics(new G4HadronPhysicsQGSP_BIC_HP());
     cout << "//// Using QGSP_BIC_HP Physics List ////" << endl;
 #else
-    std::cout << "\r\032[1;31m Warning: physics list HadronPhysicsQGSP_BIC_HP requires Geant4 10, process not activated \033[0m" <<std::endl;
+    std::cout << "\r\032[1;31m Warning: physics list HadronPhysicsQGSP_BIC_HP requires Geant4 10, process not "
+                 "activated \033[0m"
+              << std::endl;
 #endif
   }
 
-  if(m_HadronPhysicsQGSP_INCLXX_HP){
+  if (m_HadronPhysicsQGSP_INCLXX_HP) {
 #if NPS_GEANT4_VERSION_MAJOR > 9
     AddPackage("QGSP_INCLXX_HP");
 #else
-    std::cout << "\r\032[1;31m Warning: physics list HadronPhysicsQGSP_INCLXX_HP requires Geant4 10, process not activated \033[0m" <<std::endl;
+    std::cout << "\r\032[1;31m Warning: physics list HadronPhysicsQGSP_INCLXX_HP requires Geant4 10, process not "
+                 "activated \033[0m"
+              << std::endl;
 #endif
   }
 
   // Optical Photon for scintillator simulation
   if (m_OpticalPhysics) {
+    cout << "//// Using Optical Photon Physics List ////" << endl;
     RegisterPhysics(new G4OpticalPhysics(0));
     /*opticalPhysicsList->SetMaxNumPhotonsPerStep(100);
     opticalPhysicsList->SetScintillationYieldFactor(0.1);
     opticalPhysicsList->SetTrackSecondariesFirst(kScintillation,true);
     opticalPhysicsList->SetTrackSecondariesFirst(kCerenkov,true);
 */
-    cout << "//// Using Optical Photon Physics List ////" << endl;
   }
 
   // Drift electron for gazeous detector simulation
-  if(m_DriftElectronPhysics){
-    RegisterPhysics(new G4DriftElectronPhysics(0));
-    driftElectronPhysicsList->SetMaxNumDriftElectronPerStep(1e6);
+  if (m_DriftElectronPhysics) {
     cout << "//// Using Drift Electron Physics List ////" << endl;
+    driftElectronPhysicsList = new G4DriftElectronPhysics(0);
+    driftElectronPhysicsList->SetMaxNumDriftElectronPerStep(1e6);
+    RegisterPhysics(driftElectronPhysicsList);
   }
-  if(m_IonGasModels){
-    AddIonGasModels();
+  if (m_IonGasModels) {
     cout << "//// Using Ion Gas Model Physics List ////" << endl;
+    AddIonGasModels();
   }
 
-  if(m_pai){
-    AddPAIModel("pai");
+  if (m_pai) {
     cout << "//// Using PAI Model Physics List ////" << endl;
+    AddPAIModel("pai");
   }
-  if(m_pai_photon){
-    AddPAIModel("pai_photon");
+  if (m_pai_photon) {
     cout << "//// Using PAI PHOTON Model Physics List ////" << endl;
+    AddPAIModel("pai_photon");
   }
 
   // Decay physics
   // Add Radioactive decay
   // Gamma decay of known states
   if (m_Decay) {
-    RegisterPhysics(new G4DecayPhysics());
-    RegisterPhysics(new G4RadioactiveDecayPhysics());
+    cout << "//// Radioactive decay activated ////" << endl;
+    decay_List = new G4DecayPhysics();
+    radioactiveDecay_List = new G4RadioactiveDecayPhysics();
+    RegisterPhysics(decay_List);
+    RegisterPhysics(radioactiveDecay_List);
   }
   else {
     decay_List = 0;
     radioactiveDecay_List = 0;
   }
-  
+
   emConfig = G4LossTableManager::Instance()->EmConfigurator();
 }
 
@@ -269,7 +278,6 @@ void PhysicsList::ReadConfiguration(std::string filename) {
   m_pai = 0;
   m_pai_photon = 0;
   m_Menate_R = 0;
-
   m_NeutronHP = 0;
 
   std::ifstream file(filename.c_str());
@@ -310,26 +318,26 @@ void PhysicsList::ReadConfiguration(std::string filename) {
       m_HadronPhysicsQGSP_BERT_HP = value;
     else if (name == "HadronPhysicsINCLXX")
       m_HadronPhysicsINCLXX = value;
-    else if (name == "HadronPhysicsQGSP_INCLXX_HP"){
-      m_HadronPhysicsQGSP_INCLXX_HP= value;
-      if(value)
-        m_INCLXXPhysics= true;
-      }
-    else if (name == "HadronPhysicsQGSP_INCLXX"){
-      m_HadronPhysicsQGSP_INCLXX= value;
-      if(value)
-        m_INCLXXPhysics= true;
-      }
-    else if (name == "HadronPhysicsFTFP_INCLXX_HP"){
-      m_HadronPhysicsFTFP_INCLXX_HP= value;
-      if(value)
-        m_INCLXXPhysics= true;
-      }
-    else if (name == "HadronPhysicsFTFP_INCLXX"){
-      m_HadronPhysicsFTFP_INCLXX= value;
-      if(value)
-        m_INCLXXPhysics= true;
-      }
+    else if (name == "HadronPhysicsQGSP_INCLXX_HP") {
+      m_HadronPhysicsQGSP_INCLXX_HP = value;
+      if (value)
+        m_INCLXXPhysics = true;
+    }
+    else if (name == "HadronPhysicsQGSP_INCLXX") {
+      m_HadronPhysicsQGSP_INCLXX = value;
+      if (value)
+        m_INCLXXPhysics = true;
+    }
+    else if (name == "HadronPhysicsFTFP_INCLXX_HP") {
+      m_HadronPhysicsFTFP_INCLXX_HP = value;
+      if (value)
+        m_INCLXXPhysics = true;
+    }
+    else if (name == "HadronPhysicsFTFP_INCLXX") {
+      m_HadronPhysicsFTFP_INCLXX = value;
+      if (value)
+        m_INCLXXPhysics = true;
+    }
     else if (name == "Decay")
       m_Decay = value;
     else if (name == "IonGasModels")
@@ -358,18 +366,16 @@ void PhysicsList::ReadConfiguration(std::string filename) {
 PhysicsList::~PhysicsList() {}
 
 /////////////////////////////////////////////////////////////////////////////
-void PhysicsList::AddPackage(const G4String& name)
-{
+void PhysicsList::AddPackage(const G4String& name) {
   G4PhysListFactory factory;
-  G4VModularPhysicsList* phys =factory.GetReferencePhysList(name);
-  G4int i=0;
-  const G4VPhysicsConstructor* elem= phys->GetPhysics(i);
-  G4VPhysicsConstructor* tmp = const_cast<G4VPhysicsConstructor*> (elem);
-  while (elem !=0)
-  {
+  G4VModularPhysicsList* phys = factory.GetReferencePhysList(name);
+  G4int i = 0;
+  const G4VPhysicsConstructor* elem = phys->GetPhysics(i);
+  G4VPhysicsConstructor* tmp = const_cast<G4VPhysicsConstructor*>(elem);
+  while (elem != 0) {
     RegisterPhysics(tmp);
-    elem= phys->GetPhysics(++i) ;
-    tmp = const_cast<G4VPhysicsConstructor*> (elem);
+    elem = phys->GetPhysics(++i);
+    tmp = const_cast<G4VPhysicsConstructor*>(elem);
   }
 }
 
@@ -426,9 +432,18 @@ void PhysicsList::NewPAIModel(const G4ParticleDefinition* part, const G4String& 
 
 /////////////////////////////////////////////////////////////////////////////
 void PhysicsList::ConstructParticle() {
-
-  if(m_INCLXXPhysics){
+  if (m_INCLXXPhysics) {
     this->G4VModularPhysicsList::ConstructParticle();
+  }
+  if (m_OpticalPhysics) {
+    ((G4VPhysicsConstructor*)opticalPhysicsList)->ConstructParticle();
+  }
+  if (m_DriftElectronPhysics) {
+    ((G4VPhysicsConstructor*)driftElectronPhysicsList)->ConstructParticle();
+  }
+  if (decay_List) {
+    decay_List->ConstructParticle();
+    radioactiveDecay_List->ConstructParticle();
   }
   else {
     // If decay is not activated we have to declare the particle ourself
@@ -449,17 +464,17 @@ void PhysicsList::ConstructParticle() {
     G4ChargedGeantino::ChargedGeantinoDefinition();
     G4Gamma::GammaDefinition();
     //  mesons
-    G4PionPlus ::PionPlusDefinition();
-    G4PionMinus ::PionMinusDefinition();
-    G4PionZero ::PionZeroDefinition();
-    G4Eta ::EtaDefinition();
-    G4EtaPrime ::EtaPrimeDefinition();
-    //  G4RhoZero      ::RhoZeroDefinition();
-    G4KaonPlus ::KaonPlusDefinition();
-    G4KaonMinus ::KaonMinusDefinition();
-    G4KaonZero ::KaonZeroDefinition();
-    G4AntiKaonZero ::AntiKaonZeroDefinition();
-    G4KaonZeroLong ::KaonZeroLongDefinition();
+    G4PionPlus::PionPlusDefinition();
+    G4PionMinus::PionMinusDefinition();
+    G4PionZero::PionZeroDefinition();
+    G4Eta::EtaDefinition();
+    G4EtaPrime::EtaPrimeDefinition();
+    //  G4RhoZero::RhoZeroDefinition();
+    G4KaonPlus::KaonPlusDefinition();
+    G4KaonMinus::KaonMinusDefinition();
+    G4KaonZero::KaonZeroDefinition();
+    G4AntiKaonZero::AntiKaonZeroDefinition();
+    G4KaonZeroLong::KaonZeroLongDefinition();
     G4KaonZeroShort::KaonZeroShortDefinition();
     // Ion
     G4IonConstructor ionConstructor;
@@ -468,16 +483,16 @@ void PhysicsList::ConstructParticle() {
 }
 /////////////////////////////////////////////////////////////////////////////
 void PhysicsList::ConstructProcess() {
- 
-  if(m_INCLXXPhysics){
-    //G4VModularPhysicsList::ReplacePhysics(new G4EmStandardPhysics_option4());
-    this->G4VModularPhysicsList::ConstructProcess();
-  }  
-  else{
 
-   // Transportation
-   AddTransportation();
-   // Electromagnetic physics
+  if (m_INCLXXPhysics) {
+    // G4VModularPhysicsList::ReplacePhysics(new G4EmStandardPhysics_option4());
+    this->G4VModularPhysicsList::ConstructProcess();
+  }
+  else {
+
+    // Transportation
+    AddTransportation();
+    // Electromagnetic physics
     emPhysicsList->ConstructProcess();
     if (opticalPhysicsList) {
       ((G4VPhysicsConstructor*)opticalPhysicsList)->ConstructProcess();
@@ -485,12 +500,16 @@ void PhysicsList::ConstructProcess() {
     if (driftElectronPhysicsList) {
       ((G4VPhysicsConstructor*)driftElectronPhysicsList)->ConstructProcess();
     }
-    
+    if (decay_List)
+      ((G4DecayPhysics*)decay_List)->ConstructProcess();
+    if (radioactiveDecay_List)
+      ((G4RadioactiveDecayPhysics*)radioactiveDecay_List)->ConstructProcess();
+
     // Hadronic physics
-    for(auto it = m_PhysList.begin(), end = m_PhysList.end(); it!= end; it++){
+    for (auto it = m_PhysList.begin(), end = m_PhysList.end(); it != end; it++) {
       it->second->ConstructProcess();
     }
-    
+
     BiasCrossSectionByFactor(m_IonBinaryCascadePhysics);
     em_parameters = G4EmParameters::Instance();
     em_parameters->SetFluo(true);
@@ -501,12 +520,10 @@ void PhysicsList::ConstructProcess() {
     em_parameters->SetDeexcitationIgnoreCut(true);
 #endif
 #endif
-
   }
-    AddParametrisation();
-    AddLevelData();
-    return;
-
+  AddParametrisation();
+  AddLevelData();
+  return;
 }
 
 /////////////////////////////////////////////////////////////////////////////
