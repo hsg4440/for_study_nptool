@@ -140,8 +140,8 @@ void TStrasseSpectra::FillPhysicsSpectra(TStrassePhysics* Physics) {
   family= "Strasse/PHY";
 
   // Energy vs time
-  unsigned int sizeE = Physics->E.size();
-  for(unsigned int i = 0 ; i < sizeE ; i++){
+  unsigned int sizeTE = Physics->InnerTE.size();
+  for(unsigned int i = 0 ; i < sizeTE ; i++){
     //name = "Strasse_ENERGY_TIME";
     //FillSpectra(family,name,Physics->E[i],Physics->Time[i]);
   }

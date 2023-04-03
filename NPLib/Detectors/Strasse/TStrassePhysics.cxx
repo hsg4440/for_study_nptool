@@ -55,7 +55,7 @@ ClassImp(TStrassePhysics)
     m_NumberOfInnerDetectors = 0;
     m_NumberOfOuterDetectors = 0;
     m_MaximumStripMultiplicityAllowed = 10;
-    m_StripEnergyMatching = 1.00;
+    m_StripEnergyMatching = 0.100;
 
     ////////////////////
     // Inner Detector //
@@ -369,32 +369,37 @@ void TStrassePhysics::BuildPhysicalEvent() {
         int innerT = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());
         int innerL = m_PreTreatedData->GetInner_LE_StripNbr(inner[i].Y());
   
-        double TE = m_PreTreatedData->GetInner_TE_Energy(inner[i].X());
+        double innerTE = m_PreTreatedData->GetInner_TE_Energy(inner[i].X());
+        double innerLE = m_PreTreatedData->GetInner_LE_Energy(inner[i].X());
                // look for outer  
-        double outerE = 0;
+        double outerTE = 0;
+        double outerLE = 0;
         int outerT=0;
         int outerL=0;
         for(unsigned int j=0; j<outer.size(); j++){
           if(m_PreTreatedData->GetInner_TE_DetectorNbr(outer[j].X())==N){
-            outerE =  m_PreTreatedData->GetOuter_TE_Energy(outer[j].X()); 
+            outerTE =  m_PreTreatedData->GetOuter_TE_Energy(outer[j].X()); 
+            outerLE =  m_PreTreatedData->GetOuter_LE_Energy(outer[j].X()); 
             outerT = m_PreTreatedData->GetOuter_TE_StripNbr(outer[j].X());
             outerL = m_PreTreatedData->GetOuter_LE_StripNbr(outer[j].Y());
             }
         }
 
-        if(outerE){
+        if(outerTE){
           EventMultiplicity++;
           DetectorNumber.push_back(N);
           InnerStripT.push_back(innerT);
           InnerStripL.push_back(innerL);
-          DE.push_back(TE);
+          InnerTE.push_back(innerTE);
+          InnerLE.push_back(innerLE);
           InnerPosX.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).x());
           InnerPosY.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).y());
           InnerPosZ.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).z());
 
           OuterStripT.push_back(outerT);
           OuterStripL.push_back(outerL);
-          E.push_back(outerE);
+          OuterTE.push_back(outerTE);
+          OuterLE.push_back(outerLE);
           OuterPosX.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).x());
           OuterPosY.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).y());
           OuterPosZ.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).z());
@@ -604,6 +609,12 @@ void TStrassePhysics::ReadAnalysisConfig() {
         cout << whatToDo << " " << m_E_Threshold << endl;
       }
 
+      else if (whatToDo=="E_FRONTBACK_MATCHING") {
+        AnalysisConfigFile >> DataBuffer;
+        m_StripEnergyMatching = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_StripEnergyMatching << endl;
+      }
+
       else {
         ReadingStatus = false;
       }
@@ -618,12 +629,14 @@ void TStrassePhysics::Clear() {
   EventMultiplicity = 0;
   // DSSD
   DetectorNumber.clear();
-  E.clear();
   InnerStripT.clear();
   InnerStripL.clear();
   OuterStripT.clear();
   OuterStripL.clear();
-  DE.clear();
+  InnerTE.clear();
+  OuterTE.clear();
+  InnerLE.clear();
+  OuterLE.clear();
 
   // Position Information
   InnerPosX.clear();
@@ -632,7 +645,6 @@ void TStrassePhysics::Clear() {
   OuterPosX.clear();
   OuterPosY.clear();
   OuterPosZ.clear();
-
 
 }
 
