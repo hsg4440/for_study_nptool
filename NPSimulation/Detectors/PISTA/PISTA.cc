@@ -60,8 +60,8 @@ namespace PISTA_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 0.2*ns ;
-  const double ResoEnergy = 0.015*MeV ;
-  const double DE_ResoEnergy = 0.015*MeV ;
+  const double DE_ResoEnergy = 0.040*MeV ;
+  const double E_ResoEnergy  = 0.018*MeV ;
 
   // Trapezoid dimension
   const double TrapezoidBaseLarge = 74.1*mm;
@@ -282,7 +282,7 @@ void PISTA::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
-      int StripFront = FirstStageScorer->GetStripLength(i);
+      int StripFront = FirstStageScorer->GetStripWidth(i);
       m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
     }
   }
@@ -294,7 +294,7 @@ void PISTA::ReadSensitive(const G4Event* ){
 
   unsigned int sizeE = SecondStageScorer->GetLengthMult(); 
   for(unsigned int i = 0 ; i < sizeE ; i++){
-    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), E_ResoEnergy);   
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(SecondStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = SecondStageScorer->GetDetectorLength(i);
