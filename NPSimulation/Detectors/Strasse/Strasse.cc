@@ -64,7 +64,7 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Strasse_NS {
   // Energy and time Resolution
-  const double EnergyThreshold = 10 * keV;
+  const double EnergyThreshold = 1 * keV;
   const double ResoEnergy = 0.015 * MeV;
 
   ////////////////////
@@ -139,12 +139,15 @@ using namespace Strasse_NS;
 Strasse::Strasse() {
   InitializeMaterial();
   m_Event = new TStrasseData();
+  m_ReactionRegion = NULL;
   m_InnerScorer1 = 0;
   m_OuterScorer1 = 0;
   m_InnerScorer2 = 0;
   m_OuterScorer2 = 0;
   m_InnerDetector = 0;
   m_OuterDetector = 0;
+  m_Target = 0;
+  m_TargetCell = 0;
   m_Chamber = 0;
   m_Blades = 0;
   m_Stars = 0;
@@ -168,6 +171,9 @@ Strasse::Strasse() {
   GuardRingVisAtt = new G4VisAttributes(G4Colour(0.85, 0.85, 0.85, 0.5));
   // Light Blue
   BladeVisAtt = new G4VisAttributes(G4Colour(1, 0.65, 0.0, 0.7));
+  // Target: Transparent grey for the cell + Transparent blue for the LH2
+  TargetVisAtt = new G4VisAttributes(G4Colour(0.15, 0.85, 0.85, 0.1));
+  TargetCellVisAtt = new G4VisAttributes(G4Colour(0.8, 0.8, 0.8, 0.5));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -194,6 +200,16 @@ void Strasse::AddOuterDetector(double R, double Z, double Phi, double Shift, G4T
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Strasse::AddChamber(double Z) { m_Chamber_Z.push_back(Z); }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Strasse::AddTarget(double R, double L, string MaterialName, string CellMaterialName, double CellThickness,
+                        G4ThreeVector Pos) {
+  m_Target_R.push_back(R);
+  m_Target_L.push_back(L);
+  m_Target_MaterialName.push_back(MaterialName);
+  m_Target_CellMaterialName.push_back(CellMaterialName);
+  m_Target_CellThickness.push_back(CellThickness);
+  m_Target_Pos.push_back(Pos);
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Strasse::BuildInnerDetector() {
   if (!m_InnerDetector) {
@@ -550,6 +566,51 @@ G4LogicalVolume* Strasse::BuildOuterDetector() {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildTarget(int i) {
+  // NOT YET FUNCTIONAL:  multiple target blocks
+  if (i > 0) {
+    cout << "ERROR: Multiple STRASSE target blocks defined in detector file" << endl;
+  }
+
+  G4Material* TargetMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(m_Target_MaterialName[i]);
+  G4Tubs* solidTarget = new G4Tubs("Target",                                        // its name
+                                   0., m_Target_R[i], m_Target_L[i] / 2., 0, 360.); // size
+  m_Target = new G4LogicalVolume(solidTarget,                                       // its solid
+                                 TargetMaterial,                                    // its material
+                                 "Target");                                         // its name
+  m_Target->SetVisAttributes(TargetVisAtt);
+
+  return m_Target;
+}
+
+G4LogicalVolume* Strasse::BuildTargetCell(int i) {
+  // NOT YET FUNCTIONAL:  multiple target blocks
+  if (i > 0) {
+    cout << "ERROR: Multiple STRASSE target blocks defined in detector file" << endl;
+  }
+
+  //  if (!m_TargetCell && !m_Target) {
+  // Start with the full target cell volume
+  G4Material* CellMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(m_Target_CellMaterialName[i]);
+  G4Tubs* CellFull =
+      new G4Tubs("CellFull", // its name
+                 0., m_Target_R[i] + m_Target_CellThickness[i], m_Target_L[i] / 2 + m_Target_CellThickness[i], 0, 360.);
+  // For subtraction of internal part, to only keep the cell
+  G4Tubs* CellInterior = new G4Tubs("CellInterior", // its name
+                                    0., m_Target_R[i], m_Target_L[i] / 2., 0, 360.);
+  // Cell creation
+  G4SubtractionSolid* solidCell = new G4SubtractionSolid("solidCell", CellFull, CellInterior,
+                                                         new G4RotationMatrix(0, 0, 0), G4ThreeVector(0, 0, 0));
+
+  m_TargetCell = new G4LogicalVolume(solidCell,     // its solid
+                                     CellMaterial,  // its material
+                                     "TargetCell"); // name
+  m_TargetCell->SetVisAttributes(TargetCellVisAtt);
+
+  return m_TargetCell;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Strasse::BuildChamber() {
   if (!m_Chamber) {
     // Needed Element
@@ -789,6 +850,32 @@ void Strasse::ReadConfiguration(NPL::InputParser parser) {
     exit(1);
   }
 
+  // Strasse Custom Target Block
+  vector<NPL::InputBlock*> blocks_target = parser.GetAllBlocksWithTokenAndValue("Strasse", "Target");
+  if (NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks_target.size() << " Custom strasse target found " << endl;
+
+  vector<string> targettoken = {"Radius", "Length", "TargetMaterial", "CellMaterial", "CellThickness", "Pos"};
+
+  for (unsigned int i = 0; i < blocks_target.size(); i++) {
+    if (blocks_target[i]->HasTokenList(targettoken)) {
+      if (NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Strasse custom target" << i + 1 << endl;
+
+      double R = blocks_target[i]->GetDouble("Radius", "mm");
+      double L = blocks_target[i]->GetDouble("Length", "mm");
+      string TargetMaterialName = blocks_target[i]->GetString("TargetMaterial");
+      string CellMaterialName = blocks_target[i]->GetString("CellMaterial");
+      double CellThickness = blocks_target[i]->GetDouble("CellThickness", "mm");
+      G4ThreeVector Pos = NPS::ConvertVector(blocks_target[i]->GetTVector3("Pos", "mm"));
+      AddTarget(R, L, TargetMaterialName, CellMaterialName, CellThickness, Pos);
+    }
+    else {
+      cout << "ERROR: check your input file formatting on " << i + 1 << " custom strasse target block " << endl;
+      exit(1);
+    }
+  }
+
   // Inner Barrel
   vector<NPL::InputBlock*> blocks_inner = parser.GetAllBlocksWithTokenAndValue("Strasse", "Inner");
   if (NPOptionManager::getInstance()->GetVerboseLevel())
@@ -916,12 +1003,47 @@ void Strasse::ConstructDetector(G4LogicalVolume* world) {
   }
 
   // Chamber
-
   for (unsigned short i = 0; i < m_Chamber_Z.size(); i++) {
     G4ThreeVector Det_pos = G4ThreeVector(0, 0, -m_Chamber_Z[i]);
     G4RotationMatrix* Rot = new G4RotationMatrix();
 
     new G4PVPlacement(G4Transform3D(*Rot, Det_pos), BuildChamber(), "Strasse", world, false, i + 1);
+  }
+
+  // Active Target volume (LH2 only)
+  G4LogicalVolume* logicTarget[m_Target_R.size()];
+  G4LogicalVolume* logicTargetCell[m_Target_R.size()];
+  for (unsigned short i = 0; i < m_Target_R.size(); i++) {
+    G4ThreeVector Tar_pos = m_Target_Pos[i];
+    cout << "TargetPos:" << m_Target_Pos[i].z() << endl;
+    G4RotationMatrix* Rot = new G4RotationMatrix();
+    logicTarget[i] = BuildTarget(i);
+    new G4PVPlacement(Rot, Tar_pos, logicTarget[i], "Strasse_Target", world, false, i + 1);
+    logicTargetCell[i] = BuildTargetCell(i);
+    new G4PVPlacement(Rot, Tar_pos, logicTargetCell[i], "Strasse_TargetCell", world, false, i + 1);
+
+    if (!m_ReactionRegion) {
+      m_ReactionRegion = new G4Region("NPSimulationProcess");
+    }
+    // Reaction only possible LH2 volume, not in the cell window
+    // so use "m_Target" defined in BuildTarget() and not logicTarget[i]/m_TargetCell
+    m_ReactionRegion->AddRootLogicalVolume(m_Target);
+    m_ReactionRegion->SetUserLimits(new G4UserLimits(1. * mm)); //???
+
+    G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
+    unsigned int size = m_ReactionModel.size();
+    for (unsigned int o = 0; o < size; o++) {
+      mng->RemoveFastSimulationModel(m_ReactionModel[o]);
+    }
+    m_ReactionModel.clear();
+
+    G4VFastSimulationModel* fsm;
+    fsm = new NPS::BeamReaction("BeamReaction", m_ReactionRegion);
+    ((NPS::BeamReaction*)fsm)->SetStepSize(1. * mm);
+    m_ReactionModel.push_back(fsm);
+
+    fsm = new NPS::Decay("Decay", m_ReactionRegion);
+    m_ReactionModel.push_back(fsm);
   }
 
   // G4ThreeVector Det_pos = G4ThreeVector(0,0,+11.5) ;
@@ -933,7 +1055,6 @@ void Strasse::ConstructDetector(G4LogicalVolume* world) {
   if (found_chamber) {
     new G4PVPlacement(Rot, Det_pos, BuildChamberFromCAD(ChamberPath), "Strasse_Chamber", world, false, 0);
   }
-
   if (found_blades) {
     new G4PVPlacement(Rot, Det_pos, BuildBlades(BladesPath), "Strasse_Blades", world, false, 0);
   }
