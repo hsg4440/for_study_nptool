@@ -121,7 +121,7 @@ void Analysis::Init(){
   //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
   m_GladField->SetGladEntrance(0, 0, -1113.5*mm);
   m_GladField->SetGladTurningPoint(0, 0, 0);
-  m_GladField->SetGladTiltAngle(-14.*deg);
+  m_GladField->SetGladTiltAngle(0*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
   m_GladField->SetBin(50);
   m_GladField->SetTimeStep(0.8);

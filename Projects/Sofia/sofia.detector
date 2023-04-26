@@ -6,7 +6,7 @@ Target
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
- Z= -4093 mm
+ Z= -4143 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SofTwim
  R= -1850 mm
@@ -31,6 +31,7 @@ Glad
  POS= 0 0 0 mm
  TILT_ANGLE= 0 deg
  MW3_DISTANCE= 4440 mm
+ MW3_CENTRAL_THETA= -20 deg
  FIELDMAP= GladFieldMap_50mm.dat
  CURRENT= 2185
  STEPSIZE= 50 mm

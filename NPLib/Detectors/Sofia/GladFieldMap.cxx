@@ -187,7 +187,7 @@ TVector3 GladFieldMap::PropagateToMWPC(TVector3 pos, TVector3 dir){
 }
 //////////////////////////////////////////////////////////////////////
 vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store){
-  
+ 
   Pos.RotateY(m_Tilt);
   Dir.RotateY(m_Tilt);
   Dir = Dir.Unit();

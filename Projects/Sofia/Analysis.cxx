@@ -49,7 +49,7 @@ void Analysis::Init(){
   m_GladField = new GladFieldMap();
   m_GladField->SetCurrent(2185);
   m_GladField->SetGladEntrance(0,0,-1113.5*mm);
-  m_GladField->SetGladTiltAngle(-0*deg);
+  m_GladField->SetGladTiltAngle(0*deg);
   m_GladField->LoadMap("GladFieldMap_50mm.dat");
   m_GladField->SetBin(50);
   m_GladField->SetTimeStep(0.8);
@@ -80,7 +80,7 @@ void Analysis::FFAnalysis(){
     int Z_CN = FissionConditions->GetZ_CN();
     double Elab_CN = FissionConditions->GetELab_CN();
     double z_start_beam = InitialConditions->GetIncidentPositionZ();
-    double z_target = -4093;
+    double z_target = -4143;
     TVector3 v1 = TVector3(0,0,z_target-z_start_beam);
     TVector3 v2 = TVector3(0,0,z_start_beam);
     NPL::Particle* beam = new NPL::Particle(Z_CN,A_CN);

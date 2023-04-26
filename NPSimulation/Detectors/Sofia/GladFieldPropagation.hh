@@ -60,6 +60,7 @@ namespace NPS{
       double m_GladTiltAngle;
       TVector3 m_GladEntrance;
       TVector3 m_MW3_POS;
+      double m_MW3_CentralTheta;
       string m_FieldMap;  
       GladFieldMap* m_Map; 
 
@@ -75,6 +76,7 @@ namespace NPS{
       void SetGladTiltAngle(double val){m_GladTiltAngle=val;}
       void SetGladEntrance(double x, double y, double z){m_GladEntrance=TVector3(x,y,z);}
       void Set_MWPC3_Position(double x, double y, double z){m_MW3_POS=TVector3(x,y,z);}
+      void Set_MWPC3_CentralTheta(double val){m_MW3_CentralTheta=val;}
   };
 }
 

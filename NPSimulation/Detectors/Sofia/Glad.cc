@@ -178,7 +178,8 @@ void Glad::ReadConfiguration(NPL::InputParser parser){
       m_Current = blocks[i]->GetDouble("CURRENT","A");
       m_StepSize = blocks[i]->GetDouble("STEPSIZE","mm");
       m_MW3_R = blocks[i]->GetDouble("MW3_DISTANCE","mm");
-
+      m_MW3_CentralTheta = blocks[i]->GetDouble("MW3_CENTRAL_THETA","deg");
+      
       AddMagnet(Pos,fieldmap);
     }
     else{
@@ -198,15 +199,16 @@ void Glad::ConstructDetector(G4LogicalVolume* world){
   //G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
   //G4double wY = m_R * sin(m_Theta) * sin(m_Phi);
   //G4double wZ = m_R * cos(m_Theta);
-  G4double wX = m_X - 1500*sin(m_GLAD_TiltAngle);
+  G4double wX = m_X;// - 1500*sin(m_GLAD_TiltAngle);
   G4double wY = m_Y;
-  G4double wZ = m_Z - 1500*(1-cos(m_GLAD_TiltAngle));
+  G4double wZ = m_Z;// - 1500*(1-cos(m_GLAD_TiltAngle));
   G4ThreeVector Mag_pos = G4ThreeVector(wX,wY,wZ);
 
   G4ThreeVector u (cos(m_GLAD_TiltAngle), 0, -sin(m_GLAD_TiltAngle));
   G4ThreeVector v (0,1,0);
   G4ThreeVector w (sin(m_GLAD_TiltAngle), 0, cos(m_GLAD_TiltAngle));
-  G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  //G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
 
   new G4PVPlacement(Rot, Mag_pos,
       BuildMagnet(), "Glad", world, false, 0);
@@ -251,6 +253,7 @@ void Glad::SetPropagationRegion()
   ((NPS::GladFieldPropagation*) fsm)->SetStepSize(m_StepSize);
   ((NPS::GladFieldPropagation*) fsm)->SetFieldMap(m_FieldMapFile);
   ((NPS::GladFieldPropagation*) fsm)->Set_MWPC3_Position(m_MW3_POS.X(),m_MW3_POS.Y(),m_MW3_POS.Z());
+  ((NPS::GladFieldPropagation*) fsm)->Set_MWPC3_CentralTheta(m_MW3_CentralTheta);
   /*if(m_Method == NPS::RungeKutta){
     double r_max = sqrt( 
     Glad_NS::GLAD_Width * Glad_NS::GLAD_Width /4. + 
@@ -280,10 +283,10 @@ void Glad::ReadSensitive(const G4Event* ){
 
   CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_GladScorer->GetPrimitive(0);
 
-  unsigned int size = Scorer->GetMult(); 
+  /*unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     double energy = Scorer->GetEnergy(i);
-  }
+  }*/
   Scorer->clear();
 
 }

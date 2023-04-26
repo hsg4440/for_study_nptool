@@ -95,6 +95,7 @@ void NPS::GladFieldPropagation::DoIt(const G4FastTrack& fastTrack, G4FastStep& f
     m_Map->SetGladEntrance(m_GladEntrance.X(), m_GladEntrance.Y(), m_GladEntrance.Z());
     m_Map->SetGladTiltAngle(m_GladTiltAngle);
     m_Map->Set_MWPC3_Position(m_MW3_POS.X(), m_MW3_POS.Y(), m_MW3_POS.Z());
+    m_Map->SetCentralTheta(m_MW3_CentralTheta);
     m_Map->LoadMap(m_FieldMap);
     m_Initialized = true;
   }

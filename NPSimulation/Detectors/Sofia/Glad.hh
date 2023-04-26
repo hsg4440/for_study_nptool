@@ -120,6 +120,7 @@ class Glad : public NPS::VDetector{
     int m_StepSize;
     string m_FieldMapFile;
     TVector3 m_MW3_POS;
+    double m_MW3_CentralTheta;
     double m_MW3_R;
 
     // Visualisation Attribute
