@@ -36,18 +36,18 @@ void AddPlacedGammas(TH1F* hist, double ymax){
 
 /* MAIN FUNCTION */
 
-void Plots_47Kdd(){
+void Plots_47Kpp(){
 
-  LoadChain47Kdd();
+  LoadChain47Kpp();
   gStyle->SetOptStat("nemMrRi");
 
   tCentre = 2750;  tRange = 200;
   timegate = "abs(T_MUGAST_VAMOS-" + to_string(tCentre) + ")<" + to_string(tRange);
   det_gate = "MUST2.TelescopeNumber==5";
-  reactionName = "47K(d,d)";
+  reactionName = "47K(p,p)";
   
   cout << "==============================================" << endl;
-  cout << "=============== (d,d) reaction ===============" << endl;
+  cout << "=============== (p,p) reaction ===============" << endl;
   cout << "==============================================" << endl;
 
 }

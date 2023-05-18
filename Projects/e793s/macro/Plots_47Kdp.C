@@ -1,19 +1,22 @@
+string reactionName; /* defined by choice of dp or dt */
 #include "DefineColours.h"
 #include "GausFit.h"
 #include "KnownPeakFitter.h"
 #include "DrawPlots.h"
 
-#include "CS2.h"
+#include "CS2_master.h"
+//#include "CS2.h"
 //#include "CS2_MGX.h"
 #include "ThreeBodyBreakup.h"
 #include "ThreeBodyBreakup_FitPhaseSpace.h"
-#include "20Oct22_CompareYield.h"
+//#include "20Oct22_CompareYield.h"
 
 
 void AddGammaLines(TH1F* hist, double particle, double ymax){
+	
   string base = "sub ";
 
-  for(int i=1; i<means.size();i++){
+  for(int i=0; i<means.size();i++){
     string name = base + to_string(means.at(i));
     TLine *line = new TLine(particle-means.at(i), 0.0, particle-means.at(i), ymax);
     line->SetLineColor(kBlack); line->SetLineStyle(kDotted);
@@ -97,18 +100,127 @@ void CompareCountsInThetaLab(){
 
 }
 
+void CS_Diagnosis(){
+  auto majorCanv = new TCanvas("CompareCanv","CompareCanv",1500,1500);
+  majorCanv->Divide(3,3);
+  canclone(majorCanv, 1, "c_peakFits_110_112");
+  canclone(majorCanv, 2, "c_peakFits_115_118"); 
+  canclone(majorCanv, 3, "c_peakFits_120_122"); 
+  canclone(majorCanv, 4, "c_peakFits_125_128"); 
+  canclone(majorCanv, 5, "c_peakFits_130_132"); 
+  canclone(majorCanv, 6, "c_peakFits_135_138"); 
+  canclone(majorCanv, 7, "c_peakFits_140_142"); 
+  canclone(majorCanv, 8, "c_peakFits_145_148"); 
+  canclone(majorCanv, 9, "c_peakFits_150_152"); 
+}
+
+void CS(){
+// Overload function //
+  cout << "- CS(stateE, stateSp, orb_l, orb_j, binEx, options) "      << endl;
+  cout << "|-----------------| GOOD |-----------------|"     << endl;
+  cout << "---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5, 0.05, \"\") "   << endl;    
+  cout << "---- 0.279, NOT POPULATED "                      << endl;
+  cout << "---- 0.728, WEAKLY POPULATED "                   << endl;
+  cout << "---- 0.967, p1/2 = CS(0.967, 0, 1, 0.5, 0.05, \"\") "   << endl;
+  cout << "---- 1.409, p3/2 = CS(1.409, 1, 1, 1.5, 0.05, \"\") "   << endl;
+  cout << "---- 1.978, p3/2 = CS(1.978, 1, 1, 0.5, 0.05, \"\") "   << endl;
+  cout << "---- 2.407, p3/2 = CS(2.407, 0, 1, 0.5, 0.05, \"\") "   << endl;
+  cout << "---- 2.908, p3/2 = CS(2.908, 2, 1, 1.5, 0.05, \"mixed\") "   << endl;
+  cout << "---- 2.908, f5/2 = CS(2.908, 2, 3, 2.5, 0.05, \"mixed\") "   << endl;
+  cout << "---- 3.254, f5/2 = CS(3.254, 3, 3, 2.5, 0.05, \"\") "   << endl;
+  cout << "---- 3.601, f5/2 = CS(3.601, 3, 3, 2.5, 0.05, \"\") "   << endl;
+  cout << endl;
+  cout << "---- 3.792 (x-?) "                                << endl;
+  cout << "       FIT TOGETHER = CS(3.830, 2, 3, 2.5, 0.05, \"\")" << endl;
+  cout << "---- 3.868 (2-?) "                                << endl;
+  cout << endl;
+  cout << "|----------------| UNSURE |----------------|"     << endl;
+  cout << "---- 4.061, f5/2 = CS(4.061, 3, 3, 2.5, 0.05, \"\") "   << endl;
+  cout << "---- 4.387, f5/2 = CS(4.387, 3, 3, 2.5, 0.05, \"\") "   << endl;
+}
+
+void CompareGammas_ParticleRegions_48K(double binwidth, double minEx, double maxEx, double stepEx){
+  
+  vector<TH1F*>  Eg;
+  vector<string> Names;
+  int numHists = (int) ((maxEx-minEx)/stepEx);
+  cout << numHists << endl;
+
+  string draw = "AddBack_EDC>>EgTemp(" + to_string((int) (5./binwidth)) + ",0,5)";
+  cout << draw << endl;
+
+  auto cTEMP = new TCanvas("cTEMP","cTEMP",500,500);
+  for(int i=0; i<numHists; i++){
+    cout << "====================================" << endl;
+    cout << i << endl;
+    double centre = minEx + (stepEx*(double)i) + (0.5*stepEx);
+
+    string gate = "Mugast.TelescopeNumber>0 && abs(T_MUGAST_VAMOS-2700)<400 && Ex@.size()==1 && abs(Ex-" 
+  	      + to_string(centre) 
+  	      + ")<" 
+  	      + to_string(stepEx/2.0);
+ 
+    string nameTemp = "Ex = " 
+	            + to_string(centre-(0.5*stepEx)) 
+		    + " to "
+	            + to_string(centre+(0.5*stepEx));
+
+    string histTemp = "Ex" 
+	            + to_string(i);
+//	            + to_string((int)centre-(0.5*stepEx)) 
+//		    + "to"
+//	            + to_string(centre+(0.5*stepEx));
+
+    cout << gate << endl;
+
+    chain->Draw(draw.c_str(),gate.c_str(),"");
+    auto EgTemp = (TH1F*) gDirectory->Get("EgTemp");
+    EgTemp->SetLineColor(i+1);
+    EgTemp->SetNameTitle(histTemp.c_str(),histTemp.c_str());
+    Eg.push_back(EgTemp);
+    Names.push_back(nameTemp);
+  
+  }
+  delete cTEMP;
+
+  cout << "out" << endl;
+ 
+
+  auto canv = new TCanvas("cCompareGammas","cCompareGammas",1000,1000);
+  Eg[0]->Draw();
+  for (int i=1; i<numHists; i++){
+    Eg[i]->Draw("same");
+  }
+
+  cout << "out2" << endl;
+
+  auto legend = new TLegend(0.1,0.7,0.48,0.9);
+  for (int i=0; i<numHists; i++){
+    cout << "----------" << endl;
+    cout << i << endl;
+    legend->AddEntry(Eg[i],Names[i].c_str(),"f");
+  }
+  legend->Draw("same");
+
+}
+
+
 /* MAIN FUNCTION */
 
 void Plots_47Kdp(){
 
+cout << "test" << endl;
+
   LoadChain47Kdp();
   gStyle->SetOptStat("nemMrRi");
 
+cout << "test" << endl;
   tCentre = 2700;  tRange = 400;
   timegate = "abs(T_MUGAST_VAMOS-" + to_string(tCentre) + ")<" + to_string(tRange);
   det_gate = "Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8";
   reactionName = "47K(d,p)";
 
+cout << "test" << endl;
   cout << "==============================================" << endl;
   cout << "=============== (d,p) reaction ===============" << endl;
   cout << "==============================================" << endl;
