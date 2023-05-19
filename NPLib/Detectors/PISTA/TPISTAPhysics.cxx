@@ -56,21 +56,79 @@ ClassImp(TPISTAPhysics)
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TPISTAPhysics::AddDetector(TVector3){
-  // In That simple case nothing is done
-  // Typically for more complex detector one would calculate the relevant 
-  // positions (stripped silicon) or angles (gamma array)
+void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
+  // Front Face 
+  // A------------------------B
+  //  *----------------------*                      
+  //   *--------------------*
+  //    *------------------*
+  //     *----------------*
+  //      *--------------*
+  //       *------------*
+  //        D----------C
+
+  double Height = 61.7; // mm
+  double LongBase = 78.1; // mm
+  double NumberOfStripsX = 57;
+  double NumberOfStripsY = 91;
+  double StripPitchY = Height/NumberOfStripsY; // mm
+  double StripPitchX = LongBase/NumberOfStripsX; // mm
+
   m_NumberOfDetectors++;
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
+  m_D.push_back(D);
+
+  // Vector u on telescope face paralelle to Y strips
+  TVector3 u = B - A;
+  u = u.Unit();
+  // Vector v on telescope face paralelle to X strips
+  TVector3 v = (C+D)*0.5 - (A+B)*0.5;
+  v = v.Unit();
+
+  vector<double> lineX;
+  vector<double> lineY;
+  vector<double> lineZ;
+
+  vector<vector<double>> OneDetectorStripPositionX;
+  vector<vector<double>> OneDetectorStripPositionY;
+  vector<vector<double>> OneDetectorStripPositionZ;
+
+  TVector3 Strip_1_1;
+  Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
+
+  TVector3 StripPos;
+  for(int i=0; i<NumberOfStripsX; i++){
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+    for(int j=0; j<NumberOfStripsY; j++){
+      StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
+      lineX.push_back(StripPos.X());
+      lineY.push_back(StripPos.Y());
+      lineZ.push_back(StripPos.Z());
+    }
+
+    OneDetectorStripPositionX.push_back(lineX);
+    OneDetectorStripPositionY.push_back(lineY);
+    OneDetectorStripPositionZ.push_back(lineZ);
+  }
+
+  m_StripPositionX.push_back(OneDetectorStripPositionX);
+  m_StripPositionY.push_back(OneDetectorStripPositionY);
+  m_StripPositionZ.push_back(OneDetectorStripPositionZ);
+
 } 
 
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
   m_NumberOfDetectors++;
 
-  double Height = 61.8; // mm
+  double Height = 61.7; // mm
   double Base = 78.1; // mm
-  double NumberOfStripsX = 62;
-  double NumberOfStripsY = 97;
+  double NumberOfStripsX = 57;
+  double NumberOfStripsY = 91;
   
   double StripPitchHeight = Height / NumberOfStripsY; // mm
   double StripPitchBase = Base / NumberOfStripsX; // mm
@@ -151,23 +209,32 @@ TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TPISTAPhysics::GetDetectorNormal(const int i){
-  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1))
+  int det = DetectorNumber[i];
+  // Vector u on telescope face paralelle to Y strips
+  TVector3 u = m_B[det-1] - m_A[det-1];
+  u = u.Unit();
+  // Vector v on telescope face paralelle to X strips
+  TVector3 v = (m_C[det-1] + m_D[det-1])*0.5 - (m_A[det-1] + m_B[det-1])*0.5;
+  v = v.Unit();
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1));
 
-  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],62,97),
-      GetStripPositionY(DetectorNumber[i],62,97),
-      GetStripPositionZ(DetectorNumber[i],62,97))
+  /*TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1))
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1));
+    -TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1));
 
-  TVector3 Normal = U.Cross(V);
+  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],57,91),
+      GetStripPositionY(DetectorNumber[i],57,91),
+      GetStripPositionZ(DetectorNumber[i],57,91))
+
+    -TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1));*/
+
+  TVector3 Normal = u.Cross(v);
 
   return (Normal.Unit());
 }
@@ -211,11 +278,10 @@ void TPISTAPhysics::BuildPhysicalEvent() {
           DE.push_back(DE_Energy);
           E.push_back(E_Energy);
           Time.push_back(E_Time);
-
+          
           PosX.push_back(GetPositionOfInteraction(i).x());
           PosY.push_back(GetPositionOfInteraction(i).y());
           PosZ.push_back(GetPositionOfInteraction(i).z());
-
         }
       }
     }
@@ -388,7 +454,7 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS"};
+  vector<string> cart = {"POS_A","POS_B","POS_C","POS_D"};
   vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
@@ -396,9 +462,12 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  PISTA " << i+1 <<  endl;
 
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
+      TVector3 A = blocks[i]->GetTVector3("POS_A","mm");
+      TVector3 B = blocks[i]->GetTVector3("POS_B","mm");
+      TVector3 C = blocks[i]->GetTVector3("POS_C","mm");
+      TVector3 D = blocks[i]->GetTVector3("POS_D","mm");
 
-      AddDetector(Pos);
+      AddDetector(A,B,C,D);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())

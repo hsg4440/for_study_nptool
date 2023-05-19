@@ -73,7 +73,7 @@ namespace PISTA_NS{
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
-  const double DistanceBetweenSi = 5*mm;
+  const double DistanceBetweenSi = 7*mm;
   const double FirstStageNbrOfStrips = 91;
   const double SecondStageNbrOfStrips = 57;
 }
@@ -92,19 +92,33 @@ PISTA::PISTA(){
 PISTA::~PISTA(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PISTA::AddDetector(G4ThreeVector POS){
-  // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_R.push_back(POS.mag());
-  m_Theta.push_back(POS.theta());
-  m_Phi.push_back(POS.phi());
+void PISTA::AddDetector(G4ThreeVector A, G4ThreeVector B, G4ThreeVector C, G4ThreeVector D){
+  m_DefinitionType.push_back(true);
+  
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
+  m_D.push_back(D);
+
+  m_R.push_back(0);
+  m_Theta.push_back(0);
+  m_Phi.push_back(0);
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PISTA::AddDetector(double  R, double  Theta, double  Phi){
+  m_DefinitionType.push_back(false);
+
   m_R.push_back(R);
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
+
+  G4ThreeVector empty = G4ThreeVector(0,0,0);
+  m_A.push_back(empty);
+  m_B.push_back(empty);
+  m_C.push_back(empty);
+  m_D.push_back(empty);
 }
 
 
@@ -126,7 +140,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicTrapezoid->SetVisAttributes(TrapezoidVisAtt);
 
     // First stage silicon detector
-    G4ThreeVector positionFirstStage = G4ThreeVector(0,0,-4*mm);
+    G4ThreeVector positionFirstStage = G4ThreeVector(0,0,-0.5*TrapezoidLength + 0.5*FirstStageThickness);
 
     G4Trap* solidFirstStage = new G4Trap("solidFirstSatge",
         FirstStageThickness*0.5, 0*deg, 0*deg,
@@ -153,7 +167,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
 
     //////
     // Second stage silicon detector
-    G4ThreeVector positionSecondStage = G4ThreeVector(0,0,-0.5*TrapezoidLength+DistanceBetweenSi);
+    G4ThreeVector positionSecondStage = G4ThreeVector(0,0,-0.5*TrapezoidLength+DistanceBetweenSi+0.5*SecondStageThickness);
 
     G4Trap* solidSecondStage = new G4Trap("solidSecondSatge",
         SecondStageThickness*0.5, 0*deg, 0*deg,
@@ -195,7 +209,7 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS"};
+  vector<string> cart = {"POS_A", "POS_B", "POS_C", "POS_D"};
   vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
@@ -203,8 +217,11 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  PISTA " << i+1 <<  endl;
 
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      AddDetector(Pos);
+      G4ThreeVector A = NPS::ConvertVector(blocks[i]->GetTVector3("POS_A","mm"));
+      G4ThreeVector B = NPS::ConvertVector(blocks[i]->GetTVector3("POS_B","mm"));
+      G4ThreeVector C = NPS::ConvertVector(blocks[i]->GetTVector3("POS_C","mm"));
+      G4ThreeVector D = NPS::ConvertVector(blocks[i]->GetTVector3("POS_D","mm"));
+      AddDetector(A,B,C,D);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -215,7 +232,7 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
       AddDetector(R,Theta,Phi);
     }
     else{
-      cout << "ERROR: check your input file formatting " << endl;
+      cout << "NPS ERROR: check your input file formatting " << endl;
       exit(1);
     }
   }
@@ -227,31 +244,60 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void PISTA::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
+  int NumberOfTelescopes = m_DefinitionType.size();
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*PISTA_NS::TrapezoidLength*0.5;
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
-    G4double kk = -sin(m_Theta[i]);
-    G4ThreeVector Y(ii,jj,kk);
-    G4ThreeVector w = Det_pos.unit();
-    G4ThreeVector u = w.cross(Y);
-    G4ThreeVector v = w.cross(u);
-    v = v.unit();
-    u = u.unit();
+  G4RotationMatrix* Rot = NULL;    
+  G4ThreeVector Det_pos = G4ThreeVector(0,0,0);
+  G4ThreeVector u = G4ThreeVector(0,0,0);
+  G4ThreeVector v = G4ThreeVector(0,0,0);
+  G4ThreeVector w = G4ThreeVector(0,0,0);
+  G4ThreeVector center = G4ThreeVector(0,0,0);
 
-    G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  for (int i = 0 ; i < NumberOfTelescopes ; i++) {
+    if(m_DefinitionType[i]){
+      // (u,v,w) unitary vector associated to telescope referencial
+      // (u,v) // to silicon plan
+      // w perpendicular to (u,v) plan
+      u = m_B[i] - m_A[i];
+      u = u.unit();
 
+      //v = m_D[i] - m_A[i];
+      v = (m_C[i] + m_D[i])/2 - (m_A[i] + m_B[i])/2;
+      v = v.unit();
+
+      w = u.cross(v);
+      w = w.unit();
+
+      center = (m_A[i] + m_B[i] + m_C[i] + m_D[i])/4;
+    
+      Rot = new G4RotationMatrix(u,v,w);
+      Det_pos = w * TrapezoidLength * 0.5 + center; 
+    }
+    else{
+      G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
+      G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
+      //G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
+      G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
+      Det_pos = G4ThreeVector(wX, wY, wZ) ;
+      // So the face of the detector is at R instead of the middle
+      Det_pos+=Det_pos.unit()*PISTA_NS::TrapezoidLength*0.5;
+      // Building Detector reference frame
+      G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
+      G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
+      G4double kk = -sin(m_Theta[i]);
+      G4ThreeVector Y(ii,jj,kk);
+      w = Det_pos.unit();
+      u = w.cross(Y);
+      v = w.cross(u);
+      v = v.unit();
+      u = u.unit();
+
+      Rot = new G4RotationMatrix(u,v,w);
+
+    }
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
         BuildTrapezoidDetector(),
         "PISTA",world,false,i+1);
-
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

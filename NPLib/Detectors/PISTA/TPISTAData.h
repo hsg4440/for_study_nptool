@@ -115,13 +115,13 @@ class TPISTAData : public TObject {
       {return fPISTA_DE_DetectorNbr[i];}//!
     inline UShort_t GetPISTA_DE_StripNbr(const unsigned int &i) const 
       {return fPISTA_DE_StripNbr[i];}//!
-    inline UShort_t GetPISTA_DE_StripEnergy(const unsigned int &i) const 
+    inline Double_t GetPISTA_DE_StripEnergy(const unsigned int &i) const 
       {return fPISTA_DE_StripEnergy[i];}//!      
-    inline UShort_t GetPISTA_DE_BackEnergy(const unsigned int &i) const 
+    inline Double_t GetPISTA_DE_BackEnergy(const unsigned int &i) const 
       {return fPISTA_DE_BackEnergy[i];}//!
-    inline UShort_t GetPISTA_DE_StripTime(const unsigned int &i) const 
+    inline Double_t GetPISTA_DE_StripTime(const unsigned int &i) const 
       {return fPISTA_DE_StripTime[i];}//!      
-    inline UShort_t GetPISTA_DE_BackTime(const unsigned int &i) const 
+    inline Double_t GetPISTA_DE_BackTime(const unsigned int &i) const 
       {return fPISTA_DE_BackTime[i];}//!
          
     //////
@@ -132,13 +132,13 @@ class TPISTAData : public TObject {
       {return fPISTA_E_DetectorNbr[i];}//!
     inline UShort_t GetPISTA_E_StripNbr(const unsigned int &i) const 
       {return fPISTA_E_StripNbr[i];}//!
-    inline UShort_t GetPISTA_E_StripEnergy(const unsigned int &i) const 
+    inline Double_t GetPISTA_E_StripEnergy(const unsigned int &i) const 
       {return fPISTA_E_StripEnergy[i];}//!      
-    inline UShort_t GetPISTA_E_BackEnergy(const unsigned int &i) const 
+    inline Double_t GetPISTA_E_BackEnergy(const unsigned int &i) const 
       {return fPISTA_E_BackEnergy[i];}//!
-    inline UShort_t GetPISTA_E_StripTime(const unsigned int &i) const 
+    inline Double_t GetPISTA_E_StripTime(const unsigned int &i) const 
       {return fPISTA_E_StripTime[i];}//!      
-    inline UShort_t GetPISTA_E_BackTime(const unsigned int &i) const 
+    inline Double_t GetPISTA_E_BackTime(const unsigned int &i) const 
       {return fPISTA_E_BackTime[i];}//!
  
   //////////////////////////////////////////////////////////////

@@ -49,6 +49,12 @@ class Analysis: public NPL::VAnalysis{
     double OriginalEx;
     double BeamEnergy;
     double R;
+    double Xpista;
+    double Ypista;
+    double Zpista;
+    double Xcalc;
+    double Ycalc;
+    double Zcalc;
     double XTarget;
     double YTarget;
     double ZTarget;

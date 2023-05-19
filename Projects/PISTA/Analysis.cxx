@@ -58,17 +58,17 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  OriginalThetaLab = ReactionConditions->GetTheta(0);
+  /*OriginalThetaLab = ReactionConditions->GetTheta(0);
   OriginalElab = ReactionConditions->GetKineticEnergy(0);
   OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
   OriginalEx = ReactionConditions->GetExcitation4();
-
+*/
   int mult = InteractionCoordinates->GetDetectedMultiplicity();
-  if(mult>0){
+  if(mult==2){
     for(int i=0; i<mult; i++){
-      double Xpista = InteractionCoordinates->GetDetectedPositionX(i);
-      double Ypista = InteractionCoordinates->GetDetectedPositionY(i);
-      double Zpista = InteractionCoordinates->GetDetectedPositionZ(i);
+      Xpista = InteractionCoordinates->GetDetectedPositionX(i);
+      Ypista = InteractionCoordinates->GetDetectedPositionY(i);
+      Zpista = InteractionCoordinates->GetDetectedPositionZ(i);
       R = sqrt(Xpista*Xpista + Ypista*Ypista + Zpista*Zpista);
     }
   }
@@ -86,14 +86,20 @@ void Analysis::TreatEvent(){
   BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer->SetBeamEnergy(BeamEnergy);
   //Transfer->SetBeamEnergy(OriginalBeamEnergy);
+  
+  //cout << PISTA->EventMultiplicity << endl;
   if(PISTA->EventMultiplicity==1){
     for(unsigned int i = 0; i<PISTA->EventMultiplicity; i++){
       double Energy = PISTA->DE[i] + PISTA->E[i];
       DeltaE = PISTA->DE[i];
       Eres = PISTA->E[i];
-
+      
       TVector3 HitDirection = PISTA->GetPositionOfInteraction(i)-PositionOnTarget;
+      Xcalc = PISTA->GetPositionOfInteraction(i).X();
+      Ycalc = PISTA->GetPositionOfInteraction(i).Y();
+      Zcalc = PISTA->GetPositionOfInteraction(i).Z();
       //ThetaLab = HitDirection.Angle(BeamDirection);
+      
       ThetaLab = HitDirection.Angle(TVector3(0,0,1));
       ThetaDetectorSurface = HitDirection.Angle(-PISTA->GetDetectorNormal(i));
       
@@ -130,6 +136,12 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("R",&R,"R/D");
+  RootOutput::getInstance()->GetTree()->Branch("Xpista",&Xpista,"Xpista/D");
+  RootOutput::getInstance()->GetTree()->Branch("Ypista",&Ypista,"Ypista/D");
+  RootOutput::getInstance()->GetTree()->Branch("Zpista",&Zpista,"Zpista/D");
+  RootOutput::getInstance()->GetTree()->Branch("Xcalc",&Xcalc,"Xcalc/D");
+  RootOutput::getInstance()->GetTree()->Branch("Ycalc",&Ycalc,"Ycalc/D");
+  RootOutput::getInstance()->GetTree()->Branch("Zcalc",&Zcalc,"Zcalc/D");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +176,12 @@ void Analysis::ReInitValue(){
   ZTarget = -1000;
   OriginalThetaLab = -1000;
   R = -1000;
+  Xpista = -1000;
+  Ypista = -1000;
+  Zpista = -1000;
+  Xcalc = -1000;
+  Ycalc = -1000;
+  Zcalc = -1000;
   PID = -1000;
 }
 

@@ -85,7 +85,7 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     void ReadConfiguration(NPL::InputParser);
 
     /// A usefull method to bundle all operation to add a detector
-    void AddDetector(TVector3 POS); 
+    void AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D); 
     void AddDetector(double R, double Theta, double Phi); 
  
     // add parameters to the CalibrationManger
@@ -185,7 +185,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
   // parameters used in the analysis
   private:
     int m_NumberOfDetectors; //!
-
+    vector<TVector3> m_A; //!
+    vector<TVector3> m_B; //!
+    vector<TVector3> m_C; //!
+    vector<TVector3> m_D; //!
     vector<vector<vector<double>>> m_StripPositionX; //!
     vector<vector<vector<double>>> m_StripPositionY; //!
     vector<vector<vector<double>>> m_StripPositionZ; //!
