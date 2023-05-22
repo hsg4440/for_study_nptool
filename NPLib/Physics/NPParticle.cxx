@@ -258,14 +258,16 @@ Particle::Particle(int Z, int A)
 {
   //----------- Constructor Using nubtab12.asc by Z and A----------
 
-	if(Z==0 && A==4){
-		SetUp("4n");
-		return;
-	}
+  fExcitationEnergy = 0;
+
+  if(Z==0 && A==4){
+    SetUp("4n");
+    return;
+  }
   // open the file to read and check if it is open
   ifstream inFile;
   string Path = getenv("NPTOOL") ;
-  string FileName = Path + "/NPLib/Physics/nubtab12.asc";
+  string FileName = Path + "/NPLib/Physics/nubtab16.asc";
   inFile.open(FileName.c_str());
 
   // reading the file
@@ -444,7 +446,7 @@ void Particle::Extract(string line){
     fLifeTime*=3600*24*365.25*1e12;
     fLifeTimeErr*=3600*24*365.25*1e12;
   }
-  
+
   // spin and parity
   string s_spinparity = line.substr(79,14);
   fSpinParity = s_spinparity.data();
@@ -493,14 +495,14 @@ void Particle::Print() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void Particle::GetParticleName() {
-    fParticleName.assign(fName);
+  fParticleName.assign(fName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void Particle::EnergyToBrho(double Q){
   if(Q==-1000)
-     Q=GetZ();
- 
+    Q=GetZ();
+
   EnergyToBeta();
   BetaToGamma();
   //fBrho = sqrt(pow(fKineticEnergy,2) + 2*fKineticEnergy*Mass()) * 1e6 * e_SI / (c_light*1e6) / (Q * e_SI);
@@ -522,7 +524,7 @@ void Particle::TofToEnergy() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void Particle::BrhoToEnergy(double Q ){
- if(Q==-1000)
+  if(Q==-1000)
     Q=GetZ();
 
   fKineticEnergy =  sqrt( pow((fBrho*(c_light*1e6)*Q*e_SI)/(1e6*e_SI),2) + pow(Mass(),2) ) - Mass();
@@ -559,60 +561,60 @@ double Particle::DopplerCorrection(double EnergyLabGamma, double ThetaLabGamma){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
-    SetKineticEnergy(EnergyLab);
-    double EnergyCM;
-    double ImpulsionLab;
-    double ImpulsionLabX;
-    double ImpulsionLabY;
-    double ImpulsionLabZ;
-    TVector3 VImpulsionLAB;
-    TLorentzVector LVEnergyImpulsionLAB;
-    TLorentzVector LVEnergyImpulsionCM;
-    
-    ImpulsionLab    = sqrt(EnergyLab*EnergyLab + 2*EnergyLab*Mass());
-    ImpulsionLabX   = ImpulsionLab*sin(ThetaLab)*cos(PhiLab);
-    ImpulsionLabY   = ImpulsionLab*sin(ThetaLab)*sin(PhiLab);
-    ImpulsionLabZ   = ImpulsionLab*cos(ThetaLab);
-    
-    VImpulsionLAB           = TVector3(ImpulsionLabX, ImpulsionLabY, ImpulsionLabZ);
-    LVEnergyImpulsionLAB    = TLorentzVector(VImpulsionLAB,Mass()+EnergyLab);
-    
-    LVEnergyImpulsionCM     = LVEnergyImpulsionLAB;
-    LVEnergyImpulsionCM.Boost(0,0,-relativisticboost);
-    
-    EnergyCM = LVEnergyImpulsionCM.Energy() - Mass();
-    
-    return EnergyCM;
+  SetKineticEnergy(EnergyLab);
+  double EnergyCM;
+  double ImpulsionLab;
+  double ImpulsionLabX;
+  double ImpulsionLabY;
+  double ImpulsionLabZ;
+  TVector3 VImpulsionLAB;
+  TLorentzVector LVEnergyImpulsionLAB;
+  TLorentzVector LVEnergyImpulsionCM;
+
+  ImpulsionLab    = sqrt(EnergyLab*EnergyLab + 2*EnergyLab*Mass());
+  ImpulsionLabX   = ImpulsionLab*sin(ThetaLab)*cos(PhiLab);
+  ImpulsionLabY   = ImpulsionLab*sin(ThetaLab)*sin(PhiLab);
+  ImpulsionLabZ   = ImpulsionLab*cos(ThetaLab);
+
+  VImpulsionLAB           = TVector3(ImpulsionLabX, ImpulsionLabY, ImpulsionLabZ);
+  LVEnergyImpulsionLAB    = TLorentzVector(VImpulsionLAB,Mass()+EnergyLab);
+
+  LVEnergyImpulsionCM     = LVEnergyImpulsionLAB;
+  LVEnergyImpulsionCM.Boost(0,0,-relativisticboost);
+
+  EnergyCM = LVEnergyImpulsionCM.Energy() - Mass();
+
+  return EnergyCM;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetThetaCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
-    SetKineticEnergy(EnergyLab);
-    double EnergyCM;
-    double ThetaCM;
-    double ImpulsionLab;
-    double ImpulsionLabX;
-    double ImpulsionLabY;
-    double ImpulsionLabZ;
-    TVector3 VImpulsionLAB;
-    TLorentzVector LVEnergyImpulsionLAB;
-    TLorentzVector LVEnergyImpulsionCM;
-    
-    ImpulsionLab    = sqrt(EnergyLab*EnergyLab + 2*EnergyLab*Mass());
-    ImpulsionLabX   = ImpulsionLab*sin(ThetaLab)*cos(PhiLab);
-    ImpulsionLabY   = ImpulsionLab*sin(ThetaLab)*sin(PhiLab);
-    ImpulsionLabZ   = ImpulsionLab*cos(ThetaLab);
-    
-    VImpulsionLAB           = TVector3(ImpulsionLabX, ImpulsionLabY, ImpulsionLabZ);
-    LVEnergyImpulsionLAB    = TLorentzVector(VImpulsionLAB,Mass()+EnergyLab);
-    
-    LVEnergyImpulsionCM     = LVEnergyImpulsionLAB;
-    LVEnergyImpulsionCM.Boost(0,0,-relativisticboost);
-    
-    EnergyCM = LVEnergyImpulsionCM.Energy() - Mass();
-    ThetaCM = LVEnergyImpulsionCM.Theta();
-    
-    return ThetaCM;
+  SetKineticEnergy(EnergyLab);
+  double EnergyCM;
+  double ThetaCM;
+  double ImpulsionLab;
+  double ImpulsionLabX;
+  double ImpulsionLabY;
+  double ImpulsionLabZ;
+  TVector3 VImpulsionLAB;
+  TLorentzVector LVEnergyImpulsionLAB;
+  TLorentzVector LVEnergyImpulsionCM;
+
+  ImpulsionLab    = sqrt(EnergyLab*EnergyLab + 2*EnergyLab*Mass());
+  ImpulsionLabX   = ImpulsionLab*sin(ThetaLab)*cos(PhiLab);
+  ImpulsionLabY   = ImpulsionLab*sin(ThetaLab)*sin(PhiLab);
+  ImpulsionLabZ   = ImpulsionLab*cos(ThetaLab);
+
+  VImpulsionLAB           = TVector3(ImpulsionLabX, ImpulsionLabY, ImpulsionLabZ);
+  LVEnergyImpulsionLAB    = TLorentzVector(VImpulsionLAB,Mass()+EnergyLab);
+
+  LVEnergyImpulsionCM     = LVEnergyImpulsionLAB;
+  LVEnergyImpulsionCM.Boost(0,0,-relativisticboost);
+
+  EnergyCM = LVEnergyImpulsionCM.Energy() - Mass();
+  ThetaCM = LVEnergyImpulsionCM.Theta();
+
+  return ThetaCM;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -651,58 +653,58 @@ void Particle::DefineMassByThreshold(const vector<NPL::Particle>& N){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSXn(unsigned int X) const {
- Particle N(GetZ(),GetA()-X);
+  Particle N(GetZ(),GetA()-X);
   return N.Mass()+X*neutron_mass_c2-Mass();
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSXp(unsigned int X) const {
- Particle N(GetZ()-X,GetA()-X);
+  Particle N(GetZ()-X,GetA()-X);
   return N.Mass()+X*proton_mass_c2-Mass();
-  }
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSn() const {
   return GetSXn(1);
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSp() const {
   return GetSXp(1);
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetS2n() const {
   return GetSXn(2);
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetS2p() const {
   return GetSXp(2);
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSt() const {
- Particle N(GetZ()-1,GetA()-3);
- Particle A(1,3);
+  Particle N(GetZ()-1,GetA()-3);
+  Particle A(1,3);
   return N.Mass()+A.Mass()-Mass();
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetS3He() const {
- Particle N(GetZ()-2,GetA()-3);
- Particle A(2,3);
+  Particle N(GetZ()-2,GetA()-3);
+  Particle A(2,3);
   return N.Mass()+A.Mass()-Mass();
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double Particle::GetSa() const {
- Particle N(GetZ()-2,GetA()-4);
- Particle A(2,4);
+  Particle N(GetZ()-2,GetA()-4);
+  Particle A(2,4);
   return N.Mass()+A.Mass()-Mass();
-  }
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Particle::PrintThreshold() const {
-   cout << GetName() << " thresholds : " << endl;
-   cout << "  Sn   : "  << GetSn()    << " MeV" << endl;
-   cout << "  Sp   : "  << GetSp()    << " MeV" << endl;
-   cout << "  S2n  : "  << GetS2n()   << " MeV" << endl;
-   cout << "  S2p  : "  << GetS2p()   << " MeV" << endl;
-   cout << "  St   : "  << GetSt()    << " MeV" << endl;
-   cout << "  S3He : "  << GetS3He()  << " MeV" << endl;
-   cout << "  Sa   : "  << GetSa()    << " MeV" << endl;
-  }
+  cout << GetName() << " thresholds : " << endl;
+  cout << "  Sn   : "  << GetSn()    << " MeV" << endl;
+  cout << "  Sp   : "  << GetSp()    << " MeV" << endl;
+  cout << "  S2n  : "  << GetS2n()   << " MeV" << endl;
+  cout << "  S2p  : "  << GetS2p()   << " MeV" << endl;
+  cout << "  St   : "  << GetSt()    << " MeV" << endl;
+  cout << "  S3He : "  << GetS3He()  << " MeV" << endl;
+  cout << "  Sa   : "  << GetSa()    << " MeV" << endl;
+}
 

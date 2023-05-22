@@ -19,4 +19,6 @@ Minos
  BaseLine= 250
  Sampling= 10
  ZOffset= 0 mm
- XML= /Users/matta/mrdc/xml/s034/MINOS.xml
+ TargetZOffset= 0 mm
+ ZRotation= 0 mm
+ XML= ../S034/db/MINOS.xml

@@ -81,7 +81,8 @@ void PS_Interactions::Initialize(G4HCofThisEvent*){
 void PS_Interactions::EndOfEvent(G4HCofThisEvent*){
   unsigned int size = m_DataVector.size();
 
-  for(unsigned int i = 0 ; i < size ; i++){
+  //for(unsigned int i = 0 ; i < size ; i++){
+  for(int i = size-1 ; i>=0 ; --i){
     int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     int Index = t_Index + eventID; 
     m_InterractionCoordinates->SetInteraction(Index,m_DataVector[i]->GetEnergy(),m_DataVector[i]->GetTime(),

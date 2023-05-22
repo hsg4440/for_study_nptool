@@ -74,13 +74,11 @@ class GladFieldMap{
     // MWPC3 paramters
     double m_CentralTheta;
     TVector3 m_MWPC3_POS;
-    double m_R_MWPC3;
     double m_Angle_MWPC3;
   private:
     // Runge-Kunta 4 paramaters
     double m_dt;
     int m_Limit;
-    double m_Zmax;
 
   private:
     TVector3 m_InitPos;
@@ -106,7 +104,6 @@ class GladFieldMap{
   
     void SetPropagationTimeInterval(double val) {m_dt = val;}
     void SetLimit(int val) {m_Limit = val;}
-    void SetPropagationMaxZ(double val) {m_Zmax = val;}
 
     void SetInitPos(TVector3 Pos) {m_InitPos = Pos;}
     void SetInitDir(TVector3 Dir) {m_InitPos = Dir;}

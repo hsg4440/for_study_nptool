@@ -68,13 +68,14 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
   public:
     Int_t EventMultiplicity;
     vector<int>     DetectorNumber;
-    vector<double>  E;
-    vector<double>  DE;
     vector<int>     InnerStripT;
     vector<int>     InnerStripL;
+    vector<double>  InnerTE;
+    vector<double>  InnerLE;
     vector<int>     OuterStripT;
     vector<int>     OuterStripL;
-
+    vector<double>  OuterTE;
+    vector<double>  OuterLE;
 
     vector<double> InnerPosX;
     vector<double> InnerPosY;
@@ -82,8 +83,6 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     vector<double> OuterPosX;
     vector<double> OuterPosY;
     vector<double> OuterPosZ;
-
-
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
@@ -164,6 +163,9 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     double GetNumberOfInnerDetector() const {return m_NumberOfInnerDetectors;}
     double GetNumberOfOuterDetector() const {return m_NumberOfOuterDetectors;}
     int GetEventMultiplicity() const {return EventMultiplicity;}
+    int GetDetNbrSize() const {return DetectorNumber.size();}
+    TVector3 GetInnerPos(const int i) const {return TVector3(InnerPosX[i],InnerPosY[i],InnerPosZ[i]);}
+    TVector3 GetOuterPos(const int i) const {return TVector3(OuterPosX[i],OuterPosY[i],OuterPosZ[i]);}
 
     double GetInnerStripPositionX(const int N, const int X, const int Y){
       return m_InnerStripPositionX[N-1][X-1][Y-1];

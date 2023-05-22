@@ -71,6 +71,7 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_deff2;
     double fFF_Zsum;
     int fFF_iZsum;
+    int fFF_Cathode;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -94,6 +95,7 @@ class TSofFissionFragment : public TObject {
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
+    inline void SetCathode(int val){fFF_Cathode = val;};//!
     inline void SetZsum(double val){fFF_Zsum = val;};//!
     inline void SetiZsum(int val){fFF_iZsum = val;};//!
     inline void SetPlastic(int val){fFF_Plastic.push_back(val);};//!
@@ -139,6 +141,7 @@ class TSofFissionFragment : public TObject {
     /*int GetMultMwpc1() {return fFF_PosY1.size();}//!
     int GetMultMwpc2() {return fFF_PosY2.size();}//!
     int GetMultMwpc3() {return fFF_PosY3.size();}//!*/
+    inline int GetCathode() const {return fFF_Cathode;}//! 
     inline double GetZsum() const {return fFF_Zsum;}//! 
     inline int GetiZsum() const {return fFF_iZsum;}//! 
     inline int GetPlastic(int i) const {return fFF_Plastic[i];}//! 

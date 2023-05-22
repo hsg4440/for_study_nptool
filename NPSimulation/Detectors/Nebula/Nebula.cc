@@ -33,6 +33,7 @@
 
 //G4 various object
 #include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
 #include "G4Transform3D.hh"
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
@@ -42,6 +43,7 @@
 #include "Nebula.hh"
 #include "PlasticBar.hh"
 #include "InteractionScorers.hh"
+#include "ProcessScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
 #include "NPSDetectorFactory.hh"
@@ -56,19 +58,24 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Nebula_NS{
   // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime     = 4.5*ns ;
-  const double ResoEnergy   = 1.0*MeV ;
-  const double ModuleWidth  = 120*mm ;
-  const double ModuleLength = 120*mm ;
-  const double ModuleHeight = 1800*mm ;
-  const double InterModule  = 1*mm ;
-  const double VetoWidth    = 320*mm ;
-  const double VetoLength   = 10*mm ;
-  const double VetoHeight   = 1900*mm ;
-  const double InterVeto    = 1*mm ;
-  const int    VetoPerWall  = 12;
-  const double WallToVeto   = 10*cm;
+  const double LightThreshold  = 0.1*MeV;
+  const double ResoTime        = 0.75/2.355*ns; //0.75
+  const double ResoEnergy      = 0.1/2.355*MeV; 
+  const double ResoLight       = 0.1/2.355*MeV; 
+  const double ResoPosition    = 1.0*um; //1.0
+  const double ModuleWidth     = 120*mm ;
+  const double ModuleLength    = 120*mm ;
+  const double ModuleHeight    = 1800*mm ;
+  const double InterModule     = 1*mm ;
+  const double VetoWidth       = 320*mm ;
+  const double VetoLength      = 10*mm ;
+  const double VetoHeight      = 1900*mm ;
+  const double InterVeto       = 1*mm ;
+  const int    VetoPerWall     = 12;
+  const int    VetoPerExpand   = 6;
+  const double WallToVeto      = 10*cm;
+  const double MaterialIndex   = 1.58;
+  const double Attenuation     = 6680*mm; 
 
   const string Material = "BC400";
 }
@@ -85,7 +92,8 @@ Nebula::Nebula(){
 
 
   // RGB Color + Transparency
-  m_VisModule = new G4VisAttributes(G4Colour(0.3, 0.3, 1, 1));   
+  m_VisModule = new G4VisAttributes(G4Colour(0.263, 0.682, 0.639, 1));   
+  //m_VisModule = new G4VisAttributes(G4Colour(0.145, 0.384, 0.596, 1));   
   m_VisVeto   = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4, 0.2));   
   m_VisPMT    = new G4VisAttributes(G4Colour(0.1, 0.1, 0.1, 1));   
   m_VisFrame  = new G4VisAttributes(G4Colour(0, 0.3, 1, 0.5));   
@@ -131,7 +139,6 @@ G4LogicalVolume* Nebula::BuildVeto(){
 }
 
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -144,10 +151,14 @@ void Nebula::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"Pos","NumberOfModule","Veto","Frame"};
+  // define an entire wall
+  vector<string> wall = {"Pos","NumberOfModule","Veto","Frame"};
+
+  // use an experiment xml file to position bars individually
+  vector<string> xml= {"XML","Offset","InvertX","InvertY"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+    if(blocks[i]->HasTokenList(wall)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Nebula " << i+1 <<  endl;
     
@@ -157,53 +168,119 @@ void Nebula::ReadConfiguration(NPL::InputParser parser){
       bool Frame= blocks[i]->GetInt("Frame");
       AddWall(Pos,NbrModule,Veto,Frame);
     }
+    else if(blocks[i]->HasTokenList(xml)){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Nebula XML file" << i+1 <<  endl;
+      std::string xml_file = blocks[i]->GetString("XML"); 
+      G4ThreeVector Offset = NPS::ConvertVector(blocks[i]->GetTVector3("Offset","mm"));
+      bool InvertX = blocks[i]->GetInt("InvertX"); 
+      bool InvertY = blocks[i]->GetInt("InvertY"); 
+      ReadXML(xml_file,Offset,InvertX,InvertY);
+    }
       else{
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
   }
+  std::for_each(m_NbrModule.begin(), m_NbrModule.end(), [&] (int n) {
+     m_TotalModule += n;
+  });  
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Nebula::ReadXML(std::string xml_file,G4ThreeVector offset, bool InvertX,bool InvertY){ 
+  NPL::XmlParser xml;
+  xml.LoadFile(xml_file);
+  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName("NEBULA");  
+  int NumberOfBars=0;
+  for(unsigned int i = 0 ; i < b.size() ; i++){
+    NumberOfBars++;
+    unsigned int id = b[i]->AsInt("ID");
+    // position
+    auto PositionX = b[i]->AsDouble("PosX"); 
+    auto PositionY = b[i]->AsDouble("PosY"); 
+    auto PositionZ = b[i]->AsDouble("PosZ"); 
+    // SubLayer 0 is use for Veto
+    auto SubLayer  = b[i]->AsInt("SubLayer");
+    // Name "NoUseX" is used to silence bars
+    auto nousestr  = b[i]->AsString("NAME");
+    // Remove unused bar
+    if(nousestr.find("NoUse")==std::string::npos && PositionX!=PositionZ){
+      if(InvertX)
+        PositionX*=-1;
+      if(InvertY)
+        PositionY*=-1;
+      m_PositionBar[id]= G4ThreeVector(PositionX,PositionY,PositionZ)+offset;
+      if(SubLayer)
+        m_IsVetoBar[id]= false;
+      else
+        m_IsVetoBar[id]=true;
+    }
+  } 
+  cout << " -> " << NumberOfBars << " bars found" << endl;
+} 
 
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Nebula::ConstructDetector(G4LogicalVolume* world){
+  // Start with XML case
+  G4RotationMatrix* Rot = new G4RotationMatrix();
+  for(auto pos : m_PositionBar){
+    if(!m_IsVetoBar[pos.first]){
+      new G4PVPlacement(G4Transform3D(*Rot,pos.second),
+            BuildModule(),
+            "NebulaModule",world,false,pos.first);
+    }
+    else{
+      new G4PVPlacement(G4Transform3D(*Rot,pos.second),
+            BuildVeto(),
+            "NebulaModule",world,false,pos.first);
+      }
+    }
+
   unsigned int nbrM = 1 ;
   unsigned int nbrV = 1 ;
   for (unsigned short i = 0 ; i < m_Pos.size() ; i++) {
     for (unsigned short m = 0 ; m < m_NbrModule[i] ; m++) {
-      G4RotationMatrix* Rot = new G4RotationMatrix();
       double offset = (Nebula_NS::ModuleWidth+Nebula_NS::InterModule)*(-m_NbrModule[i]*0.5+m)+Nebula_NS::ModuleWidth*0.5;
       G4ThreeVector Offset(offset,0,0);
       new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
           BuildModule(),
           "NebulaModule",world,false,nbrM++);
-     }
+    }
 
     if(m_HasVeto[i]){
-      for (unsigned short m = 0 ; m < Nebula_NS::VetoPerWall ; m++) {
-        G4RotationMatrix* Rot = new G4RotationMatrix();
-        double offset = (Nebula_NS::VetoWidth+Nebula_NS::InterVeto)*(-Nebula_NS::VetoPerWall*0.5+m)+Nebula_NS::VetoWidth*0.5;
-        G4ThreeVector Offset(offset,0,-Nebula_NS::WallToVeto);
-        new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
-          BuildVeto(),
-          "NebulaVeto",world,false,nbrV++);
-     }
-
-
+      if(m_NbrModule[i] > 15){
+        for (unsigned short m = 0 ; m < Nebula_NS::VetoPerWall ; m++) {
+          double offset = (Nebula_NS::VetoWidth+Nebula_NS::InterVeto)*(-Nebula_NS::VetoPerWall*0.5+m)+Nebula_NS::VetoWidth*0.5;
+          G4ThreeVector Offset(offset,0,-Nebula_NS::WallToVeto);
+          new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
+            BuildVeto(),
+            "NebulaVeto",world,false,nbrV++);
+        }
       }
-     }
+      else{
+        for (unsigned short m = 0 ; m < Nebula_NS::VetoPerExpand ; m++) {
+          double offset = (Nebula_NS::VetoWidth+Nebula_NS::InterVeto)*(-Nebula_NS::VetoPerExpand*0.5+m)+Nebula_NS::VetoWidth*0.5;
+          G4ThreeVector Offset(offset,0,-Nebula_NS::WallToVeto);
+          new G4PVPlacement(G4Transform3D(*Rot,m_Pos[i]+Offset),
+            BuildVeto(),
+            "NebulaVeto",world,false,nbrV++);
+        }
+      }
+    }
+  }
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
-// Called After DetecorConstruction::AddDetector Method
+// Called After DetectorConstruction::AddDetector Method
 void Nebula::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
   if(!pTree->FindBranch("Nebula")){
-    pTree->Branch("Nebula", "TNebulaData", &m_Event) ;
+    pTree->Branch("Nebula", "TNebulaData",&m_Event) ;
   }
   pTree->SetBranchAddress("Nebula", &m_Event) ;
 }
@@ -215,22 +292,88 @@ void Nebula::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
   ///////////
-  // Module scorer
-  PlasticBar::PS_PlasticBar* Scorer= (PlasticBar::PS_PlasticBar*) m_ModuleScorer->GetPrimitive(0);
+  // PlasticBar scorer
+  PlasticBar::PS_PlasticBar* PlasticScorer_Module = (PlasticBar::PS_PlasticBar*) m_ModuleScorer->GetPrimitive(0);
+  PlasticBar::PS_PlasticBar* PlasticScorer_Veto = (PlasticBar::PS_PlasticBar*) m_VetoScorer->GetPrimitive(0);
+  // Should we put a ProcessScorer here to get the info if the particle is first neutron and give it to NebulaData ?
+  
+  double Time_up, Time_down;
+  double Energy_tmp, Light_tmp;
 
-  unsigned int size = Scorer->GetMult(); 
-  for(unsigned int i = 0 ; i < size ; i++){
-    vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Nebula_NS::ResoEnergy);
-    if(Energy>Nebula_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Nebula_NS::ResoTime);
+  //////////// TRIAL TO GET THE OPTICAL INDEX FROM MATERIAL PROPERTIES /////////////
+  //Trying to get Optical Index from Material directly
+  //const G4Material* aMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Nebula_NS::Material);
+  //G4MaterialPropertiesTable* aMaterialPropertiesTable = aMaterial->GetMaterialPropertiesTable();
+  //if(!aMaterialPropertiesTable->PropertyExists("RINDEX")){
+  //  MaterialIndex = !aMaterialPropertiesTable->GetConstProperty("RINDEX"); 
+  //}
+  //else{
+  //  MaterialIndex = 0; 
+  //}
+  //cout << MaterialManager::getInstance()->GetMaterialFromLibrary(Nebula_NS::Material)->GetMaterialPropertiesTable()->GetMaterialPropertyNames()[0] << endl;
+  //////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////// MODULE SCORER //////////////////////////////////
+  unsigned int ModuleHits_size = PlasticScorer_Module->GetMult(); 
+  for(unsigned int i = 0 ; i < ModuleHits_size ; i++){
+    vector<unsigned int> level = PlasticScorer_Module->GetLevel(i); 
+    Energy_tmp = PlasticScorer_Module->GetEnergy(i);
+    Light_tmp = PlasticScorer_Module->GetLight(i);
+    Energy = RandGauss::shoot(Energy_tmp, Energy_tmp*Nebula_NS::ResoEnergy);
+    Light = RandGauss::shoot(Light_tmp, Light_tmp*Nebula_NS::ResoLight);
+
+    if(Light>Nebula_NS::LightThreshold){
       int DetectorNbr = level[0];
-      m_Event->SetChargeUp(DetectorNbr,Energy/2);
-      m_Event->SetChargeDown(DetectorNbr,Energy/2);
-      m_Event->SetTimeUp(DetectorNbr,Time/2); 
-      m_Event->SetTimeDown(DetectorNbr,Time/2); 
+      double Position = RandGauss::shoot(PlasticScorer_Module->GetPosition(i),Nebula_NS::ResoPosition);
+
+      m_Event->SetChargeUp(DetectorNbr,Light*exp(-(Nebula_NS::ModuleHeight/2-Position)/Nebula_NS::Attenuation));
+      m_Event->SetChargeDown(DetectorNbr,Light*exp(-(Nebula_NS::ModuleHeight/2+Position)/Nebula_NS::Attenuation));
+     
+      // Take TOF and Position and compute Tup and Tdown
+      double Time = RandGauss::shoot(PlasticScorer_Module->GetTime(i),Nebula_NS::ResoTime);
+
+      Time_up = (Nebula_NS::ModuleHeight/2-Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
+      m_Event->SetTimeUp(DetectorNbr,Time_up);
+      
+      Time_down = (Nebula_NS::ModuleHeight/2+Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
+      m_Event->SetTimeDown(DetectorNbr,Time_down);
     }
   }
+  //cout << endl;
+
+
+
+  ///////////////////////////////// VETO SCORER //////////////////////////////////
+  unsigned int VetoHits_size = PlasticScorer_Veto->GetMult(); 
+  for(unsigned int i = 0 ; i < VetoHits_size ; i++){
+    vector<unsigned int> level = PlasticScorer_Veto->GetLevel(i); 
+    Energy_tmp = PlasticScorer_Veto->GetEnergy(i);
+    Light_tmp = PlasticScorer_Veto->GetLight(i);
+    Energy = RandGauss::shoot(Energy_tmp, Energy_tmp*Nebula_NS::ResoEnergy);
+    Light = RandGauss::shoot(Light_tmp, Light_tmp*Nebula_NS::ResoLight);
+
+    if(Light>Nebula_NS::LightThreshold){
+      double Time = RandGauss::shoot(PlasticScorer_Veto->GetTime(i),Nebula_NS::ResoTime);
+      //cout << "Time is " << Time << endl;
+      double Position = RandGauss::shoot(PlasticScorer_Veto->GetPosition(i),Nebula_NS::ResoPosition);
+      //cout << "Position is " << Position << endl;
+      int DetectorNbr = level[0] + m_TotalModule;
+      //cout << "Veto ID: " << DetectorNbr << endl;
+      
+      m_Event->SetChargeUp(DetectorNbr,Light*exp(-(Nebula_NS::VetoHeight/2-Position)/Nebula_NS::Attenuation));
+      m_Event->SetChargeDown(DetectorNbr,Light*exp(-(Nebula_NS::VetoHeight/2+Position)/Nebula_NS::Attenuation));
+      
+      Time_up = (Nebula_NS::VetoHeight/2-Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
+      //cout << "Time_up is " << Time_up << endl;
+      m_Event->SetTimeUp(DetectorNbr,Time_up);
+      
+      Time_down = (Nebula_NS::VetoHeight/2+Position)/(c_light/Nebula_NS::MaterialIndex) + Time;
+      //cout << "Time_down is " << Time_down << endl;
+      m_Event->SetTimeDown(DetectorNbr,Time_down);
+    }
+  }
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -247,19 +390,23 @@ void Nebula::InitializeScorers() {
   // Otherwise the scorer is initialise
   // Module 
   vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* ModulePlasticBar= new PlasticBar::PS_PlasticBar("ModulePlasticBar",level, 0) ;
-  G4VPrimitiveScorer* ModuleInteraction= new InteractionScorers::PS_Interactions("ModuleInteraction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* ModulePlasticBar= new PlasticBar::PS_PlasticBar("ModulePlasticBar",level, 0);
+  G4VPrimitiveScorer* ModuleInteraction= new InteractionScorers::PS_Interactions("ModuleInteraction",ms_InterCoord, 0);
+  G4VPrimitiveScorer* ModuleProcess= new ProcessScorers::PS_Process("ModuleProcess", 0);
   //and register it to the multifunctionnal detector
   m_ModuleScorer->RegisterPrimitive(ModulePlasticBar);
   m_ModuleScorer->RegisterPrimitive(ModuleInteraction);
+  m_ModuleScorer->RegisterPrimitive(ModuleProcess);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_ModuleScorer) ;
 
   // Veto 
-  G4VPrimitiveScorer* VetoPlasticBar= new PlasticBar::PS_PlasticBar("VetoPlasticBar",level, 0) ;
-  G4VPrimitiveScorer* VetoInteraction= new InteractionScorers::PS_Interactions("VetoInteraction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* VetoPlasticBar= new PlasticBar::PS_PlasticBar("VetoPlasticBar",level, 0);
+  G4VPrimitiveScorer* VetoInteraction= new InteractionScorers::PS_Interactions("VetoInteraction",ms_InterCoord, 0);
+  G4VPrimitiveScorer* VetoProcess= new ProcessScorers::PS_Process("ModuleProcess", 0);
   //and register it to the multifunctionnal detector
   m_VetoScorer->RegisterPrimitive(VetoPlasticBar);
   m_VetoScorer->RegisterPrimitive(VetoInteraction);
+  m_VetoScorer->RegisterPrimitive(VetoProcess);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_VetoScorer) ;
 
 

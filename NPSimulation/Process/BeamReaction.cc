@@ -500,14 +500,14 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack, G4FastStep& fastStep)
     // Momentum in beam and world frame for light particle 1
     G4ThreeVector momentum_kine1_beam(sin(Theta1) * cos(Phi1), sin(Theta1) * sin(Phi1), cos(Theta1));
     G4ThreeVector momentum_kine1_world = momentum_kine1_beam;
-    momentum_kine1_world.rotate(Beam_theta, uy); // rotation of Beam_theta around Y axis
-    momentum_kine1_world.rotate(Beam_phi, uz);   // rotation of Beam_phi around Z axis
+    //    momentum_kine1_world.rotate(Beam_theta, uy); // rotation of Beam_theta around Y axis
+    //    momentum_kine1_world.rotate(Beam_phi, uz);   // rotation of Beam_phi around Z axis
 
     // Momentum in beam and world frame for light particle 2
     G4ThreeVector momentum_kine2_beam(sin(Theta2) * cos(Phi2), sin(Theta2) * sin(Phi2), cos(Theta2));
     G4ThreeVector momentum_kine2_world = momentum_kine2_beam;
-    momentum_kine2_world.rotate(Beam_theta, uy); // rotation of Beam_theta on Y axis
-    momentum_kine2_world.rotate(Beam_phi, uz);   // rotation of Beam_phi on Z axis
+    //    momentum_kine2_world.rotate(Beam_theta, uy); // rotation of Beam_theta on Y axis
+    //    momentum_kine2_world.rotate(Beam_phi, uz);   // rotation of Beam_phi on Z axis
 
     // Momentum in beam and world frame for heavy residual
     //

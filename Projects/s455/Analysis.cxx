@@ -39,6 +39,7 @@ struct TofPair
   double beta = -1;
   double gamma = -1;
   double theta_in = -10;
+  double phi_in = -10;
   double theta_out = -10;
   double psi = -10;
   int plastic = -1;
@@ -100,28 +101,36 @@ void Analysis::Init(){
   SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
   SofAt= (TSofAtPhysics*) m_DetectorManager->GetDetector("SofAt");
   SofMwpc= (TSofMwpcPhysics*) m_DetectorManager->GetDetector("SofMwpc");
-  
-  m_GladField = new GladFieldMap();
-  m_GladField->SetCurrent(2135.);
-  //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
-  m_GladField->SetGladEntrance(0, 0, -1.135*m);
-  //m_GladField->SetGladTurningPoint(0, 0.02*m, 2.774*m  + 0.5405*m + 1.135*m);
-  m_GladField->SetGladTurningPoint(0, 0, 0);
-  m_GladField->SetGladTiltAngle(-14.*deg);
-  m_GladField->LoadMap("GladFieldMap_50mm.dat");
-  m_GladField->SetBin(50);
-  m_GladField->SetTimeStep(0.8);
-  m_GladField->SetCentralTheta(-20.*deg);
-  
-  //double Z_MWPC3 = 7.852*m;
-  //double Z_MWPC3 = 3.402*m;
-  double Z_MWPC3 = 3.65*m;
-  double X_MWPC3 = (Z_MWPC3 - m_GladField->GetGladTurningPoint().Z())*tan(m_GladField->GetCentralTheta());
-  m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
+
+  ReadAnalysisConfig();
+  for(int i=0; i<3; i++){
+    // i=0 Cahtode 1 -> Lead 1
+    // i=1 Cathode 2 -> Carbon
+    // i=2 Cathode 3 -> Lead 2
+    fDistancePlasticToCathode[i] = fDistanceStartToFirstATCathode + i*fDistanceBetweenCathode;
+    cout << "**** Distance Plastic to cathode " << i+1 << " = " << fDistancePlasticToCathode[i] << endl; 
+  }
 
   InitParameter();
   InitOutputBranch();
   LoadSpline();
+  LoadActiveTargetCuts();
+
+  m_GladField = new GladFieldMap();
+  m_GladField->SetCurrent(fGladCurrent);
+  //m_GladField->SetGladEntrance(0, 0.02*m, 2.774*m + 0.5405*m);
+  m_GladField->SetGladEntrance(0, 0, -1113.5*mm);
+  m_GladField->SetGladTurningPoint(0, 0, 0);
+  m_GladField->SetGladTiltAngle(0*deg);
+  m_GladField->LoadMap("GladFieldMap_50mm.dat");
+  m_GladField->SetBin(50);
+  m_GladField->SetTimeStep(0.8);
+  m_GladField->SetCentralTheta(-20.*deg);
+ 
+  double R_MWPC3 = fDistanceGToMW3;
+  double Z_MWPC3 = R_MWPC3 * cos(m_GladField->GetCentralTheta());
+  double X_MWPC3 = R_MWPC3 * sin(m_GladField->GetCentralTheta());
+  m_GladField->Set_MWPC3_Position(X_MWPC3,0,Z_MWPC3);
 
 }
 
@@ -139,8 +148,28 @@ void Analysis::TreatEvent(){
     SofTofW->SetStartTime(start_time);
     SofTofW->BuildPhysicalEvent();
 
-    FissionFragmentAnalysis();
-    //BeamFragmentAnalysis();
+    if(SofAt->Energy.size()==3 || SofAt->Energy.size()==4){ 
+      double Anode1 = SofAt->Energy[0];
+      double Anode2 = SofAt->Energy[1];
+      double Anode3 = SofAt->Energy[2];
+      int k= fRunID-1;
+      int which_cathode = 0;
+      
+      if(cut_Pb1[k]->IsInside(Anode1,Anode2)){
+        which_cathode = 1;
+      }
+      else if(cut_Pb2[k]->IsInside(Anode2,Anode3)){
+        which_cathode = 3;
+      }  
+      else if(cut_C[k]->IsInside(Anode2,Anode3)){
+        which_cathode = 2;
+      }
+      else
+        return;
+
+      FissionFragmentAnalysis(which_cathode);
+      //BeamFragmentAnalysis();
+    }
   }
 }
 
@@ -180,7 +209,7 @@ void Analysis::BeamFragmentAnalysis(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Analysis::FissionFragmentAnalysis(){
+void Analysis::FissionFragmentAnalysis(int which_cathode){
   unsigned int softofw_size = SofTofW->PlasticNbr.size();
   unsigned int softwim_size = SofTwim->SectionNbr.size();
 
@@ -590,23 +619,23 @@ void Analysis::FissionFragmentAnalysis(){
         }
       }
 
-
-      // *** Calculation Theta_out *** //
-      double DistanceStartToG = 2.774*m + 0.5405*m +1.135*m;
-      double DistanceStartToA = 2.3155*m;
-      double DistanceStartToMW2 = 2.651*m;
+  
+      double ATToG = fDistanceStartToG - fDistancePlasticToCathode[which_cathode-1];
+      double ATToA = fDistanceStartToA - fDistancePlasticToCathode[which_cathode-1];
+      double GToTof = (fDistanceGToMW3 + fDistanceMW3ToToF) * cos(20*deg);
+      double Zdistance = ATToG + GToTof;
       double Theta0 = 20.*deg;//m_GladField->GetCentralTheta();
       double XA = 0;
-      double ZA = DistanceStartToA - DistanceStartToG;
+      double YA = 0;
+      double ZA = fDistanceStartToA - fDistanceStartToG;
       double ZG = m_GladField->GetGladTurningPoint().Z();
       double ZMW3 = m_GladField->Get_MWPC3_Position().Z();
       double XMW3 = m_GladField->Get_MWPC3_Position().X();
-      double ZMW2 = DistanceStartToMW2 - DistanceStartToG;
       double X3lab = 0;
       double Z3lab = 0;;
       double Tilt = 14.*deg;//;
       TVector3 vZ = TVector3(0,0,1);
-      TVector3 vStart = TVector3(0,0,-DistanceStartToG);
+      TVector3 vStart = TVector3(0,0,-ATToG);
       double XC = 0;
       double ZC = 0;
       double XB = 0;
@@ -615,10 +644,14 @@ void Analysis::FissionFragmentAnalysis(){
       double ZD = 0;
       double MagB = m_GladField->GetB()/1000;
       for(int i=0; i<2; i++){
-        XA = TofHit[i].DT;
-        if(XA != -1e6){
+       XA = TofHit[i].DT;
+       YA = (ATToA/Zdistance)*TofHit[i].y;
+       TofHit[i].phi_in = atan(TofHit[i].y/Zdistance);
+      
+       if(XA != -1e6 && SofBeamID->GetBeta()>0){
+     
           TVector3 vG = TVector3(0,0,ZG);
-          TVector3 vA = TVector3(XA,0,ZA);
+          TVector3 vA = TVector3(XA,YA,ZA);
           // *** Extroplate to C position *** //
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
@@ -627,15 +660,15 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].yc = (ZC/8592.)*TofHit[i].y;
           TofHit[i].zc = ZC;
 
-          int ix, iy;
+          /*int ix, iy;
           ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/m_GladField->GetBin();
           iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/m_GladField->GetBin();
-          TofHit[i].Leff = m_GladField->GetLeff(ix,iy);
+          TofHit[i].Leff = m_GladField->GetLeff(ix,iy);*/
 
           X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
           Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
           TVector3 vE = TVector3(X3lab, TofHit[i].y, Z3lab);
-          TVector3 dir = TVector3(sin(TofHit[i].theta_in), 0, cos(TofHit[i].theta_in));
+          TVector3 dir = TVector3(sin(TofHit[i].theta_in)*cos(TofHit[i].phi_in), sin(TofHit[i].theta_in)*sin(TofHit[i].phi_in), cos(TofHit[i].theta_in));
           TofHit[i].x3lab = X3lab;
           TofHit[i].z3lab = Z3lab;
           TVector3 vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
@@ -645,6 +678,7 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].rho = TofHit[i].Leff/(2*sin(0.5*TofHit[i].psi)*cos(Tilt-0.5*TofHit[i].psi));
           //TofHit[i].Brho = MagB*TofHit[i].rho;
           TofHit[i].Brho = m_GladField->FindBrho(vA,dir,vE);
+
 
           // *** Extrapolate to B position *** //
           double ZI = ZG - TofHit[i].Leff/(2*cos(Tilt));
@@ -665,12 +699,11 @@ void Analysis::FissionFragmentAnalysis(){
           TofHit[i].xd = XD;
           TofHit[i].zd = ZD;
           TVector3 vD = TVector3(XD,0,ZD);
-    
+
           // *** Extrapolate position of the rho point *** //
           TofHit[i].BrhoX = XB - TofHit[i].rho*cos(TofHit[i].theta_in); 
           TofHit[i].BrhoZ = ZB + TofHit[i].rho*sin(TofHit[i].theta_in); 
           TVector3 vBrho = TVector3(TofHit[i].BrhoX, 0, TofHit[i].BrhoZ);
-            
 
           TVector3 v3lab = TVector3(X3lab,0,Z3lab);
           TVector3 v1 = TVector3(XB,0,ZB)-vStart;
@@ -679,13 +712,48 @@ void Analysis::FissionFragmentAnalysis(){
           double Path1 = v1.Mag();
           double Path2 = TofHit[i].rho*TofHit[i].omega;
           double Path3 = v3.Mag();
-          //double PathLength = Path1 + Path2 + Path3 + 740. + 50.;
-          double PathLength = m_GladField->GetFlightPath(vStart, TofHit[i].Brho, vA, dir) + 740. + 50;
+          
+          double delta_theta = TofHit[i].theta_out - m_GladField->GetCentralTheta();
+          //double PathLength = Path1 + Path2 + Path3 + fDistanceMW3ToToF/cos(delta_theta);
+          double PathLength = m_GladField->GetFlightPath(vStart, TofHit[i].Brho, vA, dir) + fDistanceMW3ToToF/cos(delta_theta);
           PathLength = PathLength/1000.;
 
+          double BeamTimeOffset1 = 0;
+          double BeamTimeOffset2 = 0;
+          double BeamTimeOffset3 = 0;
+          double BeamTimeOffset  = 0;
+          double new_beta=0;
+
+          // BeamTimeOffset between Start and first cathode //
+          BeamTimeOffset1 = fDistancePlasticToCathode[0]/(SofBeamID->GetBeta()*NPUNITS::c_light);
+
+          // BeamTimeOffset between first and second cathode //
+          double par0= 3.442;
+          double par1= -0.842;
+          double par2= 1.070;
+          new_beta =  par0*SofBeamID->GetBeta() + par1*exp(par2*SofBeamID->GetBeta());
+          BeamTimeOffset2 = fDistanceBetweenCathode/(new_beta*NPUNITS::c_light);
+          
+          // BeamTimeOffset between second and third cathode //
+          par0= 1.028;
+          par1= -0.013;
+          par2= 0.846;
+          new_beta =  par0*new_beta + par1*exp(par2*new_beta);
+          BeamTimeOffset3 = fDistanceBetweenCathode/(new_beta*NPUNITS::c_light);
+
+          if(which_cathode==1)// 1st Lead
+            BeamTimeOffset = BeamTimeOffset1;
+          else if(which_cathode==2)// Carbon
+            BeamTimeOffset = BeamTimeOffset1 + BeamTimeOffset2;
+          else if(which_cathode==3)// 2nd Lead
+            BeamTimeOffset = BeamTimeOffset1 + BeamTimeOffset2 + BeamTimeOffset3;
+      
+          TofHit[i].tof = TofHit[i].tof - BeamTimeOffset;
           TofHit[i].flight_path = PathLength;
           TofHit[i].velocity = PathLength/TofHit[i].tof;
           TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
+          TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
+          TofHit[i].AoQ = TofHit[i].Brho / (3.107 * TofHit[i].beta * TofHit[i].gamma);
           TofHit[i].x2twim = XA;
 
           double Z = TofHit[i].Esec;
@@ -694,11 +762,10 @@ void Analysis::FissionFragmentAnalysis(){
           int iZ = (int) round(Z);
           TofHit[i].Z = Z;
           TofHit[i].iZ = iZ;
-
+          TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
+          
           TVector3 vCG = vG - vC;
           TVector3 vCA = vA - vC;
-          //TofHit[i].deff1 = vCG.Angle(vCA)*180./TMath::Pi();
-          //TofHit[i].deff2 = vCG.Angle(vOut)*180./TMath::Pi();
 
           TVector3 vBD = vD-vB;
           double vBD_angle = vZ.Angle(vBD);
@@ -708,10 +775,6 @@ void Analysis::FissionFragmentAnalysis(){
           TVector3 vO = TVector3(XO,0,ZO);
           TofHit[i].deff1 = (vO-vB).Mag();
           TofHit[i].deff2 = (vD-vO).Mag();
-
-          TofHit[i].gamma = 1. / sqrt(1 - pow(TofHit[i].beta,2));
-          TofHit[i].AoQ = TofHit[i].Brho / (3.10716 * TofHit[i].beta * TofHit[i].gamma);
-          TofHit[i].A = TofHit[i].AoQ * TofHit[i].iZ;
 
         }
       }
@@ -753,6 +816,7 @@ void Analysis::FissionFragmentAnalysis(){
         SofFF->SetFlightPath(TofHit[i].flight_path);
 
       }
+      SofFF->SetCathode(which_cathode);
       SofFF->SetZsum(TofHit[0].Z+TofHit[1].Z);
       SofFF->SetiZsum(TofHit[0].iZ+TofHit[1].iZ);
     }
@@ -840,7 +904,7 @@ void Analysis::LoadSpline(){
 
   TString splinename;
   if(ifile->IsOpen()){
-    cout << "Loading Beta spline for fission fragment analysis..." << endl;
+    cout << "**** Loading Beta spline for fission fragment analysis..." << endl;
     for(int i=0; i<4; i++){
       splinename = Form("spline_beta_sec%i",i+1);
       fcorr_z_beta[i] = (TSpline3*) ifile->FindObjectAny(splinename);
@@ -855,7 +919,7 @@ void Analysis::LoadSpline(){
   ifile = new TFile(rootfile,"read");
 
   if(ifile->IsOpen()){
-    cout << "Loading DT spline for fission fragment analysis..." << endl;
+    cout << "**** Loading DT spline for fission fragment analysis..." << endl;
     for(int i=0; i<4; i++){
       splinename = Form("spline_dt_sec%i",i+1);
       fcorr_z_dt[i] = (TSpline3*) ifile->FindObjectAny(splinename);
@@ -874,13 +938,14 @@ void Analysis::End(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
-  fLS2_0 = 135.614;
-  fDS2   = 8000;
-  fDCC   = -10000;
+  
   fK_LS2 = -30e-8;
-
-  fBrho0 = 12.3255;
-  fRunID = 12;
+  
+  //fLS2_0 = 135.614;
+  //fDS2   = 8000;
+  //fDCC   = -10000;
+  //fBrho0 = 12.3255;
+  //fRunID = 12;
 
   // Beam parameter //
   fZBeta_p0 = 1;
@@ -1010,6 +1075,162 @@ void Analysis::InitParameter(){
     fBrho0 = 12.3352;
   }
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadActiveTargetCuts()
+{
+  TString element[14] = {"180Hg_1", "180Hg_2", "182Hg", "184Hg", "187Pb", "189Pb", "175Pt", "204Fr", "207Fr", "199At_1", "199At_2", "197At", "216Th", "221Pa"};
+
+  TFile* file;
+  TString filename1[14];
+  TString filename2[14];
+  TString filename3[14];
+  cout << "/// Loading Active Target cuts..." << endl;
+  for(int i=0; i<14; i++){
+    filename1[i]= "./macro/cuts/"+element[i]+"/cut_Pb1.root";
+    filename2[i]= "./macro/cuts/"+element[i]+"/cut_Pb2.root";
+    filename3[i]= "./macro/cuts/"+element[i]+"/cut_C.root";
+
+    file = new TFile(filename1[i],"read");
+    cout << "- " << filename1[i] << endl;
+    cut_Pb1[i] = (TCutG*) file->FindObjectAny("cut_Pb1");
+    cut_Pb1[i]->SetName(element[i]+"_Pb1");
+
+    file = new TFile(filename2[i],"read");
+    cout << "- " << filename2[i] << endl;
+    cut_Pb2[i] = (TCutG*) file->FindObjectAny("cut_Pb2");
+    cut_Pb2[i]->SetName(element[i]+"_Pb2");
+
+    file = new TFile(filename3[i],"read");
+    cout << "- " << filename3[i] << endl;
+    cut_C[i] = (TCutG*) file->FindObjectAny("cut_C");
+    cut_C[i]->SetName(element[i]+"_C");
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ReadAnalysisConfig()
+{
+  bool ReadingStatus = false;
+
+  string filename = "AnalysisConfig.dat";
+  
+  // open analysis config file
+  ifstream AnalysisConfigFile;
+  AnalysisConfigFile.open(filename.c_str());
+
+  if (!AnalysisConfigFile.is_open()) {
+    cout << " No AnalysisConfig.dat found: Default parameter loaded for Analayis " << filename << endl;
+    return;
+  }
+  cout << "**** Loading user parameter for Analysis from AnalysisConfig.dat " << endl;
+
+  // Save it in a TAsciiFile
+  TAsciiFile* asciiConfig = RootOutput::getInstance()->GetAsciiFileAnalysisConfig();
+  asciiConfig->AppendLine("%%% AnalysisConfig.dat %%%");
+  asciiConfig->Append(filename.c_str());
+  asciiConfig->AppendLine("");
+  // read analysis config file
+  string LineBuffer,DataBuffer,whatToDo;
+  while (!AnalysisConfigFile.eof()) {
+    // Pick-up next line
+    getline(AnalysisConfigFile, LineBuffer);
+
+    // search for "header"
+    string name = "AnalysisConfig";
+    if (LineBuffer.compare(0, name.length(), name) == 0) 
+      ReadingStatus = true;
+
+    // loop on tokens and data
+    while (ReadingStatus ) {
+      whatToDo="";
+      AnalysisConfigFile >> whatToDo;
+
+      // Search for comment symbol (%)
+      if (whatToDo.compare(0, 1, "%") == 0) {
+        AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
+      }
+
+      else if (whatToDo=="RunID") {
+        AnalysisConfigFile >> DataBuffer;
+        fRunID = atoi(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fRunID << endl;
+      }
+
+      else if (whatToDo=="Brho0") {
+        AnalysisConfigFile >> DataBuffer;
+        fBrho0 = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fBrho0 << endl;
+      }
+
+      else if (whatToDo=="LS2_0") {
+        AnalysisConfigFile >> DataBuffer;
+        fLS2_0 = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fLS2_0 << endl;
+      }
+
+      else if (whatToDo=="DispersionS2") {
+        AnalysisConfigFile >> DataBuffer;
+        fDS2 = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fLS2_0 << endl;
+      }
+
+      else if (whatToDo=="DispersionCC") {
+        AnalysisConfigFile >> DataBuffer;
+        fDCC = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDCC << endl;
+      }    
+
+      else if (whatToDo=="GladCurrent") {
+        AnalysisConfigFile >> DataBuffer;
+        fGladCurrent = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fGladCurrent << endl;
+      }    
+
+      else if (whatToDo=="DistanceStartToG") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceStartToG = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceStartToG << endl;
+      }    
+
+      else if (whatToDo=="DistanceStartToA") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceStartToA = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceStartToA << endl;
+      }    
+
+      else if (whatToDo=="DistanceBetweenATCathode") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceBetweenCathode = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceBetweenCathode << endl;
+      }    
+
+      else if (whatToDo=="DistanceMW3ToToF") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceMW3ToToF = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceMW3ToToF << endl;
+      }    
+
+      else if (whatToDo=="DistanceStartToFirstATCathode") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceStartToFirstATCathode = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceStartToFirstATCathode << endl;
+      }    
+
+      else if (whatToDo=="DistanceGToMW3") {
+        AnalysisConfigFile >> DataBuffer;
+        fDistanceGToMW3 = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << fDistanceGToMW3 << endl;
+      }    
+
+
+
+      else {
+        ReadingStatus = false;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -173,8 +173,7 @@ void FissionChamber::ConstructDetector(G4LogicalVolume* world){
     G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
     G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*FissionChamber_NS::Thickness*0.5;
+    
     // Building Detector reference frame
     G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
     G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
@@ -427,10 +426,10 @@ void FissionChamber::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  //G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_FissionChamberScorer->RegisterPrimitive(Calorimeter);
-  m_FissionChamberScorer->RegisterPrimitive(Interaction);
+  //m_FissionChamberScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_FissionChamberScorer) ;
 }
 

@@ -60,8 +60,8 @@ namespace PISTA_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 0.2*ns ;
-  const double ResoEnergy = 0.015*MeV ;
-  const double DE_ResoEnergy = 0.015*MeV ;
+  const double DE_ResoEnergy = 0.040*MeV ;
+  const double E_ResoEnergy  = 0.018*MeV ;
 
   // Trapezoid dimension
   const double TrapezoidBaseLarge = 74.1*mm;
@@ -73,9 +73,9 @@ namespace PISTA_NS{
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
-  const double DistanceBetweenSi = 5*mm;
-  //const double FirstStageNbrOfStrips = 97;
-  //const double SecondStageNbrOfStrips = 122;
+  const double DistanceBetweenSi = 7*mm;
+  const double FirstStageNbrOfStrips = 91;
+  const double SecondStageNbrOfStrips = 57;
 }
 using namespace PISTA_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -92,19 +92,33 @@ PISTA::PISTA(){
 PISTA::~PISTA(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PISTA::AddDetector(G4ThreeVector POS){
-  // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_R.push_back(POS.mag());
-  m_Theta.push_back(POS.theta());
-  m_Phi.push_back(POS.phi());
+void PISTA::AddDetector(G4ThreeVector A, G4ThreeVector B, G4ThreeVector C, G4ThreeVector D){
+  m_DefinitionType.push_back(true);
+  
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
+  m_D.push_back(D);
+
+  m_R.push_back(0);
+  m_Theta.push_back(0);
+  m_Phi.push_back(0);
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PISTA::AddDetector(double  R, double  Theta, double  Phi){
+  m_DefinitionType.push_back(false);
+
   m_R.push_back(R);
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
+
+  G4ThreeVector empty = G4ThreeVector(0,0,0);
+  m_A.push_back(empty);
+  m_B.push_back(empty);
+  m_C.push_back(empty);
+  m_D.push_back(empty);
 }
 
 
@@ -126,7 +140,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicTrapezoid->SetVisAttributes(TrapezoidVisAtt);
 
     // First stage silicon detector
-    G4ThreeVector positionFirstStage = G4ThreeVector(0,0,-4*mm);
+    G4ThreeVector positionFirstStage = G4ThreeVector(0,0,-0.5*TrapezoidLength + 0.5*FirstStageThickness);
 
     G4Trap* solidFirstStage = new G4Trap("solidFirstSatge",
         FirstStageThickness*0.5, 0*deg, 0*deg,
@@ -153,7 +167,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
 
     //////
     // Second stage silicon detector
-    G4ThreeVector positionSecondStage = G4ThreeVector(0,0,-0.5*TrapezoidLength+DistanceBetweenSi);
+    G4ThreeVector positionSecondStage = G4ThreeVector(0,0,-0.5*TrapezoidLength+DistanceBetweenSi+0.5*SecondStageThickness);
 
     G4Trap* solidSecondStage = new G4Trap("solidSecondSatge",
         SecondStageThickness*0.5, 0*deg, 0*deg,
@@ -195,7 +209,7 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS"};
+  vector<string> cart = {"POS_A", "POS_B", "POS_C", "POS_D"};
   vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
@@ -203,8 +217,11 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  PISTA " << i+1 <<  endl;
 
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      AddDetector(Pos);
+      G4ThreeVector A = NPS::ConvertVector(blocks[i]->GetTVector3("POS_A","mm"));
+      G4ThreeVector B = NPS::ConvertVector(blocks[i]->GetTVector3("POS_B","mm"));
+      G4ThreeVector C = NPS::ConvertVector(blocks[i]->GetTVector3("POS_C","mm"));
+      G4ThreeVector D = NPS::ConvertVector(blocks[i]->GetTVector3("POS_D","mm"));
+      AddDetector(A,B,C,D);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -215,7 +232,7 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
       AddDetector(R,Theta,Phi);
     }
     else{
-      cout << "ERROR: check your input file formatting " << endl;
+      cout << "NPS ERROR: check your input file formatting " << endl;
       exit(1);
     }
   }
@@ -227,31 +244,60 @@ void PISTA::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void PISTA::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
+  int NumberOfTelescopes = m_DefinitionType.size();
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*PISTA_NS::TrapezoidLength*0.5;
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
-    G4double kk = -sin(m_Theta[i]);
-    G4ThreeVector Y(ii,jj,kk);
-    G4ThreeVector w = Det_pos.unit();
-    G4ThreeVector u = w.cross(Y);
-    G4ThreeVector v = w.cross(u);
-    v = v.unit();
-    u = u.unit();
+  G4RotationMatrix* Rot = NULL;    
+  G4ThreeVector Det_pos = G4ThreeVector(0,0,0);
+  G4ThreeVector u = G4ThreeVector(0,0,0);
+  G4ThreeVector v = G4ThreeVector(0,0,0);
+  G4ThreeVector w = G4ThreeVector(0,0,0);
+  G4ThreeVector center = G4ThreeVector(0,0,0);
 
-    G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  for (int i = 0 ; i < NumberOfTelescopes ; i++) {
+    if(m_DefinitionType[i]){
+      // (u,v,w) unitary vector associated to telescope referencial
+      // (u,v) // to silicon plan
+      // w perpendicular to (u,v) plan
+      u = m_B[i] - m_A[i];
+      u = u.unit();
 
+      //v = m_D[i] - m_A[i];
+      v = (m_C[i] + m_D[i])/2 - (m_A[i] + m_B[i])/2;
+      v = v.unit();
+
+      w = u.cross(v);
+      w = w.unit();
+
+      center = (m_A[i] + m_B[i] + m_C[i] + m_D[i])/4;
+    
+      Rot = new G4RotationMatrix(u,v,w);
+      Det_pos = w * TrapezoidLength * 0.5 + center; 
+    }
+    else{
+      G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
+      G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
+      //G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
+      G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
+      Det_pos = G4ThreeVector(wX, wY, wZ) ;
+      // So the face of the detector is at R instead of the middle
+      Det_pos+=Det_pos.unit()*PISTA_NS::TrapezoidLength*0.5;
+      // Building Detector reference frame
+      G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
+      G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
+      G4double kk = -sin(m_Theta[i]);
+      G4ThreeVector Y(ii,jj,kk);
+      w = Det_pos.unit();
+      u = w.cross(Y);
+      v = w.cross(u);
+      v = v.unit();
+      u = u.unit();
+
+      Rot = new G4RotationMatrix(u,v,w);
+
+    }
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
         BuildTrapezoidDetector(),
         "PISTA",world,false,i+1);
-
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -273,57 +319,33 @@ void PISTA::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
   ///////////
-  // First Stage scorer
+  // DE
   DSSDScorers::PS_Rectangle* FirstStageScorer= (DSSDScorers::PS_Rectangle*) m_FirstStageScorer->GetPrimitive(0);
 
-  unsigned int sizeFront = FirstStageScorer->GetLengthMult(); 
-  for(unsigned int i = 0 ; i < sizeFront ; i++){
+  unsigned int sizeDE = FirstStageScorer->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeDE ; i++){
     double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), DE_ResoEnergy);   
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
-      int StripFront = FirstStageScorer->GetStripLength(i);
-      m_Event->SetFirstStageXE(DetNbr, StripFront, Energy);
-      m_Event->SetFirstStageXT(DetNbr, StripFront, Time);
-    }
-  }
-  unsigned int sizeBack = FirstStageScorer->GetWidthMult(); 
-  for(unsigned int i = 0 ; i < sizeBack ; i++){
-    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyWidth(i), DE_ResoEnergy);   
-    if(Energy>EnergyThreshold){
-      double Time = RandGauss::shoot(FirstStageScorer->GetTimeWidth(i), ResoTime);
-      int DetNbr  = FirstStageScorer->GetDetectorWidth(i);
-      int StripBack = FirstStageScorer->GetStripWidth(i);
-      m_Event->SetFirstStageYE(DetNbr, StripBack, Energy);
-      m_Event->SetFirstStageYT(DetNbr, StripBack, Time);
+      int StripFront = FirstStageScorer->GetStripWidth(i);
+      m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
     }
   }
   FirstStageScorer->clear();
 
   ///////////
-  // Second Stage scorer
+  // E
   DSSDScorers::PS_Rectangle* SecondStageScorer= (DSSDScorers::PS_Rectangle*) m_SecondStageScorer->GetPrimitive(0);
 
-  unsigned int sizeFrontSecondStage = SecondStageScorer->GetLengthMult(); 
-  for(unsigned int i = 0 ; i < sizeFrontSecondStage ; i++){
-    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), ResoEnergy);   
+  unsigned int sizeE = SecondStageScorer->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeE ; i++){
+    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), E_ResoEnergy);   
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(SecondStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = SecondStageScorer->GetDetectorLength(i);
       int StripFront = SecondStageScorer->GetStripLength(i);
-      m_Event->SetSecondStageXE(DetNbr, StripFront, Energy);
-      m_Event->SetSecondStageXT(DetNbr, StripFront, Time);
-    }
-  }
-  unsigned int sizeBackSecondStage = SecondStageScorer->GetWidthMult(); 
-  for(unsigned int i = 0 ; i < sizeBackSecondStage ; i++){
-    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyWidth(i), ResoEnergy);   
-    if(Energy>EnergyThreshold){
-      double Time = RandGauss::shoot(SecondStageScorer->GetTimeWidth(i), ResoTime);
-      int DetNbr  = SecondStageScorer->GetDetectorWidth(i);
-      int StripBack = SecondStageScorer->GetStripWidth(i);
-      m_Event->SetSecondStageYE(DetNbr, StripBack, Energy);
-      m_Event->SetSecondStageYT(DetNbr, StripBack, Time);
+      m_Event->SetPISTA_E(DetNbr, StripFront, Energy, Energy, Time, Time);
     }
   }
   SecondStageScorer->clear();
@@ -346,11 +368,11 @@ void PISTA::InitializeScorers() {
   G4VPrimitiveScorer* FirstStageScorer = new DSSDScorers::PS_Rectangle("FirstStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      1,97);
+      1,FirstStageNbrOfStrips);
   G4VPrimitiveScorer* SecondStageScorer = new DSSDScorers::PS_Rectangle("SecondStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      62,1);
+      SecondStageNbrOfStrips,1);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);

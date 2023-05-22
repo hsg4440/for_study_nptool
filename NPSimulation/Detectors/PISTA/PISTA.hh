@@ -50,7 +50,7 @@ class PISTA : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(G4ThreeVector POS);
+    void AddDetector(G4ThreeVector A, G4ThreeVector B, G4ThreeVector C, G4ThreeVector D);
     // Spherical
     void AddDetector(double R,double Theta,double Phi);  
 
@@ -98,6 +98,12 @@ class PISTA : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
+    vector<bool> m_DefinitionType;
+    vector<G4ThreeVector>  m_A; 
+    vector<G4ThreeVector>  m_B; 
+    vector<G4ThreeVector>  m_C; 
+    vector<G4ThreeVector>  m_D; 
+    
     vector<double>  m_R; 
     vector<double>  m_Theta;
     vector<double>  m_Phi; 

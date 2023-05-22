@@ -56,21 +56,79 @@ ClassImp(TPISTAPhysics)
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TPISTAPhysics::AddDetector(TVector3){
-  // In That simple case nothing is done
-  // Typically for more complex detector one would calculate the relevant 
-  // positions (stripped silicon) or angles (gamma array)
+void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
+  // Front Face 
+  // A------------------------B
+  //  *----------------------*                      
+  //   *--------------------*
+  //    *------------------*
+  //     *----------------*
+  //      *--------------*
+  //       *------------*
+  //        D----------C
+
+  double Height = 61.7; // mm
+  double LongBase = 78.1; // mm
+  double NumberOfStripsX = 57;
+  double NumberOfStripsY = 91;
+  double StripPitchY = Height/NumberOfStripsY; // mm
+  double StripPitchX = LongBase/NumberOfStripsX; // mm
+
   m_NumberOfDetectors++;
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
+  m_D.push_back(D);
+
+  // Vector u on telescope face paralelle to Y strips
+  TVector3 u = B - A;
+  u = u.Unit();
+  // Vector v on telescope face paralelle to X strips
+  TVector3 v = (C+D)*0.5 - (A+B)*0.5;
+  v = v.Unit();
+
+  vector<double> lineX;
+  vector<double> lineY;
+  vector<double> lineZ;
+
+  vector<vector<double>> OneDetectorStripPositionX;
+  vector<vector<double>> OneDetectorStripPositionY;
+  vector<vector<double>> OneDetectorStripPositionZ;
+
+  TVector3 Strip_1_1;
+  Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
+
+  TVector3 StripPos;
+  for(int i=0; i<NumberOfStripsX; i++){
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+    for(int j=0; j<NumberOfStripsY; j++){
+      StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
+      lineX.push_back(StripPos.X());
+      lineY.push_back(StripPos.Y());
+      lineZ.push_back(StripPos.Z());
+    }
+
+    OneDetectorStripPositionX.push_back(lineX);
+    OneDetectorStripPositionY.push_back(lineY);
+    OneDetectorStripPositionZ.push_back(lineZ);
+  }
+
+  m_StripPositionX.push_back(OneDetectorStripPositionX);
+  m_StripPositionY.push_back(OneDetectorStripPositionY);
+  m_StripPositionZ.push_back(OneDetectorStripPositionZ);
+
 } 
 
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
   m_NumberOfDetectors++;
 
-  double Height = 61.8; // mm
+  double Height = 61.7; // mm
   double Base = 78.1; // mm
-  double NumberOfStripsX = 62;
-  double NumberOfStripsY = 97;
+  double NumberOfStripsX = 57;
+  double NumberOfStripsY = 91;
   
   double StripPitchHeight = Height / NumberOfStripsY; // mm
   double StripPitchBase = Base / NumberOfStripsX; // mm
@@ -137,9 +195,9 @@ void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
-  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], E_StripX[i], DE_StripY[i]),
-      GetStripPositionY(DetectorNumber[i], E_StripX[i], DE_StripY[i]),
-      GetStripPositionZ(DetectorNumber[i], E_StripX[i], DE_StripY[i]));
+  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], E_Strip[i], DE_Strip[i]),
+      GetStripPositionY(DetectorNumber[i], E_Strip[i], DE_Strip[i]),
+      GetStripPositionZ(DetectorNumber[i], E_Strip[i], DE_Strip[i]));
   
   /*TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], DE_StripX[i], E_StripY[i]),
       GetStripPositionY(DetectorNumber[i], DE_StripX[i], E_StripY[i]),
@@ -151,23 +209,32 @@ TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TPISTAPhysics::GetDetectorNormal(const int i){
-  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1))
+  int det = DetectorNumber[i];
+  // Vector u on telescope face paralelle to Y strips
+  TVector3 u = m_B[det-1] - m_A[det-1];
+  u = u.Unit();
+  // Vector v on telescope face paralelle to X strips
+  TVector3 v = (m_C[det-1] + m_D[det-1])*0.5 - (m_A[det-1] + m_B[det-1])*0.5;
+  v = v.Unit();
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1));
 
-  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],62,97),
-      GetStripPositionY(DetectorNumber[i],62,97),
-      GetStripPositionZ(DetectorNumber[i],62,97))
+  /*TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1))
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
-      GetStripPositionY(DetectorNumber[i],62,1),
-      GetStripPositionZ(DetectorNumber[i],62,1));
+    -TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1));
 
-  TVector3 Normal = U.Cross(V);
+  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],57,91),
+      GetStripPositionY(DetectorNumber[i],57,91),
+      GetStripPositionZ(DetectorNumber[i],57,91))
+
+    -TVector3(GetStripPositionX(DetectorNumber[i],57,1),
+      GetStripPositionY(DetectorNumber[i],57,1),
+      GetStripPositionZ(DetectorNumber[i],57,1));*/
+
+  TVector3 Normal = u.Cross(v);
 
   return (Normal.Unit());
 }
@@ -187,38 +254,34 @@ void TPISTAPhysics::BuildPhysicalEvent() {
     //vector<TVector2> couple = Match_X_Y();
     //EventMultiplicity = couple.size();
 
-    int FirstStageMult = m_PreTreatedData->GetFirstStageMultXEnergy();
-    int SecondStageMult = m_PreTreatedData->GetSecondStageMultXEnergy();
+    int DEMult = m_PreTreatedData->GetPISTADEMult();
+    int EMult = m_PreTreatedData->GetPISTAEMult();
 
-    for(unsigned int i=0; i<FirstStageMult; i++){
-      for(unsigned int j=0; j<SecondStageMult; j++){
-        int DE_N = m_PreTreatedData->GetFirstStage_XE_DetectorNbr(i);
-        int E_N = m_PreTreatedData->GetSecondStage_XE_DetectorNbr(j);
-        if(DE_N==E_N){
+    for(unsigned int i=0; i<DEMult; i++){
+      for(unsigned int j=0; j<EMult; j++){
+        int DE_DetNbr = m_PreTreatedData->GetPISTA_DE_DetectorNbr(i);
+        int E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
+        if(DE_DetNbr==E_DetNbr){
+          int DE_StripNbr = m_PreTreatedData->GetPISTA_DE_StripNbr(i);
+          int E_StripNbr = m_PreTreatedData->GetPISTA_E_StripNbr(j);
+          
+          // Taking Strip energy for DE
+          double DE_Energy = m_PreTreatedData->GetPISTA_DE_StripEnergy(i);
+          // Taking BAck Energy for E
+          double E_Energy = m_PreTreatedData->GetPISTA_E_BackEnergy(j);
 
-          int DE_X = m_PreTreatedData->GetFirstStage_XE_StripNbr(i);
-          int DE_Y = m_PreTreatedData->GetFirstStage_YE_StripNbr(i);
-          double DE_XE = m_PreTreatedData->GetFirstStage_XE_Energy(i);
-          double DE_YE = m_PreTreatedData->GetFirstStage_YE_Energy(i);
+          double E_Time = m_PreTreatedData->GetPISTA_E_BackTime(j);
 
-          int E_X = m_PreTreatedData->GetSecondStage_XE_StripNbr(j);
-          int E_Y = m_PreTreatedData->GetSecondStage_YE_StripNbr(j);
-          double E_XE = m_PreTreatedData->GetSecondStage_XE_Energy(j);
-          double E_YE = m_PreTreatedData->GetSecondStage_YE_Energy(j);
-
-          DetectorNumber.push_back(DE_N);
-          DE_StripX.push_back(DE_X);
-          DE_StripY.push_back(DE_Y);
-          //DE.push_back(DE_YE);
-          DE.push_back(DE_XE);
-          E_StripX.push_back(E_X);
-          E_StripY.push_back(E_Y);
-          E.push_back(E_XE);
-
+          DetectorNumber.push_back(DE_DetNbr);
+          DE_Strip.push_back(DE_StripNbr);
+          E_Strip.push_back(E_StripNbr);
+          DE.push_back(DE_Energy);
+          E.push_back(E_Energy);
+          Time.push_back(E_Time);
+          
           PosX.push_back(GetPositionOfInteraction(i).x());
           PosY.push_back(GetPositionOfInteraction(i).y());
           PosZ.push_back(GetPositionOfInteraction(i).z());
-
         }
       }
     }
@@ -230,35 +293,12 @@ void TPISTAPhysics::BuildPhysicalEvent() {
 vector<TVector2> TPISTAPhysics::Match_X_Y(){
   vector<TVector2> ArrayOfGoodCouple;
 
-  static unsigned int m_XEMult, m_YEMult;
-  m_XEMult = m_PreTreatedData->GetFirstStageMultXEnergy();
-  m_YEMult = m_PreTreatedData->GetFirstStageMultYEnergy();
+  static unsigned int m_DEMult, m_EMult;
+  m_DEMult = m_PreTreatedData->GetPISTADEMult();
+  m_EMult = m_PreTreatedData->GetPISTAEMult();
 
-  if(m_XEMult>m_MaximumStripMultiplicityAllowed || m_YEMult>m_MaximumStripMultiplicityAllowed){
+  if(m_DEMult>m_MaximumStripMultiplicityAllowed || m_EMult>m_MaximumStripMultiplicityAllowed){
     return ArrayOfGoodCouple;
-  }
-
-  for(unsigned int i=0; i<m_XEMult; i++){
-    for(unsigned int j=0; j<m_YEMult; j++){
-
-      // Declaration of variable for clarity
-      int XDetNbr = m_PreTreatedData->GetFirstStage_XE_DetectorNbr(i);
-      int YDetNbr = m_PreTreatedData->GetFirstStage_YE_DetectorNbr(j);
-
-      // if same detector check energy
-      if(XDetNbr == YDetNbr){
-        // Declaration of variable for clarity
-        double XE = m_PreTreatedData->GetFirstStage_XE_Energy(i);
-        double YE = m_PreTreatedData->GetFirstStage_YE_Energy(i);
-        double XStripNbr = m_PreTreatedData->GetFirstStage_XE_StripNbr(i);
-        double YStripNbr = m_PreTreatedData->GetFirstStage_YE_StripNbr(i);
-
-        // look if energy matches
-        if(abs(XE-YE)/2.<m_StripEnergyMatching){
-          ArrayOfGoodCouple.push_back(TVector2(i,j));
-        }
-      }
-    }
   }
 
   return ArrayOfGoodCouple;
@@ -267,7 +307,7 @@ vector<TVector2> TPISTAPhysics::Match_X_Y(){
 ///////////////////////////////////////////////////////////////////////////
 int TPISTAPhysics::CheckEvent(){
   // Check the size of the different elements
-  if(m_PreTreatedData->GetFirstStageMultXEnergy() == m_PreTreatedData->GetFirstStageMultYEnergy() )
+  if(m_PreTreatedData->GetPISTADEMult() == m_PreTreatedData->GetPISTAEMult() )
     return 1;
 
   else
@@ -287,57 +327,40 @@ void TPISTAPhysics::PreTreat() {
   static CalibrationManager* Cal = CalibrationManager::getInstance();
 
   //////
-  // First Stage Energy
-  unsigned int sizeFront = m_EventData->GetFirstStageMultXEnergy();
-  for (UShort_t i = 0; i < sizeFront ; ++i) {
-    if (m_EventData->GetFirstStage_XE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetFirstStage_XE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_XE_DetectorNbr(i)),m_EventData->GetFirstStage_XE_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetFirstStageXE(m_EventData->GetFirstStage_XE_DetectorNbr(i), m_EventData->GetFirstStage_XE_StripNbr(i), Energy);
+  // DE
+  unsigned int sizeDE = m_EventData->GetPISTADEMult();
+  for (UShort_t i = 0; i < sizeDE ; ++i) {
+    if (m_EventData->GetPISTA_DE_StripEnergy(i) > m_E_RAW_Threshold) {
+      int DetNbr = m_EventData->GetPISTA_DE_DetectorNbr(i);
+      int StripNbr = m_EventData->GetPISTA_DE_StripNbr(i);
+      double StripE = m_EventData->GetPISTA_DE_StripEnergy(i);
+      double BackE  = m_EventData->GetPISTA_DE_BackEnergy(i);
+      double StripT  = m_EventData->GetPISTA_DE_StripTime(i);
+      double BackT  = m_EventData->GetPISTA_DE_BackTime(i);
+      //StripE = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_XE_DetectorNbr(i)),m_EventData->GetFirstStage_XE_Energy(i));
+      if (StripE > m_E_Threshold) {
+        m_PreTreatedData->SetPISTA_DE(DetNbr, StripNbr, StripE, BackE, StripT, BackT);
       }
     }
   }
-  unsigned int sizeBack = m_EventData->GetFirstStageMultYEnergy();
-  for (UShort_t i = 0; i < sizeBack ; ++i) {
-    if (m_EventData->GetFirstStage_YE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetFirstStage_YE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_YE_DetectorNbr(i)),m_EventData->GetFirstStage_YE_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetFirstStageYE(m_EventData->GetFirstStage_YE_DetectorNbr(i), m_EventData->GetFirstStage_YE_StripNbr(i), Energy);
+ 
+  // E
+  unsigned int sizeE = m_EventData->GetPISTAEMult();
+  for (UShort_t i = 0; i < sizeE ; ++i) {
+    if (m_EventData->GetPISTA_E_StripEnergy(i) > m_E_RAW_Threshold) {
+      int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
+      int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
+      double StripE = m_EventData->GetPISTA_E_StripEnergy(i);
+      double BackE  = m_EventData->GetPISTA_E_BackEnergy(i);
+      double StripT  = m_EventData->GetPISTA_E_StripTime(i);
+      double BackT  = m_EventData->GetPISTA_E_BackTime(i);
+      //StripE = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_XE_DetectorNbr(i)),m_EventData->GetFirstStage_XE_Energy(i));
+      if (StripE > m_E_Threshold) {
+        m_PreTreatedData->SetPISTA_E(DetNbr, StripNbr, StripE, BackE, StripT, BackT);
       }
     }
   }
-  // First Stage Time 
-  unsigned int mysize = m_EventData->GetFirstStageMultXTime();
-  for (UShort_t i = 0; i < mysize; ++i) {
-    Double_t Time= Cal->ApplyCalibration("PISTA/TIME"+NPL::itoa(m_EventData->GetFirstStage_XT_DetectorNbr(i)),m_EventData->GetFirstStage_XT_Time(i));
-    m_PreTreatedData->SetFirstStageXT(m_EventData->GetFirstStage_XT_DetectorNbr(i), m_EventData->GetFirstStage_XT_StripNbr(i), Time);
-  }
-
-  //////
-  // Second Stage Energy
-  sizeFront = m_EventData->GetSecondStageMultXEnergy();
-  for (UShort_t i = 0; i < sizeFront ; ++i) {
-    if (m_EventData->GetSecondStage_XE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetSecondStage_XE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetSecondStage_XE_DetectorNbr(i)),m_EventData->GetSecondStage_XE_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetSecondStageXE(m_EventData->GetSecondStage_XE_DetectorNbr(i), m_EventData->GetSecondStage_XE_StripNbr(i), Energy);
-      }
-    }
-  }
-  sizeBack = m_EventData->GetSecondStageMultYEnergy();
-  for (UShort_t i = 0; i < sizeBack ; ++i) {
-    if (m_EventData->GetSecondStage_YE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetSecondStage_YE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetSecondStage_YE_DetectorNbr(i)),m_EventData->GetSecondStage_YE_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetSecondStageYE(m_EventData->GetSecondStage_YE_DetectorNbr(i), m_EventData->GetSecondStage_YE_StripNbr(i), Energy);
-      }
-    }
-  }
-
+ 
 }
 
 
@@ -415,15 +438,12 @@ void TPISTAPhysics::Clear() {
   PosY.clear();
   PosZ.clear();
 
-  // DSSD
   DetectorNumber.clear();
   E.clear();
-  DE_StripX.clear();
-  DE_StripY.clear();
-  E_StripX.clear();
-  E_StripY.clear();
-  Time.clear();
   DE.clear();
+  DE_Strip.clear();
+  E_Strip.clear();
+  Time.clear();
 }
 
 
@@ -434,7 +454,7 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS"};
+  vector<string> cart = {"POS_A","POS_B","POS_C","POS_D"};
   vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
@@ -442,9 +462,12 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  PISTA " << i+1 <<  endl;
 
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
+      TVector3 A = blocks[i]->GetTVector3("POS_A","mm");
+      TVector3 B = blocks[i]->GetTVector3("POS_B","mm");
+      TVector3 C = blocks[i]->GetTVector3("POS_C","mm");
+      TVector3 D = blocks[i]->GetTVector3("POS_D","mm");
 
-      AddDetector(Pos);
+      AddDetector(A,B,C,D);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())

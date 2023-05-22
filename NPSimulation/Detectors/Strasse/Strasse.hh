@@ -27,149 +27,167 @@
 using namespace std;
 
 // G4 headers
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
+#include "G4FastSimulationManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
+#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
+#include "G4UserLimits.hh"
+#include "G4VFastSimulationModel.hh"
 
 // NPTool header
+#include "BeamReaction.hh"
+#include "Decay.hh"
+#include "NPInputParser.h"
 #include "NPSVDetector.hh"
 #include "TStrasseData.h"
-#include "NPInputParser.h"
 
-class Strasse : public NPS::VDetector{
+class Strasse : public NPS::VDetector {
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
-  public:
-    Strasse() ;
-    virtual ~Strasse() ;
+ public:
+  Strasse();
+  virtual ~Strasse();
 
-    ////////////////////////////////////////////////////
-    /////// Specific Function of this Class ///////////
-    ////////////////////////////////////////////////////
-  public:
-    // Cylindrical coordinate
-    void AddInnerDetector(double R,double Z,double Phi, double Shift, G4ThreeVector Ref);  
-    void AddOuterDetector(double R,double Z,double Phi, double Shift, G4ThreeVector Ref);  
-    void AddChamber(double Z);
+  ////////////////////////////////////////////////////
+  /////// Specific Function of this Class ///////////
+  ////////////////////////////////////////////////////
+ public:
+  // Cylindrical coordinate
+  void AddInnerDetector(double R, double Z, double Phi, double Shift, G4ThreeVector Ref);
+  void AddOuterDetector(double R, double Z, double Phi, double Shift, G4ThreeVector Ref);
+  void AddTarget(double R, double L, string MaterialName, string CellMaterialName, double CellThickness,
+                 G4ThreeVector Pos);
+  void AddChamber(double Z);
 
-    G4LogicalVolume* BuildInnerDetector();
-    G4LogicalVolume* BuildOuterDetector();
-    G4LogicalVolume* BuildElectronic();
-    G4LogicalVolume* BuildChamber();
-    G4LogicalVolume* BuildChamberFromCAD(string path);
-    G4LogicalVolume* BuildStars(string path);
-    G4LogicalVolume* BuildBlades(string path);
-    G4LogicalVolume* BuildBase(string path);
+  G4LogicalVolume* BuildInnerDetector();
+  G4LogicalVolume* BuildOuterDetector();
+  G4LogicalVolume* BuildTarget(int i);
+  G4LogicalVolume* BuildTargetCell(int i);
+  G4LogicalVolume* BuildElectronic();
+  G4LogicalVolume* BuildChamber();
+  G4LogicalVolume* BuildChamberFromCAD(string path);
+  G4LogicalVolume* BuildStars(string path);
+  G4LogicalVolume* BuildBlades(string path);
+  G4LogicalVolume* BuildBase(string path);
 
-  private:
-    G4LogicalVolume* m_InnerDetector;
-    G4LogicalVolume* m_OuterDetector;
-    G4LogicalVolume* m_Electronic;
-    G4LogicalVolume* m_Stars;
-    G4LogicalVolume* m_Chamber;
-    G4LogicalVolume* m_Blades;
-    G4LogicalVolume* m_Base;
+ private:
+  G4LogicalVolume* m_InnerDetector;
+  G4LogicalVolume* m_OuterDetector;
+  G4LogicalVolume* m_Target;
+  G4LogicalVolume* m_TargetCell;
+  G4LogicalVolume* m_Electronic;
+  G4LogicalVolume* m_Stars;
+  G4LogicalVolume* m_Chamber;
+  G4LogicalVolume* m_Blades;
+  G4LogicalVolume* m_Base;
 
-    string ChamberPath;
-    string BasePath;
-    string StarsPath;
-    string BladesPath;
-    bool found_chamber;
-    bool found_blades;
-    bool found_stars;
-    bool found_base;
+  string ChamberPath;
+  string BasePath;
+  string StarsPath;
+  string BladesPath;
+  bool found_chamber;
+  bool found_blades;
+  bool found_stars;
+  bool found_base;
 
-  private:
-    //    Initialize material used in detector definition
-    void InitializeMaterial();
+ private:
+  //    Initialize material used in detector definition
+  void InitializeMaterial();
 
+  //   List of material
+  G4Material* m_MaterialSilicon;
+  G4Material* m_MaterialAl;
+  G4Material* m_MaterialVacuum;
+  G4Material* m_MaterialPCB;
+  G4Material* m_MaterialCu;
 
-    //   List of material
-    G4Material* m_MaterialSilicon ;
-    G4Material* m_MaterialAl      ;
-    G4Material* m_MaterialVacuum  ;
-    G4Material* m_MaterialPCB     ;
-    G4Material* m_MaterialCu     ;
+  // calculated dimension
+  double m_Active_InnerWafer_Width;
+  double m_Active_InnerWafer_Length;
+  double m_Active_OuterWafer_Width;
+  double m_Active_OuterWafer_Length;
 
-    // calculated dimension
-    double m_Active_InnerWafer_Width;
-    double m_Active_InnerWafer_Length; 
-    double m_Active_OuterWafer_Width;
-    double m_Active_OuterWafer_Length; 
+  ////////////////////////////////////////////////////
+  //////  Inherite from NPS::VDetector class /////////
+  ////////////////////////////////////////////////////
+ public:
+  // Read stream at Configfile to pick-up parameters of detector (Position,...)
+  // Called in DetecorConstruction::ReadDetextorConfiguration Method
+  void ReadConfiguration(NPL::InputParser);
 
+  // Construct detector and inialise sensitive part.
+  // Called After DetecorConstruction::AddDetector Method
+  void ConstructDetector(G4LogicalVolume* world);
 
-    ////////////////////////////////////////////////////
-    //////  Inherite from NPS::VDetector class /////////
-    ////////////////////////////////////////////////////
-  public:
-    // Read stream at Configfile to pick-up parameters of detector (Position,...)
-    // Called in DetecorConstruction::ReadDetextorConfiguration Method
-    void ReadConfiguration(NPL::InputParser) ;
+  // Add Detector branch to the EventTree.
+  // Called After DetecorConstruction::AddDetector Method
+  void InitializeRootOutput();
 
-    // Construct detector and inialise sensitive part.
-    // Called After DetecorConstruction::AddDetector Method
-    void ConstructDetector(G4LogicalVolume* world) ;
+  // Read sensitive part and fill the Root tree.
+  // Called at in the EventAction::EndOfEventAvtion
+  void ReadSensitive(const G4Event* event);
 
-    // Add Detector branch to the EventTree.
-    // Called After DetecorConstruction::AddDetector Method
-    void InitializeRootOutput() ;
+ public: // Scorer
+  //   Initialize all Scorer used by the MUST2Array
+  void InitializeScorers();
 
-    // Read sensitive part and fill the Root tree.
-    // Called at in the EventAction::EndOfEventAvtion
-    void ReadSensitive(const G4Event* event) ;
+  //   Associated Scorer
+  G4MultiFunctionalDetector* m_InnerScorer1;
+  G4MultiFunctionalDetector* m_OuterScorer1;
+  G4MultiFunctionalDetector* m_InnerScorer2;
+  G4MultiFunctionalDetector* m_OuterScorer2;
 
-  public:   // Scorer
-    //   Initialize all Scorer used by the MUST2Array
-    void InitializeScorers() ;
+  ////////////////////////////////////////////////////
+  ///////////Event class to store Data////////////////
+  ////////////////////////////////////////////////////
+ private:
+  TStrasseData* m_Event;
 
-    //   Associated Scorer
-    G4MultiFunctionalDetector* m_InnerScorer1 ;
-    G4MultiFunctionalDetector* m_OuterScorer1 ;
-    G4MultiFunctionalDetector* m_InnerScorer2 ;
-    G4MultiFunctionalDetector* m_OuterScorer2 ;
+  ////////////////////////////////////////////////////
+  ///////////////Private intern Data//////////////////
+  ////////////////////////////////////////////////////
+ private: // Geometry
+  // Detector Coordinate
+  vector<double> m_Inner_R;
+  vector<double> m_Inner_Z;
+  vector<double> m_Inner_Phi;
+  vector<double> m_Inner_Shift;
+  vector<G4ThreeVector> m_Inner_Ref;
 
-    ////////////////////////////////////////////////////
-    ///////////Event class to store Data////////////////
-    ////////////////////////////////////////////////////
-  private:
-    TStrasseData* m_Event ;
+  vector<double> m_Outer_R;
+  vector<double> m_Outer_Z;
+  vector<double> m_Outer_Phi;
+  vector<double> m_Outer_Shift;
+  vector<G4ThreeVector> m_Outer_Ref;
 
-    ////////////////////////////////////////////////////
-    ///////////////Private intern Data//////////////////
-    ////////////////////////////////////////////////////
-  private: // Geometry
-    // Detector Coordinate 
-    vector<double>  m_Inner_R; 
-    vector<double>  m_Inner_Z;
-    vector<double>  m_Inner_Phi; 
-    vector<double>  m_Inner_Shift; 
-    vector<G4ThreeVector> m_Inner_Ref;
+  vector<double> m_Target_R;
+  vector<double> m_Target_L;
+  vector<string> m_Target_MaterialName;
+  vector<string> m_Target_CellMaterialName;
+  vector<double> m_Target_CellThickness;
+  vector<G4ThreeVector> m_Target_Pos;
 
-    vector<double>  m_Outer_R; 
-    vector<double>  m_Outer_Z;
-    vector<double>  m_Outer_Phi; 
-    vector<double>  m_Outer_Shift; 
-    vector<G4ThreeVector> m_Outer_Ref;
+  vector<double> m_Chamber_Z;
 
-    vector<double>  m_Chamber_Z;
+  // Region were reaction can occure:
+  G4Region* m_ReactionRegion;
+  vector<G4VFastSimulationModel*> m_ReactionModel;
 
+  // Needed for dynamic loading of the library
+ public:
+  static NPS::VDetector* Construct();
 
-    // Needed for dynamic loading of the library
-  public:
-    static NPS::VDetector* Construct();
-
-
-  private: // Visualisation
-    G4VisAttributes* SiliconVisAtt  ;
-    G4VisAttributes* PCBVisAtt;
-    G4VisAttributes* PADVisAtt  ;
-    G4VisAttributes* StarsVisAtt ;
-    G4VisAttributes* ChamberVisAtt ;
-    G4VisAttributes* GuardRingVisAtt ;
-    G4VisAttributes* BladeVisAtt ;
-
-
+ private: // Visualisation
+  G4VisAttributes* SiliconVisAtt;
+  G4VisAttributes* PCBVisAtt;
+  G4VisAttributes* PADVisAtt;
+  G4VisAttributes* StarsVisAtt;
+  G4VisAttributes* ChamberVisAtt;
+  G4VisAttributes* GuardRingVisAtt;
+  G4VisAttributes* BladeVisAtt;
+  G4VisAttributes* TargetVisAtt;
+  G4VisAttributes* TargetCellVisAtt;
 };
 #endif
