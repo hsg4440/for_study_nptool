@@ -64,12 +64,9 @@ namespace PISTA_NS{
   const double E_ResoEnergy  = 0.018*MeV ;
 
   // Trapezoid dimension
-  const double TrapezoidBaseLarge = 74.1*mm;
-  //const double TrapezoidBaseLarge = 78.1*mm;
-  const double TrapezoidBaseSmall = 39.3*mm;
-  //const double TrapezoidBaseSmall = 43.3*mm;
-  const double TrapezoidHeight = 57.8*mm;
-  //const double TrapezoidHeight = 61.8*mm;
+  const double TrapezoidBaseLarge = 78.1*mm;
+  const double TrapezoidBaseSmall = 43.3*mm;
+  const double TrapezoidHeight = 61.7*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
