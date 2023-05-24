@@ -257,14 +257,20 @@ void TPISTAPhysics::BuildPhysicalEvent() {
     int DEMult = m_PreTreatedData->GetPISTADEMult();
     int EMult = m_PreTreatedData->GetPISTAEMult();
 
+    int DE_DetNbr = -1;
+    int DE_StripNbr = -1;
+    int E_DetNbr = -1;
+    int E_StripNbr = -1;
+
     for(unsigned int i=0; i<DEMult; i++){
+      DE_DetNbr = m_PreTreatedData->GetPISTA_DE_DetectorNbr(i);
+      DE_StripNbr = m_PreTreatedData->GetPISTA_DE_StripNbr(i);
+      
       for(unsigned int j=0; j<EMult; j++){
-        int DE_DetNbr = m_PreTreatedData->GetPISTA_DE_DetectorNbr(i);
-        int E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
+
+        E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
+        E_StripNbr = m_PreTreatedData->GetPISTA_E_StripNbr(j);
         if(DE_DetNbr==E_DetNbr){
-          int DE_StripNbr = m_PreTreatedData->GetPISTA_DE_StripNbr(i);
-          int E_StripNbr = m_PreTreatedData->GetPISTA_E_StripNbr(j);
-          
           // Taking Strip energy for DE
           double DE_Energy = m_PreTreatedData->GetPISTA_DE_StripEnergy(i);
           // Taking BAck Energy for E

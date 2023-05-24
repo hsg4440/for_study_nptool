@@ -64,12 +64,9 @@ namespace PISTA_NS{
   const double E_ResoEnergy  = 0.018*MeV ;
 
   // Trapezoid dimension
-  const double TrapezoidBaseLarge = 74.1*mm;
-  //const double TrapezoidBaseLarge = 78.1*mm;
-  const double TrapezoidBaseSmall = 39.3*mm;
-  //const double TrapezoidBaseSmall = 43.3*mm;
-  const double TrapezoidHeight = 57.8*mm;
-  //const double TrapezoidHeight = 61.8*mm;
+  const double TrapezoidBaseLarge = 78.1*mm;
+  const double TrapezoidBaseSmall = 43.3*mm;
+  const double TrapezoidHeight = 61.7*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
@@ -375,13 +372,13 @@ void PISTA::InitializeScorers() {
       SecondStageNbrOfStrips,1);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
-  G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);
+  //G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);
 
   // Register it to the multifunctionnal detector
   m_FirstStageScorer->RegisterPrimitive(FirstStageScorer);
   m_FirstStageScorer->RegisterPrimitive(InteractionFirstStage);
   m_SecondStageScorer->RegisterPrimitive(SecondStageScorer);
-  m_SecondStageScorer->RegisterPrimitive(InteractionSecondStage);
+  //m_SecondStageScorer->RegisterPrimitive(InteractionSecondStage);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_FirstStageScorer);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SecondStageScorer);

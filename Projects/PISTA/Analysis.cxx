@@ -64,7 +64,7 @@ void Analysis::TreatEvent(){
   OriginalEx = ReactionConditions->GetExcitation4();
 */
   int mult = InteractionCoordinates->GetDetectedMultiplicity();
-  if(mult==2){
+  if(mult==1){
     for(int i=0; i<mult; i++){
       Xpista = InteractionCoordinates->GetDetectedPositionX(i);
       Ypista = InteractionCoordinates->GetDetectedPositionY(i);
