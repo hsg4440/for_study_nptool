@@ -372,13 +372,13 @@ void PISTA::InitializeScorers() {
       SecondStageNbrOfStrips,1);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
-  G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);
+  //G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);
 
   // Register it to the multifunctionnal detector
   m_FirstStageScorer->RegisterPrimitive(FirstStageScorer);
   m_FirstStageScorer->RegisterPrimitive(InteractionFirstStage);
   m_SecondStageScorer->RegisterPrimitive(SecondStageScorer);
-  m_SecondStageScorer->RegisterPrimitive(InteractionSecondStage);
+  //m_SecondStageScorer->RegisterPrimitive(InteractionSecondStage);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_FirstStageScorer);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SecondStageScorer);
