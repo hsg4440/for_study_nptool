@@ -58,14 +58,14 @@ ClassImp(TPISTAPhysics)
 /// A usefull method to bundle all operation to add a detector
 void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   // Front Face 
-  // A------------------------B
-  //  *----------------------*                      
-  //   *--------------------*
-  //    *------------------*
-  //     *----------------*
-  //      *--------------*
-  //       *------------*
-  //        D----------C
+  //  A------------------------B
+  //   *----------------------*                      
+  //    *--------------------*
+  //     *------------------*
+  //      *----------------*
+  //       *--------------*
+  //        *------------*
+  //         D----------C
 
   double Height = 61.7; // mm
   double LongBase = 78.1; // mm
@@ -86,6 +86,10 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   // Vector v on telescope face paralelle to X strips
   TVector3 v = (C+D)*0.5 - (A+B)*0.5;
   v = v.Unit();
+  // Vector n normal to detector surface pointing to target
+  TVector3 n = -0.25*(A+B+C+D);
+  double norm = n.Mag();
+  n = n.Unit();
 
   vector<double> lineX;
   vector<double> lineY;
@@ -96,7 +100,12 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   vector<vector<double>> OneDetectorStripPositionZ;
 
   TVector3 Strip_1_1;
-  Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
+  double ContractedStripPitchX = StripPitchX*norm/(norm+7);
+  double ContractedLongBase = NumberOfStripsX*ContractedStripPitchX;
+  double deltaX = LongBase/2-ContractedLongBase/2;
+
+  //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
+  Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(StripPitchY / 2.);
 
   TVector3 StripPos;
   for(int i=0; i<NumberOfStripsX; i++){
@@ -104,9 +113,12 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
     lineY.clear();
     lineZ.clear();
     for(int j=0; j<NumberOfStripsY; j++){
-      StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
+      //StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
+      StripPos = Strip_1_1 + i*u*ContractedStripPitchX + j*v*StripPitchY;
       lineX.push_back(StripPos.X());
+      //lineX.push_back(StripPos.X()*norm/(norm+7*abs(sin(n.Phi()))));
       lineY.push_back(StripPos.Y());
+      //lineY.push_back(StripPos.Y()*norm/(norm+7*abs(cos(n.Phi()))));
       lineZ.push_back(StripPos.Z());
     }
 
