@@ -105,7 +105,7 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   double deltaX = LongBase/2-ContractedLongBase/2;
 
   //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
-  Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(StripPitchY / 2.);
+  Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(NumberOfStripsY*StripPitchY - StripPitchY / 2.);
 
   TVector3 StripPos;
   for(int i=0; i<NumberOfStripsX; i++){
@@ -114,7 +114,7 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
     lineZ.clear();
     for(int j=0; j<NumberOfStripsY; j++){
       //StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
-      StripPos = Strip_1_1 + i*u*ContractedStripPitchX + j*v*StripPitchY;
+      StripPos = Strip_1_1 + i*u*ContractedStripPitchX - j*v*StripPitchY;
       lineX.push_back(StripPos.X());
       //lineX.push_back(StripPos.X()*norm/(norm+7*abs(sin(n.Phi()))));
       lineY.push_back(StripPos.Y());

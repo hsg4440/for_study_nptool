@@ -325,7 +325,7 @@ void PISTA::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
-      int StripFront = FirstStageScorer->GetStripWidth(i);
+      int StripFront = 92-FirstStageScorer->GetStripWidth(i);
       m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
     }
   }
