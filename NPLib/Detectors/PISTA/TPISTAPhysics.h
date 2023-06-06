@@ -69,8 +69,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     vector<int>     DetectorNumber;
     vector<double>  E;
     vector<double>  DE;
-    vector<int>     DE_Strip;
-    vector<int>     E_Strip;
+    vector<double>  back_DE;
+    vector<double>  back_E;
+    vector<int>     DE_StripNbr;
+    vector<int>     E_StripNbr;
     vector<double>  Time;
 
     vector<double> PosX;
@@ -185,6 +187,8 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
   // parameters used in the analysis
   private:
     int m_NumberOfDetectors; //!
+    int m_NumberOfStripsX; //!
+    int m_NumberOfStripsY; //!
     vector<TVector3> m_A; //!
     vector<TVector3> m_B; //!
     vector<TVector3> m_C; //!
