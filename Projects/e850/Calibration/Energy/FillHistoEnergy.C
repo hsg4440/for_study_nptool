@@ -9,8 +9,8 @@ TH1F* h[8][91];
 void FillHistoEnergy()
 {
   // Input file
-  chain = new TChain("RD");
-  chain->Add("/home/pierre/Physics/ganil/pista/analysisenv/RootR/r0180_000r.root");
+  chain = new TChain("AD");
+  chain->Add("/home/pierre/Physics/ganil/pista/analysisenv/RootA/r0180_000a.root");
 
   // Output file
   TFile * ofile = new TFile("histo_file_alpha.root","recreate");
@@ -39,7 +39,6 @@ void FillHistoEnergy()
       int det = pista->GetPISTA_DE_DetectorNbr(j);
       int strip = pista->GetPISTA_DE_StripNbr(j);
       double val = pista->GetPISTA_DE_StripEnergy(j);
-
       if(det>0 && strip>0 && det<9 && strip<92)
         h[det-1][strip-1]->Fill(val);
     }
