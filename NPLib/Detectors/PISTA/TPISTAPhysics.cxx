@@ -264,12 +264,14 @@ void TPISTAPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
 
+  int DEMult = 0;
+  int EMult = 0;
   if(1 /*CheckEvent() == 1*/){
     //vector<TVector2> couple = Match_X_Y();
     //EventMultiplicity = couple.size();
 
-    int DEMult = m_PreTreatedData->GetPISTADEMult();
-    int EMult = m_PreTreatedData->GetPISTAEMult();
+    DEMult = m_PreTreatedData->GetPISTADEMult();
+    EMult = m_PreTreatedData->GetPISTAEMult();
 
     int DE_DetNbr = -1;
     int StripNbr_DE = -1;
@@ -281,40 +283,47 @@ void TPISTAPhysics::BuildPhysicalEvent() {
       StripNbr_DE = m_PreTreatedData->GetPISTA_DE_StripNbr(i);
       
       // *** to be removed *** //
-      DetectorNumber.push_back(DE_DetNbr);
-      DE_StripNbr.push_back(StripNbr_DE);
-      DE.push_back(m_PreTreatedData->GetPISTA_DE_StripEnergy(i));
-      back_DE.push_back(m_PreTreatedData->GetPISTA_DE_BackEnergy(i));
+      if(EMult==0){
+        DetectorNumber.push_back(DE_DetNbr);
+        DE_StripNbr.push_back(StripNbr_DE);
+        DE.push_back(m_PreTreatedData->GetPISTA_DE_StripEnergy(i));
+        back_DE.push_back(m_PreTreatedData->GetPISTA_DE_BackEnergy(i));
+      }
       // *** // 
 
-      for(unsigned int j=0; j<EMult; j++){
-        E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
-        StripNbr_E = m_PreTreatedData->GetPISTA_E_StripNbr(j);
-        if(DE_DetNbr==E_DetNbr){
-          // Taking Strip energy for DE
-          double DE_Energy = m_PreTreatedData->GetPISTA_DE_StripEnergy(i);
-          // Taking BAck Energy for E
-          double E_Energy = m_PreTreatedData->GetPISTA_E_StripEnergy(j);
+      else{
+        for(unsigned int j=0; j<EMult; j++){
+          E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
+          StripNbr_E = m_PreTreatedData->GetPISTA_E_StripNbr(j);
+          if(DE_DetNbr==E_DetNbr){
+            // Taking Strip energy for DE
+            double DE_Energy = m_PreTreatedData->GetPISTA_DE_StripEnergy(i);
+            // Taking BAck Energy for E
+            double E_Energy = m_PreTreatedData->GetPISTA_E_StripEnergy(j);
 
-          double E_Time = m_PreTreatedData->GetPISTA_E_BackTime(j);
+            //double E_Time = m_PreTreatedData->GetPISTA_E_BackTime(j);
 
-          DetectorNumber.push_back(DE_DetNbr);
-          DE_StripNbr.push_back(StripNbr_DE);
-          E_StripNbr.push_back(StripNbr_E);
-          DE.push_back(DE_Energy);
-          E.push_back(E_Energy);
-          back_DE.push_back(m_PreTreatedData->GetPISTA_DE_BackEnergy(i));
-          back_E.push_back(m_PreTreatedData->GetPISTA_E_BackEnergy(j));
-          Time.push_back(E_Time);
-          
-          PosX.push_back(GetPositionOfInteraction(i).x());
-          PosY.push_back(GetPositionOfInteraction(i).y());
-          PosZ.push_back(GetPositionOfInteraction(i).z());
+            DetectorNumber.push_back(DE_DetNbr);
+            DE_StripNbr.push_back(StripNbr_DE);
+            E_StripNbr.push_back(StripNbr_E);
+            DE.push_back(DE_Energy);
+            E.push_back(E_Energy);
+            back_DE.push_back(m_PreTreatedData->GetPISTA_DE_BackEnergy(i));
+            back_E.push_back(m_PreTreatedData->GetPISTA_E_BackEnergy(j));
+            //Time.push_back(E_Time);
+
+            PosX.push_back(GetPositionOfInteraction(i).x());
+            PosY.push_back(GetPositionOfInteraction(i).y());
+            PosZ.push_back(GetPositionOfInteraction(i).z());
+          }
         }
       }
     }
   }
-  EventMultiplicity = DetectorNumber.size();
+  if(EMult==0)
+    EventMultiplicity=0;
+  else
+    EventMultiplicity = DetectorNumber.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -365,7 +374,7 @@ void TPISTAPhysics::PreTreat() {
       double BackDE  = m_EventData->GetPISTA_DE_BackEnergy(i);
       double StripT  = m_EventData->GetPISTA_DE_StripTime(i);
       double BackT  = 0;//m_EventData->GetPISTA_DE_BackTime(i);
-      
+
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_PEDESTAL",0);
       double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_ENERGY",StripE-ped);
       double CalBackDE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_DE",BackDE);
@@ -374,7 +383,7 @@ void TPISTAPhysics::PreTreat() {
       }
     }
   }
- 
+
   // E
   unsigned int sizeE = m_EventData->GetPISTAEMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
@@ -385,7 +394,7 @@ void TPISTAPhysics::PreTreat() {
       double BackE  = m_EventData->GetPISTA_E_BackEnergy(i);
       double StripT  = m_EventData->GetPISTA_E_StripTime(i);
       double BackT  = 0;//m_EventData->GetPISTA_E_BackTime(i);
-      
+
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_PEDESTAL",0);
       double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_ENERGY",StripE-ped);
       double CalBackE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_E",BackE);
@@ -395,7 +404,7 @@ void TPISTAPhysics::PreTreat() {
       }
     }
   }
- 
+
 }
 
 
