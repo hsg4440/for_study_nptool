@@ -230,8 +230,8 @@ void Beam::GenerateRandomEvent(double& E, double& X, double& Y, double& Z, doubl
 
   // Profile
   else{
-      fXThetaXHist->GetRandom2(X,ThetaX);
-      fYPhiYHist->GetRandom2(Y,PhiY);
+      fXThetaXHist->GetRandom2(X0,ThetaX);
+      fYPhiYHist->GetRandom2(Y0,PhiY);
   }
   // Backward propagtion from ZProfile (in general on target) 
   // to ZEmission (position where beam is generated in simulation.)
