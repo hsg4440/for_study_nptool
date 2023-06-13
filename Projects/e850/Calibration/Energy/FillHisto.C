@@ -30,7 +30,7 @@ void FillHisto()
   for(int i=0; i<nentries; i++){
     chain->GetEntry(i);
 
-    if(i%100000==0){
+    if(i%10000==0){
       cout << "\033[34m\r Processing tree..." << (double)i/nentries*100 << "\% done" << flush; 
     }
 
