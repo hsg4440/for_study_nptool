@@ -190,8 +190,8 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
   // parameters used in the analysis
   private:
     // Map to activate/deactivate strips
-    map<int, vector<bool>> m_XChannelStatus; //!
-    map<int, vector<bool>> m_YChannelStatus; //!
+    map<int, vector<bool>> m_DEChannelStatus; //!
+    map<int, vector<bool>> m_EChannelStatus; //!
 
     int m_NumberOfDetectors; //!
     int m_NumberOfStripsX; //!

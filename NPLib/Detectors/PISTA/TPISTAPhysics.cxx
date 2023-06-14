@@ -469,13 +469,13 @@ void TPISTAPhysics::ReadAnalysisConfig() {
         cout << whatToDo << " " << DataBuffer << endl;
         int telescope = atoi(DataBuffer.substr(5,1).c_str());
         int channel = -1;
-        if(DataBuffer.compare(6,4,"STRX") == 0 ){
+        if(DataBuffer.compare(6,3,"_DE") == 0 ){
           channel = atoi(DataBuffer.substr(10).c_str());
-          *(m_XChannelStatus[telescope -1].begin() + channel -1) = false;
+          *(m_DEChannelStatus[telescope -1].begin() + channel -1) = false;
         }
-        else if(DataBuffer.compare(6,4,"STRY") == 0 ){
+        else if(DataBuffer.compare(6,2,"_E") == 0 ){
           channel = atoi(DataBuffer.substr(10).c_str());
-          *(m_YChannelStatus[telescope -1].begin() + channel -1) = false;
+          *(m_EChannelStatus[telescope -1].begin() + channel -1) = false;
         }
 
       }
@@ -554,19 +554,19 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
 void TPISTAPhysics::InitializeStandardParameter() {
 
   // Enable all channel
-  vector<bool> ChannelStatusX;
-  vector<bool> ChannelStatusY;
-  m_XChannelStatus.clear();
-  m_YChannelStatus.clear();
+  vector<bool> ChannelStatusDE;
+  vector<bool> ChannelStatusE;
+  m_DEChannelStatus.clear();
+  m_EChannelStatus.clear();
 
-  ChannelStatusX.resize(91,true);
-  ChannelStatusY.resize(57,true);
+  ChannelStatusDE.resize(91,true);
+  ChannelStatusE.resize(57,true);
 
   for(int i=0; i<91; i++){
-    m_XChannelStatus[i] = ChannelStatusX;
+    m_DEChannelStatus[i] = ChannelStatusDE;
   }
   for(int i=0; i<57; i++){
-    m_YChannelStatus[i] = ChannelStatusY;
+    m_EChannelStatus[i] = ChannelStatusE;
   }
 
 }
@@ -575,10 +575,10 @@ void TPISTAPhysics::InitializeStandardParameter() {
 bool TPISTAPhysics::IsValidChannel(const int& DetectorType, const int& telescope, const int& channel){
 
   if(DetectorType==0){
-    return *(m_XChannelStatus[telescope - 1].begin() + channel -1);
+    return *(m_DEChannelStatus[telescope - 1].begin() + channel -1);
   }
   else if(DetectorType==1){
-    return *(m_YChannelStatus[telescope - 1].begin() + channel -1);
+    return *(m_EChannelStatus[telescope - 1].begin() + channel -1);
   }
 
   else 
