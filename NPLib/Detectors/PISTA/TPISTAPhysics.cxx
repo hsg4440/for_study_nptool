@@ -291,7 +291,7 @@ void TPISTAPhysics::BuildPhysicalEvent() {
       }
       // *** // 
 
-      else{
+      if(EMult==DEMult){
         for(unsigned int j=0; j<EMult; j++){
           E_DetNbr = m_PreTreatedData->GetPISTA_E_DetectorNbr(j);
           StripNbr_E = m_PreTreatedData->GetPISTA_E_StripNbr(j);
@@ -312,9 +312,9 @@ void TPISTAPhysics::BuildPhysicalEvent() {
             back_E.push_back(m_PreTreatedData->GetPISTA_E_BackEnergy(j));
             //Time.push_back(E_Time);
 
-            PosX.push_back(GetPositionOfInteraction(i).x());
+            /*PosX.push_back(GetPositionOfInteraction(i).x());
             PosY.push_back(GetPositionOfInteraction(i).y());
-            PosZ.push_back(GetPositionOfInteraction(i).z());
+            PosZ.push_back(GetPositionOfInteraction(i).z());*/
           }
         }
       }
@@ -367,7 +367,7 @@ void TPISTAPhysics::PreTreat() {
   // DE
   unsigned int sizeDE = m_EventData->GetPISTADEMult();
   for (UShort_t i = 0; i < sizeDE ; ++i) {
-    if (m_EventData->GetPISTA_DE_StripEnergy(i) > m_E_RAW_Threshold) {
+    if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i))) {
       int DetNbr = m_EventData->GetPISTA_DE_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_DE_StripNbr(i);
       double StripE = m_EventData->GetPISTA_DE_StripEnergy(i);
@@ -387,7 +387,7 @@ void TPISTAPhysics::PreTreat() {
   // E
   unsigned int sizeE = m_EventData->GetPISTAEMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
-    if (m_EventData->GetPISTA_E_StripEnergy(i) > m_E_RAW_Threshold) {
+    if (IsValidChannel(1,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i))) {
       int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
       double StripE = m_EventData->GetPISTA_E_StripEnergy(i);
@@ -464,6 +464,22 @@ void TPISTAPhysics::ReadAnalysisConfig() {
         cout << whatToDo << " " << m_E_Threshold << endl;
       }
 
+      else if(whatToDo=="DISABLE_CHANNEL"){
+        AnalysisConfigFile >> DataBuffer;
+        cout << whatToDo << " " << DataBuffer << endl;
+        int telescope = atoi(DataBuffer.substr(5,1).c_str());
+        int channel = -1;
+        if(DataBuffer.compare(6,4,"STRX") == 0 ){
+          channel = atoi(DataBuffer.substr(10).c_str());
+          *(m_XChannelStatus[telescope -1].begin() + channel -1) = false;
+        }
+        else if(DataBuffer.compare(6,4,"STRY") == 0 ){
+          channel = atoi(DataBuffer.substr(10).c_str());
+          *(m_YChannelStatus[telescope -1].begin() + channel -1) = false;
+        }
+
+      }
+
       else {
         ReadingStatus = false;
       }
@@ -529,8 +545,46 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
       exit(1);
     }
   }
+
+  InitializeStandardParameter();
+  ReadAnalysisConfig();
 }
 
+///////////////////////////////////////////////////////////////////////////
+void TPISTAPhysics::InitializeStandardParameter() {
+
+  // Enable all channel
+  vector<bool> ChannelStatusX;
+  vector<bool> ChannelStatusY;
+  m_XChannelStatus.clear();
+  m_YChannelStatus.clear();
+
+  ChannelStatusX.resize(91,true);
+  ChannelStatusY.resize(57,true);
+
+  for(int i=0; i<91; i++){
+    m_XChannelStatus[i] = ChannelStatusX;
+  }
+  for(int i=0; i<57; i++){
+    m_YChannelStatus[i] = ChannelStatusY;
+  }
+
+}
+  
+///////////////////////////////////////////////////////////////////////////
+bool TPISTAPhysics::IsValidChannel(const int& DetectorType, const int& telescope, const int& channel){
+
+  if(DetectorType==0){
+    return *(m_XChannelStatus[telescope - 1].begin() + channel -1);
+  }
+  else if(DetectorType==1){
+    return *(m_YChannelStatus[telescope - 1].begin() + channel -1);
+  }
+
+  else 
+    return false;
+
+}
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::InitSpectra() {
   m_Spectra = new TPISTASpectra(m_NumberOfDetectors);

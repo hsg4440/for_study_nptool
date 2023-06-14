@@ -151,7 +151,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
 
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
+  
+    void InitializeStandardParameter();
 
+    bool IsValidChannel(const int& DetectorType, const int& telescope, const int& channel);
     // give and external TPISTAData object to TPISTAPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TPISTAData* rawDataPointer) {m_EventData = rawDataPointer;}
@@ -186,6 +189,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
 
   // parameters used in the analysis
   private:
+    // Map to activate/deactivate strips
+    map<int, vector<bool>> m_XChannelStatus; //!
+    map<int, vector<bool>> m_YChannelStatus; //!
+
     int m_NumberOfDetectors; //!
     int m_NumberOfStripsX; //!
     int m_NumberOfStripsY; //!
