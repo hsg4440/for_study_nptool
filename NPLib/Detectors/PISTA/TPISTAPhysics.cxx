@@ -387,7 +387,7 @@ void TPISTAPhysics::PreTreat() {
   // E
   unsigned int sizeE = m_EventData->GetPISTAEMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
-    if (IsValidChannel(1,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i))) {
+    if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i))) {
       int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
       double StripE = m_EventData->GetPISTA_E_StripEnergy(i);
