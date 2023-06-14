@@ -470,11 +470,11 @@ void TPISTAPhysics::ReadAnalysisConfig() {
         int telescope = atoi(DataBuffer.substr(5,1).c_str());
         int channel = -1;
         if(DataBuffer.compare(6,3,"_DE") == 0 ){
-          channel = atoi(DataBuffer.substr(10).c_str());
+          channel = atoi(DataBuffer.substr(9).c_str());
           *(m_DEChannelStatus[telescope -1].begin() + channel -1) = false;
         }
         else if(DataBuffer.compare(6,2,"_E") == 0 ){
-          channel = atoi(DataBuffer.substr(10).c_str());
+          channel = atoi(DataBuffer.substr(8).c_str());
           *(m_EChannelStatus[telescope -1].begin() + channel -1) = false;
         }
 
