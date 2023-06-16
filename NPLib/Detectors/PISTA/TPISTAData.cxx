@@ -51,6 +51,7 @@ void TPISTAData::Clear() {
   fPISTA_DE_BackEnergy.clear();
   fPISTA_DE_StripTime.clear();
   fPISTA_DE_BackTime.clear();
+  fPISTA_DE_BackDetector.clear();
  
   // E //
   fPISTA_E_DetectorNbr.clear();
@@ -59,6 +60,7 @@ void TPISTAData::Clear() {
   fPISTA_E_BackEnergy.clear();
   fPISTA_E_StripTime.clear();
   fPISTA_E_BackTime.clear();
+  fPISTA_E_BackDetector.clear();
   
 }
 

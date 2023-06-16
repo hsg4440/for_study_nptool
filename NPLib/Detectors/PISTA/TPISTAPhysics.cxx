@@ -301,8 +301,6 @@ void TPISTAPhysics::BuildPhysicalEvent() {
             // Taking BAck Energy for E
             double E_Energy = m_PreTreatedData->GetPISTA_E_StripEnergy(j);
 
-            //double E_Time = m_PreTreatedData->GetPISTA_E_BackTime(j);
-
             DetectorNumber.push_back(DE_DetNbr);
             DE_StripNbr.push_back(StripNbr_DE);
             E_StripNbr.push_back(StripNbr_E);
@@ -310,7 +308,11 @@ void TPISTAPhysics::BuildPhysicalEvent() {
             E.push_back(E_Energy);
             back_DE.push_back(m_PreTreatedData->GetPISTA_DE_BackEnergy(i));
             back_E.push_back(m_PreTreatedData->GetPISTA_E_BackEnergy(j));
-            //Time.push_back(E_Time);
+            
+            DE_Time.push_back(m_PreTreatedData->GetPISTA_DE_StripTime(i));
+            back_DE_Time.push_back(m_PreTreatedData->GetPISTA_DE_BackTime(i));
+            E_Time.push_back(m_PreTreatedData->GetPISTA_E_StripTime(j));
+            back_E_Time.push_back(m_PreTreatedData->GetPISTA_E_BackTime(j));
 
             /*PosX.push_back(GetPositionOfInteraction(i).x());
             PosY.push_back(GetPositionOfInteraction(i).y());
@@ -366,45 +368,56 @@ void TPISTAPhysics::PreTreat() {
   //////
   // DE
   unsigned int sizeDE = m_EventData->GetPISTADEMult();
+  unsigned int sizeDE_back = m_EventData->GetPISTADEBackMult();
   for (UShort_t i = 0; i < sizeDE ; ++i) {
     if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i))) {
       int DetNbr = m_EventData->GetPISTA_DE_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_DE_StripNbr(i);
       double StripE = m_EventData->GetPISTA_DE_StripEnergy(i);
-      double BackDE  = m_EventData->GetPISTA_DE_BackEnergy(i);
       double StripT  = m_EventData->GetPISTA_DE_StripTime(i);
-      double BackT  = 0;//m_EventData->GetPISTA_DE_BackTime(i);
-
+      
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_PEDESTAL",0);
       double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_ENERGY",StripE-ped);
-      double CalBackDE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_DE",BackDE);
-      if (CalStripE > m_E_Threshold) {
-        m_PreTreatedData->SetPISTA_DE(DetNbr, StripNbr, CalStripE, CalBackDE, StripT, BackT);
+
+      for(UShort_t j = 0; j< sizeDE_back; j++){
+        double BackDE = m_EventData->GetPISTA_DE_BackEnergy(j);
+        double BackT  = m_EventData->GetPISTA_DE_BackTime(j);
+        int BackDet   = m_EventData->GetPISTA_DE_BackDetector(j); 
+
+        double CalBackDE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_DE",BackDE);
+        if (CalStripE > m_E_Threshold && DetNbr==BackDet) {
+          m_PreTreatedData->SetPISTA_DE(DetNbr, StripNbr, CalStripE, CalBackDE, StripT, BackT);
+        }
       }
     }
   }
 
   // E
   unsigned int sizeE = m_EventData->GetPISTAEMult();
+  unsigned int sizeE_back = m_EventData->GetPISTAEBackMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
     if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i))) {
       int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
       double StripE = m_EventData->GetPISTA_E_StripEnergy(i);
-      double BackE  = m_EventData->GetPISTA_E_BackEnergy(i);
       double StripT  = m_EventData->GetPISTA_E_StripTime(i);
-      double BackT  = 0;//m_EventData->GetPISTA_E_BackTime(i);
-
+     
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_PEDESTAL",0);
       double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_ENERGY",StripE-ped);
-      double CalBackE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_E",BackE);
+      
+      for(UShort_t j = 0; j< sizeE_back; j++){
+        double BackE  = m_EventData->GetPISTA_E_BackEnergy(j);
+        double BackT  = m_EventData->GetPISTA_E_BackTime(j);
+        int BackDet = m_EventData->GetPISTA_E_BackDetector(j);
 
-      if (CalStripE > m_E_Threshold) {
-        m_PreTreatedData->SetPISTA_E(DetNbr, StripNbr, CalStripE, CalBackE, StripT, BackT);
+        double CalBackE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_E",BackE);
+
+        if (CalStripE > m_E_Threshold && DetNbr==BackDet) {
+          m_PreTreatedData->SetPISTA_E(DetNbr, StripNbr, CalStripE, CalBackE, StripT, BackT);
+        }
       }
     }
   }
-
 }
 
 
@@ -505,7 +518,10 @@ void TPISTAPhysics::Clear() {
   back_E.clear();
   DE_StripNbr.clear();
   E_StripNbr.clear();
-  Time.clear();
+  DE_Time.clear();
+  back_DE_Time.clear();
+  E_Time.clear();
+  back_E_Time.clear();
 }
 
 
@@ -570,7 +586,7 @@ void TPISTAPhysics::InitializeStandardParameter() {
   }
 
 }
-  
+
 ///////////////////////////////////////////////////////////////////////////
 bool TPISTAPhysics::IsValidChannel(const int& DetectorType, const int& telescope, const int& channel){
 
@@ -693,14 +709,14 @@ NPL::VDetector* TPISTAPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-  class proxy_PISTA{
-    public:
-      proxy_PISTA(){
-        NPL::DetectorFactory::getInstance()->AddToken("PISTA","PISTA");
-        NPL::DetectorFactory::getInstance()->AddDetector("PISTA",TPISTAPhysics::Construct);
-      }
-  };
+class proxy_PISTA{
+  public:
+    proxy_PISTA(){
+      NPL::DetectorFactory::getInstance()->AddToken("PISTA","PISTA");
+      NPL::DetectorFactory::getInstance()->AddDetector("PISTA",TPISTAPhysics::Construct);
+    }
+};
 
-  proxy_PISTA p_PISTA;
+proxy_PISTA p_PISTA;
 }
 
