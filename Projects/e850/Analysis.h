@@ -63,12 +63,14 @@ class Analysis: public NPL::VAnalysis{
     double ThetaCM;
     double Ex240Pu;
     double Ex236U;
+    double Ex238U;
     double PID;
     double Chio_DE;
     double Chio_E;
 
     NPL::Reaction* Transfer10Be;
     NPL::Reaction* Transfer14C;
+    NPL::Reaction* Elastic;
 
     TRandom3 Rand;
     double ThetaNormalTarget;

@@ -45,6 +45,7 @@ void Analysis::Init(){
 
   Transfer10Be = new NPL::Reaction("238U(12C,10Be)240Pu@1417");
   Transfer14C  = new NPL::Reaction("238U(12C,14C)236U@1417");
+  Elastic      = new NPL::Reaction("238U(12C,12C)238U@1417");
   
   chain = RootInput::getInstance()->GetChain();
 
@@ -57,16 +58,16 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  double Xoffset = 0;// +2.8;
-  double Yoffset = -1.0;
+  double Xoffset = -1.0;
+  double Yoffset = 1.0;
   if(fTP_X>-1500 && fTP_Y>-1500){
-    XTarget = fTP_X + Xoffset;
+    XTarget = 0.5*fTP_X + Xoffset;
     YTarget = fTP_Y + Yoffset;
     ZTarget = 0;
   }
   else{  
-    XTarget = Xoffset;
-    YTarget = Yoffset;
+    XTarget = -1.0;
+    YTarget = -2 + Yoffset;
     ZTarget = 0;
   }
 
@@ -77,6 +78,7 @@ void Analysis::TreatEvent(){
   //BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer10Be->SetBeamEnergy(BeamEnergy);
   Transfer14C->SetBeamEnergy(BeamEnergy);
+  Elastic->SetBeamEnergy(BeamEnergy);
 
 
   if(fIC[1]>0 && fIC[5]>0){
@@ -109,9 +111,10 @@ void Analysis::TreatEvent(){
         PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
 
         ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
-        Elab = Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
+        Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
         Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
         Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
+        Ex238U  = Elastic->ReconstructRelativistic(Elab, ThetaLab);
         ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
         ThetaLab = ThetaLab/deg;
       }
@@ -127,6 +130,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("ZTarget",&ZTarget,"ZTarget/D");
   RootOutput::getInstance()->GetTree()->Branch("Ex240Pu",&Ex240Pu,"Ex240Pu/D");
   RootOutput::getInstance()->GetTree()->Branch("Ex236U",&Ex236U,"Ex236U/D");
+  RootOutput::getInstance()->GetTree()->Branch("Ex238U",&Ex238U,"Ex238U/D");
   RootOutput::getInstance()->GetTree()->Branch("DeltaE",&DeltaE,"DeltaE/D");
   RootOutput::getInstance()->GetTree()->Branch("DeltaEcorr",&DeltaEcorr,"DeltaEcorr/D");
   RootOutput::getInstance()->GetTree()->Branch("Eres",&Eres,"Eres/D");
@@ -243,6 +247,7 @@ void Analysis::ReInitValue(){
   BeamEnergy = -1000;
   Ex240Pu = -1000;
   Ex236U = -1000;
+  Ex238U = -1000;
   DeltaE = -1000;
   DeltaEcorr = -1000;
   Eres = -1000;
