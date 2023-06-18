@@ -39,7 +39,6 @@ class TPISTAData : public TObject {
     vector<unsigned short> fPISTA_DE_StripNbr;
     vector<double> fPISTA_DE_StripTime;
     vector<double> fPISTA_DE_StripEnergy;
-    
     vector<double> fPISTA_DE_BackEnergy;
     vector<double> fPISTA_DE_BackTime;
     vector<double> fPISTA_DE_BackDetector;

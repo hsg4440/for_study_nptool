@@ -81,6 +81,8 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     vector<double> PosX;
     vector<double> PosY;
     vector<double> PosZ;
+    vector<int> mult_DE;
+    vector<int> mult_E;
 
   
   //////////////////////////////////////////////////////////////
@@ -176,7 +178,7 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     };
 
 
-    TVector3 GetPositionOfInteraction(const int i);
+    TVector3 GetPositionOfInteraction(int DetectorNumber, int StripE, int StripDE);
     TVector3 GetDetectorNormal(const int i);
     
   // objects are not written in the TTree
