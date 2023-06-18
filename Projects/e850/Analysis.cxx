@@ -82,43 +82,58 @@ void Analysis::TreatEvent(){
 
 
   if(fIC[1]>0 && fIC[5]>0){
-    Chio_DE = 0.5*(fIC[1]+fIC[2]+fIC[3]+fIC[4]);
-    Chio_E = fIC[5]+fIC[6]+fIC[7];
+    Chio_DE = 0.5*(fIC[0]+fIC[1]+fIC[2]+fIC[3]+fIC[4]);
+    Chio_E = fIC[5]+fIC[6]+fIC[7]+fIC[8];
   }
 
   //cout << PISTA->EventMultiplicity << endl;
+  double Energy = 0;
+  int strip_DE = 0;
+  int strip_E = 0;
+  int DetectorNumber = 0;
   if(PISTA->EventMultiplicity==1){
-    for(unsigned int i = 0; i<PISTA->EventMultiplicity; i++){
-      double Energy = PISTA->DE[i] + PISTA->back_E[i];
-      DeltaE = PISTA->DE[i];
-      Eres = PISTA->back_E[i];
+    DeltaE = PISTA->DE[0];
+    Eres = PISTA->back_E[0];
+    Energy = DeltaE + Eres;
 
-      int strip_DE = PISTA->DE_StripNbr[i];
-      int strip_E = PISTA->E_StripNbr[i];
-      if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
-        TVector3 HitDirection = PISTA->GetPositionOfInteraction(i)-PositionOnTarget;
-        PhiLab = PISTA->GetPositionOfInteraction(i).Phi();
-        Xcalc = PISTA->GetPositionOfInteraction(i).X();
-        Ycalc = PISTA->GetPositionOfInteraction(i).Y();
-        Zcalc = PISTA->GetPositionOfInteraction(i).Z();
-        //ThetaLab = HitDirection.Angle(BeamDirection);
+    strip_DE = PISTA->DE_StripNbr[0];
+    strip_E = PISTA->E_StripNbr[0];
+    DetectorNumber = PISTA->DetectorNumber[0];
+  }
+  if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
+    DeltaE = PISTA->DE[0] + PISTA->DE[1];
+    Eres = PISTA->back_E[0];
+    Energy = DeltaE + Eres;
 
-        ThetaLab = HitDirection.Angle(TVector3(0,0,1));
-        ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(i));
+    DetectorNumber = PISTA->DetectorNumber[0];
+    if(PISTA->DE[0]>PISTA->DE[1])
+      strip_DE = PISTA->DE_StripNbr[0];
+    else
+      strip_DE = PISTA->DE_StripNbr[1];
 
-        DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
-        //PID = pow(Energy,1.78)-pow(PISTA->E[i],1.78);
-        PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
+    strip_E = PISTA->E_StripNbr[0];
+  }
+  if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
+    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(DetectorNumber, strip_E, strip_DE);
+    TVector3 HitDirection = PISTA_pos - PositionOnTarget;
+    PhiLab = PISTA_pos.Phi();
+    Xcalc  = PISTA_pos.X();
+    Ycalc  = PISTA_pos.Y();
+    Zcalc  = PISTA_pos.Z();
 
-        ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
-        Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
-        Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
-        Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
-        Ex238U  = Elastic->ReconstructRelativistic(Elab, ThetaLab);
-        ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
-        ThetaLab = ThetaLab/deg;
-      }
-    }
+    ThetaLab = HitDirection.Angle(TVector3(0,0,1));
+    ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(0));
+
+    DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
+    PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
+
+    ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
+    Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
+    Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
+    Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
+    Ex238U  = Elastic->ReconstructRelativistic(Elab, ThetaLab);
+    ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
+    ThetaLab = ThetaLab/deg;
   }
 }
 
@@ -265,7 +280,7 @@ void Analysis::ReInitValue(){
 
   Chio_DE = -1000;
   Chio_E = -1000;
-  
+
 
 }
 
