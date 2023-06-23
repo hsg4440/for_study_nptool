@@ -74,11 +74,17 @@ void CS_Diagnosis(){
 void CS(){
 /* Overload function */
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
-  cout << "---- 0.691, f7/2 = CS(0.691, 4, 3, 3.5) "<< endl;
-  cout << "----   ''   s1/2 = CS(0.691, 1, 0, 0.5) "<< endl;
-  cout << "----   ''   d3/2 = CS(0.691, 1, 2, 1.5) "<< endl;
-  cout << "---- 1.945, s1/2 = CS(1.945, 1, 0, 0.5) "<< endl;
-  cout << "---- 3.344, s1/2 = CS(3.344, 1, 0, 0.5) "<< endl;
+  cout << "---- 0.000, f7/2 = CS(0.000, 4, 3, 3.5, 0.10, \"\") "<< endl;
+  cout << "---- 0.579, f7/2 = CS(0.579, 4, 3, 3.5, 0.10, \"\") "<< endl;
+  cout << "---- 0.691, f7/2 = CS(0.691, 4, 3, 3.5, 0.10, \"\") "<< endl;
+  cout << "---- 1.945, s1/2 = CS(1.945, 1, 0, 0.5, 0.10, \"\") "<< endl;
+  cout << "---- 2.233, s1/2 = CS(2.233, 1, 0, 0.5, 0.10, \"\") "<< endl;
+  cout << "---- 2.732, dX/2 = CS(2.732, 2, 2, 1.5, 0.10, \"\") "<< endl;
+  cout << "---- 3.344 (x-?) "                                << endl;
+  cout << "    FIT TOGETHER = CS(3.377, 1, 0, 0.5, 0.10, \"\")" << endl;
+  cout << "---- 3.410 (?-?) "                                << endl;
+  cout << "---- 4.297, d5/2 = CS(4.297, 3, 2, 2.5, 0.10, \"\") "<< endl;
+  cout << "NOT SURE OF THE L TRANSFERS OR SPINS OF THESE STATES!!! CORRECT AS I GO ALONG!!!!" << endl;
 }
 
 /* MAIN FUNCTION */
@@ -127,7 +133,8 @@ void Plots_47Kdt(){
   TCutG* cutTritons = (TCutG*) gcIn.FindObjectAny("cutTritons");
   cutTritons->SetName("cutTritons");
 
-  TFile gcIn2("cutTime.root");
+  //TFile gcIn2("cutTime.root");
+  TFile gcIn2("cutTimeNew.root");
   TCutG* cutTime = (TCutG*) gcIn2.FindObjectAny("cutTime");
   cutTime->SetName("cutTime");
 
@@ -155,7 +162,8 @@ void Plots_47Kdt(){
   LoadChain47Kdt();
   gStyle->SetOptStat("nemMrRi");
 
-  tCentre = 2750;  tRange = 350; //Wide is fine because I use the 2D time gate
+  tCentre = 280;  tRange = 30; //post-calibration
+  //tCentre = 2750;  tRange = 350; //Wide is fine because I use the 2D time gate
   //tCentre = 2550;  tRange = 150;
   timegate = "abs(T_MUGAST_VAMOS-" + to_string(tCentre) + ")<" + to_string(tRange);
   det_gate = "MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5";

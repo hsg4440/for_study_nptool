@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%% E793S %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 47K 
+  ExcitationEnergy= 0 MeV
+  Energy= 362 MeV
+  SigmaEnergy= 0. MeV
+  SigmaThetaX= 0.0  deg
+  SigmaPhiY= 0.0    deg
+  SigmaX= 2 mm
+  SigmaY= 2 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= -4.967853 mm
+  MeanY= +0.575841 mm
+  %EnergyProfilePath=
+  %XThetaXProfilePath=
+  %YPhiYProfilePath=
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 47K
+ Target= 2H
+ Light= 1H
+ Heavy= 48K
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.143 MeV
+ LabCrossSectionPath= 47Kdp48K_p32.txt CSR
+ %%LabCrossSectionPath= 47Kdp48K_p12.txt CSR
+ %%LabCrossSectionPath= 47Kdp48K_f72.txt CSR
+ %%LabCrossSectionPath= 47Kdp48K_f52.txt CSR
+ ShootLight= 1
+ ShootHeavy= 0

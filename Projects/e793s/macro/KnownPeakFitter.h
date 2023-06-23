@@ -9,42 +9,31 @@ vector<double> means = { 0.000,
 			   0.728,
 			   0.967,
 			   1.409,
-			   1.978,//1.952,//1.981,
+			   1.978,
 			   2.407,
 			   2.909,
 			   3.254,
-			   //3.455,//Possible???? TEMP!!!
 			   3.601,
-			   //3.794,//Split in two?
-			   //3.868,//Split in two? 
 			   3.830,
-			   //4.0,
-			   4.18,
-			   //4.2,
-			   4.3,
-			   4.4
 			   //4.16,
-			   //4.23,
-			   ////4.316,
-			   //4.387
-			   ////4.317,
-			   ////4.42
+			   //4.29,
+			   //4.35
+			   4.363
                            };
 const int numPeaks = means.size(); 
 
 
-//const int numPeaks_dt = 8;//9; 
-//array<double,numPeaks_dt> means_dt = { 0.000,
 vector<double> means_dt = { 0.000,
-	                   0.587, //from lit
-			   0.691, //from lit
-			   //0.886, //from lit
-			   //1.738, //from lit
+	                   0.587,
+			   0.691,
+			   //0.886,
+			   //1.738,
                            1.944,
 			   2.233, 
 			   2.732,
-                           3.344,
-                           3.410,
+			   3.377,//DOUBLET
+                           //3.344,
+                           //3.410,
 			   4.297
                            };
 
@@ -136,7 +125,7 @@ Double_t f_full_dt(Double_t *x, Double_t *par) {
 }
 
 vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
-  double minFit=-1.0, maxFit=8.0; 
+  double minFit=-1.0, maxFit=4.644; 
   double binWidth = hist->GetXaxis()->GetBinWidth(3);
   //double sigma = 0.14;
 
@@ -151,13 +140,11 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
     gradient = 0.989;
     numPeaks_temp = numPeaks;
     means_temp = means;
-
   } else if (reactionName=="47K(d,t)"){
     sigma = 0.18;
-    gradient = 1.000;
+    gradient = 0.986;
     numPeaks_temp = numPeaks_dt;
     means_temp = means_dt;
-
   }
 
   cout << BOLDGREEN 
@@ -166,10 +153,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
        << RESET 
        << endl;
 
-  hist->Sumw2();
-
-  /* Construct flat BG to subtract */ 
-  /** REMOVED FOR NOW **/
+  //hist->Sumw2();
 
   //Build individual peak fit functions
   string nameBase = "Peak ";
@@ -185,27 +169,27 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
   } 
 
   //Subtract flat background equal to smallest bin in range
-  /** REMOVED FOR NOW **/
-  
-  ////Gradient on mean value
-  //double gradient;
-  //gradient = 0.989;
-  //cout << BOLDGREEN 
-  //     << "FITTING WITH A REAL:OBSERVED Ex GRADIENT GRADIENT OF " 
-  //     << gradient 
-  //     << RESET 
-  //     << endl;
+  hist->GetXaxis()->SetRange(hist->FindBin(-0.8), hist->FindBin(-0.0));
+  double bgmin = hist->GetBinContent(hist->GetMinimumBin());
+  hist->GetXaxis()->UnZoom();
+  cout << "Subtracting background of " << bgmin << endl;
+  for(int b=1; b<hist->GetNbinsX() ; b++){
+      hist->SetBinContent(b,hist->GetBinContent(b)-bgmin);
+  }
 
   //Build background function
-  /** REMOVED FOR NOW **/
+  TF1 *bg = new TF1 ("bg","[0]",minFit, maxFit);
+  bg->SetLineColor(kGreen);
+  bg->SetLineStyle(9);
+  bg->SetParNames("Background");
 
   //Build total function
   string s_full = f_full_string();
-  TF1 *full = new TF1("fitAllPeaks", s_full.c_str(), minFit, maxFit);//, (int) (3*numPeaks));
+  TF1 *full = new TF1("fitAllPeaks", s_full.c_str(), minFit, maxFit);
   full->SetLineColor(kRed);
   const int numParams = (numPeaks_temp*3);
   for(int i=0; i<numPeaks_temp; i++) {
-    full->FixParameter((i*3)+1,means_temp.at(i)*gradient); //GRADIENT REMOVED FOR NOW
+    full->FixParameter((i*3)+1,means_temp.at(i)*gradient);
     full->FixParameter((i*3)+2,sigma);
     full->SetParameter((i*3)+0,1e1);
     full->SetParLimits((i*3)+0,0.0,1e5);
@@ -213,11 +197,19 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
   full->SetNpx(500);
 
   //Set and fix specific parameters
-  /** REMOVED FOR NOW **/
+  for (int i=0; i<numPeaks; i++){
+    if(means[i]>4.0){
+      full->SetParameter((i*3)+2,0.23);
+    }
+    if(abs(means[i]-0.279)<0.05){
+      full->FixParameter((i*3)+0,0.0);
+    }
+  }
 
   //Fit full function to histogram
   //hist->Fit(full, "RWQB", "", minFit, maxFit);
   hist->Fit(full, "RWQBL", "", minFit, maxFit); cout << GREEN << "FITTING WITH MAX LIKELYHOOD METHOD" << RESET << endl;
+
   hist->Draw();
 
   //Extract fitted variables, assign them to individual fits, and draw them
@@ -226,10 +218,43 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
   for (int i=0; i<numPeaks_temp; i++){
     allPeaks[i]->SetParameters(finalPar[0+(i*3)], finalPar[1+(i*3)], finalPar[2+(i*3)]);
   }
+  bg->SetParameter(0,finalPar[0]);
+  bg->Draw("SAME");
   full->Draw("SAME");
 
   //Make irresolvable doublet clear
-  /** REMOVED FOR NOW **/
+  if(reactionName=="47K(d,p)"){
+    for (int i=0; i<numPeaks_temp; i++){
+      if(abs(means[i]-3.83)<0.1){
+        cout << BOLDCYAN 
+             << "PEAK #" << i 
+             << " IS FITTING IRRESOLVABLE DOUBLET!" 
+             << RESET 
+             << endl;
+        allPeaks[i]->SetLineColor(kCyan+1);
+      }
+      if(means[i]>4.0){
+        cout << BOLDMAGENTA 
+             << "PEAK #" << i 
+             << " IS FITTING UNKNOWN ZONE WITH SIGMA = "
+             << full->GetParameter((i*3)+2)
+             << RESET 
+             << endl;
+        allPeaks[i]->SetLineColor(kMagenta);
+      }
+    }
+  } else if(reactionName=="47K(d,t)"){
+    for (int i=0; i<numPeaks_temp; i++){
+      if(abs(means[i]-3.37)<0.1){
+        cout << BOLDCYAN 
+             << "PEAK #" << i 
+             << " IS FITTING IRRESOLVABLE DOUBLET!" 
+             << RESET 
+             << endl;
+        allPeaks[i]->SetLineColor(kCyan+1);
+      }
+    }
+  }
 
   //Draw all peaks
   for (int i=0; i<numPeaks_temp; i++){

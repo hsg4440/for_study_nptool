@@ -88,9 +88,14 @@ void LoadChain47Kdp(){
   //files.push_back("../../../Outputs/Analysis/20Feb23_NewGammaMatching_PartI.root");
   //files.push_back("../../../Outputs/Analysis/20Feb23_NewGammaMatching_PartII.root");
 
-  files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartI.root");
-  files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartII.root");
 
+  //files.push_back("../../../Outputs/Analysis/27May23_47Kdp_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/27May23_47Kdp_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -104,8 +109,15 @@ void LoadChain47Kdt(){
   //files.push_back("../../../Outputs/Analysis/47Kdt_18Oct22_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdt_18Oct22_PartII.root");
 
-  files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartII.root");
+  
+  //files.push_back("../../../Outputs/Analysis/47Kdt_24May23_PostPhiFix_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_24May23_PostPhiFix_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/47Kdt_30May23_PhiFix_BetaMag_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdt_30May23_PhiFix_BetaMag_PartII.root");
+
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -336,9 +348,23 @@ void Load_1DGamma_MG(){
 void Load_1DParticle(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   TH1F *hEx = new TH1F("hEx","Loaded 1D Particle Spectrum",600,-15,15);
-  TFile *file = new TFile("LoadHistograms/Load_1DParticle.root","READ");
+  TFile *file = new TFile("LoadHistograms_48K/Load_1DParticle.root","READ");
   hEx = (TH1F*)file->Get("Ep");
   hEx->Draw();
+}
+
+TH1F* Return_1DParticle(){
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
+  TH1F *hEx = new TH1F("hEx","Loaded 1D Particle Spectrum",600,-15,15);
+
+  if(reactionName=="47K(d,p)"){
+    TFile *file = new TFile("LoadHistograms_48K/Load_1DParticle.root","READ");
+    hEx = (TH1F*)file->Get("Ep");
+  } else if (reactionName=="47K(d,t)"){
+    TFile *file = new TFile("LoadHistograms_46K/Load_1DParticle.root","READ");
+    hEx = (TH1F*)file->Get("Ep");
+  }
+  return hEx;
 }
 
 void Load_1DParticle_SubPhaseSpace(){
@@ -898,6 +924,7 @@ void GateGamma_SeeGamma_WithBG(double gamma, double width, double bg, double wid
   ggBG->Draw("same");
 }
 */
+
 void CompareExsAt4MeV(){
   TCanvas *cExCompare = new TCanvas("cExCompare","cExCompare",1000,1000);
   chain->Draw("AddBack_EDC>>gate3p0(1000,0,10)",
@@ -3142,7 +3169,6 @@ void Figure_GateGamma_SeeParticle(
   gate3H->Draw("SAME");
 }
 
-
 void Figure_TopGamma_BottomParticle(double gammaBinWidth, double particleBinWidth){
   string gating = timegate + "&&" + det_gate + " && Ex@.size()==1";
   string gammagate = timegate 
@@ -3373,7 +3399,6 @@ TH2F* Func_Rebin2DPartGamma(TH2F* h2D, double gammaBin, double particleBin){
   //COULD MAKE FASTER USING POINTER TO POINTER, BUT CBA
 }
 
-
 TH2F* Func_Rebin2DGammaGamma(TH2F* h2D, double gammaBin1, double gammaBin2){
   double gammaBinMin = h2D->GetXaxis()->GetBinWidth(2);
 
@@ -3399,7 +3424,6 @@ TH2F* Func_Rebin2DGammaGamma(TH2F* h2D, double gammaBin1, double gammaBin2){
   //COULD MAKE FASTER USING POINTER TO POINTER, BUT CBA
 }
 
-
 TH1F* Func_Gater(TH2F* h2D, const char* axis, double gateMean, double gateWidth, Color_t gateColour){
 
   TH1F* output;
@@ -3418,7 +3442,6 @@ TH1F* Func_Gater(TH2F* h2D, const char* axis, double gateMean, double gateWidth,
 
   return output;
 }
-
 
 TH2F* Func_LoadIn2DGammaGamma(){
   string loadname = "./";
@@ -3480,12 +3503,17 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma, double width, double gamma
 }
 
 void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gamma2, double width2, double gammaBin, double particleBin){
-
-  TH2F* h2D = (TH2F*)Func_LoadIn2DPartGamma();
+  gStyle->SetPadTopMargin(0.01);
+  gStyle->SetPadRightMargin(0.01);
+  gStyle->SetPadBottomMargin(1.0);
+  gStyle->SetPadLeftMargin(0.09);
   gStyle->SetOptStat(0);
+
+  TH1F* hExTotal = Return_1DParticle();
+  TH2F* h2D = (TH2F*)Func_LoadIn2DPartGamma();
   h2D = Func_Rebin2DPartGamma(h2D, gammaBin, particleBin);
 
-  TCanvas *cGGSP = new TCanvas("cGGSP","cGGSP",1000,1000);
+  TCanvas *cGGSP = new TCanvas("cGGSP","cGGSP",1000,600);
   cGGSP->Divide(1,2);
   double zoom = 0.2;
 
@@ -3494,6 +3522,31 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
   hEg->GetXaxis()->SetRangeUser(gamma1-zoom, gamma1+zoom);
   hEg->SetLineColor(kBlack);
   hEg->Draw();
+
+  hEg->SetTitle("");
+
+  hEg->GetXaxis()->SetTitle("Ex [MeV]");
+  hEg->GetXaxis()->CenterTitle();
+  hEg->GetXaxis()->SetTitleFont(133);
+  hEg->GetXaxis()->SetTitleSize(22);
+  hEg->GetXaxis()->SetLabelFont(133);
+  hEg->GetXaxis()->SetLabelSize(20);
+  hEg->GetXaxis()->SetNdivisions(511);
+
+  string exytit = "Counts / " + to_string(particleBin) + " MeV";
+
+  hEg->GetYaxis()->SetTitle(exytit.c_str());
+  hEg->GetYaxis()->CenterTitle();
+  hEg->GetYaxis()->SetTitleFont(133);
+  hEg->GetYaxis()->SetTitleSize(22);
+  hEg->GetYaxis()->SetLabelFont(133);
+  hEg->GetYaxis()->SetLabelSize(20);
+  hEg->GetYaxis()->SetTitleOffset(0.45);
+
+
+
+
+
   double height = hEg->GetMaximum();
   Func_AddGatingLines(gamma1, width1, height, kRed); 
   Func_AddGatingLines(gamma2, width2, height, kBlue); 
@@ -3505,6 +3558,28 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
   //TH1F* hEx2 = Func_Gater(h2D, "Y", gamma2, width2, kBlue); 
   //hEx1->Draw();
   //hEx2->Draw("same");
+ 
+  string egytit = "Counts / " + to_string(particleBin) + " MeV";
+
+  hExTotal->SetTitle("");
+  hExTotal->GetXaxis()->CenterTitle();
+  hExTotal->GetXaxis()->SetTitleFont(133);
+  hExTotal->GetXaxis()->SetTitleSize(22);
+  hExTotal->GetXaxis()->SetLabelFont(133);
+  hExTotal->GetXaxis()->SetLabelSize(20);
+  hExTotal->GetXaxis()->SetNdivisions(511);
+  hExTotal->GetYaxis()->CenterTitle();
+  hExTotal->GetYaxis()->SetTitleFont(133);
+  hExTotal->GetYaxis()->SetTitleSize(22);
+  hExTotal->GetYaxis()->SetLabelFont(133);
+  hExTotal->GetYaxis()->SetLabelSize(20);
+  hExTotal->GetYaxis()->SetTitleOffset(0.45);
+
+  hExTotal->SetLineColor(kBlack);
+  hExTotal->Scale(0.02);
+
+  hExTotal->Draw();
+  
   TH1F* hEx = (TH1F*)h2D->ProjectionY("hEx",
         	              h2D->GetXaxis()->FindBin(gamma1-width1),
         	              h2D->GetXaxis()->FindBin(gamma1+width1)
@@ -3512,6 +3587,11 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
   hEx->GetXaxis()->SetRangeUser(-1,7);
   hEx->SetLineColor(kRed);
   hEx->Draw();
+  //hEx->Draw("same");
+
+
+
+
 
   TH1F* hEx2 = (TH1F*)h2D->ProjectionY("hEx2",
         	              h2D->GetXaxis()->FindBin(gamma2-width2),
@@ -3524,12 +3604,18 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
 }
 
 void GateGamma_SeeParticle_LoadFromFile(double gamma, double width, double gamma2, double width2, double gamma3, double width3, double gammaBin, double particleBin){
+  gStyle->SetPadTopMargin(0.01);
+  gStyle->SetPadRightMargin(0.01);
+  gStyle->SetPadBottomMargin(1.0);
+  gStyle->SetPadLeftMargin(0.09);
+  gStyle->SetOptStat(0);
 
+  TH1F* hExTotal = Return_1DParticle();
   TH2F* h2D = (TH2F*)Func_LoadIn2DPartGamma();
   gStyle->SetOptStat(0);
   h2D = Func_Rebin2DPartGamma(h2D, gammaBin, particleBin);
 
-  TCanvas *cGGSP = new TCanvas("cGGSP","cGGSP",1000,1000);
+  TCanvas *cGGSP = new TCanvas("cGGSP","cGGSP",1000,600);
   cGGSP->Divide(1,2);
   double zoom = 0.2;
 
@@ -3537,19 +3623,77 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma, double width, double gamma
   TH1F* hEg = (TH1F*)h2D->ProjectionX("hEg",0,10000);
   hEg->GetXaxis()->SetRangeUser(gamma-zoom, gamma+zoom);
   hEg->SetLineColor(kBlack);
+
+  hEg->SetTitle("");
+
+  hEg->GetXaxis()->SetTitle("Ex [MeV]");
+  hEg->GetXaxis()->CenterTitle();
+  hEg->GetXaxis()->SetTitleFont(133);
+  hEg->GetXaxis()->SetTitleSize(22);
+  hEg->GetXaxis()->SetLabelFont(133);
+  hEg->GetXaxis()->SetLabelSize(20);
+  hEg->GetXaxis()->SetNdivisions(511);
+
+  string egytit = "Counts / " + to_string(gammaBin) + " MeV";
+
+  hEg->GetYaxis()->SetTitle(egytit.c_str());
+  hEg->GetYaxis()->CenterTitle();
+  hEg->GetYaxis()->SetTitleFont(133);
+  hEg->GetYaxis()->SetTitleSize(22);
+  hEg->GetYaxis()->SetLabelFont(133);
+  hEg->GetYaxis()->SetLabelSize(20);
+  hEg->GetYaxis()->SetTitleOffset(0.45);
+  hEg->GetXaxis()->CenterTitle();
+  hEg->GetXaxis()->SetTitleFont(133);
+  hEg->GetXaxis()->SetTitleSize(22);
+  hEg->GetXaxis()->SetLabelFont(133);
+  hEg->GetXaxis()->SetLabelSize(20);
+  hEg->GetXaxis()->SetNdivisions(511);
+  hEg->GetYaxis()->CenterTitle();
+  hEg->GetYaxis()->SetTitleFont(133);
+  hEg->GetYaxis()->SetTitleSize(22);
+  hEg->GetYaxis()->SetLabelFont(133);
+  hEg->GetYaxis()->SetLabelSize(20);
+  hEg->GetYaxis()->SetTitleOffset(0.45);
   hEg->Draw();
+
   double height = hEg->GetMaximum();
   Func_AddGatingLines(gamma,  width,  height, kRed); 
   Func_AddGatingLines(gamma2, width2, height, kBlue); 
   Func_AddGatingLines(gamma3, width3, height, kGreen); 
 
+  
+
   cGGSP->cd(2);
+
+  string exytit = "Counts / " + to_string(particleBin) + " MeV";
+
+  hExTotal->SetTitle("");
+  hExTotal->GetXaxis()->SetTitle(exytit.c_str());
+  hExTotal->GetXaxis()->CenterTitle();
+  hExTotal->GetXaxis()->SetTitleFont(133);
+  hExTotal->GetXaxis()->SetTitleSize(22);
+  hExTotal->GetXaxis()->SetLabelFont(133);
+  hExTotal->GetXaxis()->SetLabelSize(20);
+  hExTotal->GetXaxis()->SetNdivisions(511);
+  hExTotal->GetYaxis()->CenterTitle();
+  hExTotal->GetYaxis()->SetTitleFont(133);
+  hExTotal->GetYaxis()->SetTitleSize(22);
+  hExTotal->GetYaxis()->SetLabelFont(133);
+  hExTotal->GetYaxis()->SetLabelSize(20);
+  hExTotal->GetYaxis()->SetTitleOffset(0.45);
+
+  hExTotal->SetLineColor(kBlack);
+  hExTotal->Scale(0.15);
+
+  hExTotal->Draw();
+
   TH1F* hEx = (TH1F*)h2D->ProjectionY("hEx",
 		              h2D->GetXaxis()->FindBin(gamma-width),
 		              h2D->GetXaxis()->FindBin(gamma+width)
 			      );
   hEx->SetLineColor(kRed);
-  hEx->Draw();
+  hEx->Draw("same");
 
   TH1F* hEx2 = (TH1F*)h2D->ProjectionY("hEx2",
 		              h2D->GetXaxis()->FindBin(gamma2-width2),
@@ -3968,4 +4112,270 @@ void RandomStateSubtraction(){
   RandomStateSubtraction(-500.);
 }
 
+TChain* chOrig=NULL ;
+TChain* ch0p99=NULL ;
+TChain* ch1p01=NULL ;
 
+void Fig_MM_CompareThickChanges(){
+
+  TCanvas* cMMCT = new TCanvas("cMMCT","cMMCT",1000,1000);
+  cMMCT->Divide(1,3);
+
+  ///////////////////////////////////////////////////////////
+  vector<string> files;
+  string gating = "MUST2.TelescopeNumber<5 && abs(T_MUGAST_VAMOS-2750)<350 && cutTritons && cutTime && " + exclBmDcy;
+  string gate19 = gating + " && abs(Ex-1.85)<0.2";
+  string gate36 = gating + " && abs(Ex-3.35)<0.2";
+
+  ///////////////////////////////////////////////////////////
+  //files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartII.root");
+  //chOrig = Chain("PhysicsTree",files,true);
+  //files.clear();
+
+  //files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx0p99_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx0p99_PartII.root");
+  //ch0p99 = Chain("PhysicsTree",files,true);
+  //files.clear();
+
+  //files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx1p01_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx1p01_PartII.root");
+  //ch1p01 = Chain("PhysicsTree",files,true);
+  //files.clear();
+
+  ///////////////////////////////////////////////////////////
+  files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdt_30Mar23_AfterNPLGRITChanges_PartII.root");
+  chOrig = Chain("PhysicsTree",files,true);
+  files.clear();
+
+  cMMCT->cd(1);
+  chOrig->Draw("AddBack_EDC>>hOrig19(50,1.9,2.0)", gate19.c_str(), "");
+  TH1F* hOrig19 = (TH1F*) gDirectory->Get("hOrig19");
+  chOrig->Draw("AddBack_EDC>>hOrig36(50,1.9,2.0)", gate36.c_str(), "");
+  TH1F* hOrig36 = (TH1F*) gDirectory->Get("hOrig36");
+
+  hOrig19->SetLineColor(kRed);
+  hOrig36->SetLineColor(kBlue);
+
+  hOrig19->Draw("");
+  hOrig36->Draw("SAME");
+  ///////////////////////////////////////////////////////////
+  files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx0p99_PartI.root");
+  files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx0p99_PartII.root");
+  ch0p99 = Chain("PhysicsTree",files,true);
+  files.clear();
+
+  cMMCT->cd(2);
+  ch0p99->Draw("AddBack_EDC>>h0p9919(50,1.9,2.0)", gate19.c_str(), "");
+  TH1F* h0p9919 = (TH1F*) gDirectory->Get("h0p9919");
+  ch0p99->Draw("AddBack_EDC>>h0p9936(50,1.9,2.0)", gate36.c_str(), "");
+  TH1F* h0p9936 = (TH1F*) gDirectory->Get("h0p9936");
+
+  h0p9919->SetLineColor(kRed);
+  h0p9936->SetLineColor(kBlue);
+
+  h0p9919->Draw("");
+  h0p9936->Draw("SAME");
+  ///////////////////////////////////////////////////////////
+  files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx1p01_PartI.root");
+  files.push_back("../../../Outputs/Analysis/19May23_47Kdt_Tx1p01_PartII.root");
+  ch1p01 = Chain("PhysicsTree",files,true);
+  files.clear();
+
+  cMMCT->cd(3);
+  ch1p01->Draw("AddBack_EDC>>h1p0119(50,1.9,2.0)", gate19.c_str(), "");
+  TH1F* h1p0119 = (TH1F*) gDirectory->Get("h1p0119");
+  ch1p01->Draw("AddBack_EDC>>h1p0136(50,1.9,2.0)", gate36.c_str(), "");
+  TH1F* h1p0136 = (TH1F*) gDirectory->Get("h1p0136");
+
+  h1p0119->SetLineColor(kRed);
+  h1p0136->SetLineColor(kBlue);
+
+  h1p0119->Draw("");
+  h1p0136->Draw("SAME");
+
+
+}
+
+void Fig_Ex_Eg_SepCanvases_SameScale(){
+
+  gStyle->SetPadTopMargin(0.01);
+  gStyle->SetPadRightMargin(0.01);
+  gStyle->SetPadBottomMargin(1.0);
+  gStyle->SetPadLeftMargin(0.09);
+  gStyle->SetOptStat(0);
+  TCanvas* cEx = new TCanvas("cEx","cEx",1000,300);
+  TCanvas* cEg = new TCanvas("cEg","cEg",1000,300);
+ 
+  cEx->cd();
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
+
+  //chain->Draw("Ex>>Ep(22,-0.5,5)", gate.c_str(),"");
+  chain->Draw("Ex>>Ep(220,-0.5,5)", gate.c_str(),"");
+  TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
+  Ep->GetXaxis()->SetTitle("Ex [MeV]");
+  Ep->GetYaxis()->SetTitle("Counts / 0.025 MeV");
+  Ep->SetTitle("");
+  Ep->GetXaxis()->CenterTitle();
+  Ep->GetXaxis()->SetTitleFont(133);
+  Ep->GetXaxis()->SetTitleSize(22);
+  Ep->GetXaxis()->SetLabelFont(133);
+  Ep->GetXaxis()->SetLabelSize(20);
+  Ep->GetXaxis()->SetNdivisions(511);
+  Ep->GetYaxis()->CenterTitle();
+  Ep->GetYaxis()->SetTitleFont(133);
+  Ep->GetYaxis()->SetTitleSize(22);
+  Ep->GetYaxis()->SetLabelFont(133);
+  Ep->GetYaxis()->SetLabelSize(20);
+  Ep->GetYaxis()->SetTitleOffset(0.45);
+  Ep->GetYaxis()->SetRangeUser(0,1300);
+
+  Ep->SetLineColor(kBlack);
+
+  if(reactionName=="47K(d,t)"){
+    Ep->Rebin(2); 
+    Ep->GetYaxis()->SetTitle("Counts / 0.05 MeV");
+  }
+
+  //FitKnownPeaks((TH1F*) Ep);
+
+  TLine* l00 = new TLine(0,0,0,1300);
+  l00->SetLineColor(kOrange-3);
+  l00->SetLineWidth(2);
+  l00->Draw();
+  TLine* lSn = new TLine(4.644,0,4.644,1300);
+  lSn->SetLineColor(kOrange-3);
+  lSn->SetLineWidth(2);
+  lSn->Draw();
+
+  TLatex *TSn = new TLatex(.5,.5,"S_{n}");
+    TSn->SetTextColor(kOrange-3);
+    TSn->SetTextSize(0.06);
+    TSn->SetX(4.70);
+    TSn->SetY(1075);
+    TSn->Draw("same");
+  TLatex *Tgs = new TLatex(.5,.5,"g.s.");
+    Tgs->SetTextColor(kOrange-3);
+    Tgs->SetTextSize(0.06);
+    Tgs->SetX(-0.35);
+    Tgs->SetY(1075);
+    Tgs->Draw("same");
+
+  TLatex *ExT = new TLatex(.5,.5,"Reconstructed excitation ^{47}K(d,p)^{48}K");
+    ExT->SetTextAlign(22);
+    ExT->SetTextFont(132);
+    ExT->SetTextColor(kBlack);
+    ExT->SetTextSize(0.08);
+    ExT->SetX(2.25);
+    ExT->SetY(1200);
+    ExT->Draw("same");
+
+
+  cEg->cd();
+  cEg->SetLogy();
+  gate = gate + " && " + exclBmDcy;
+
+  chain->Draw("AddBack_EDC>>Eg(1100,-0.5,5)",gate.c_str(),"");
+  //chain->Draw("AddBack_EDC>>Eg(110,-0.5,5)",gate.c_str(),"");
+  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
+  Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  Eg->GetYaxis()->SetTitle("Counts / 0.005 MeV");
+  Eg->SetTitle("");
+  Eg->GetXaxis()->CenterTitle();
+  Eg->GetXaxis()->SetTitleFont(133);
+  Eg->GetXaxis()->SetTitleSize(22);
+  Eg->GetXaxis()->SetLabelFont(133);
+  Eg->GetXaxis()->SetLabelSize(20);
+  Eg->GetXaxis()->SetNdivisions(511);
+  Eg->GetYaxis()->CenterTitle();
+  Eg->GetYaxis()->SetTitleFont(133);
+  Eg->GetYaxis()->SetTitleSize(22);
+  Eg->GetYaxis()->SetLabelFont(133);
+  Eg->GetYaxis()->SetLabelSize(20);
+  Eg->GetYaxis()->SetTitleOffset(0.45);
+  Eg->GetYaxis()->SetRangeUser(0.5,5000);
+
+  Eg->SetLineColor(kBlack);
+
+  TLine* l0g = new TLine(0,0.5,0,5000);
+  l0g->SetLineColor(kOrange-3);
+  l0g->SetLineWidth(2);
+  l0g->Draw();
+  TLine* lSng = new TLine(4.644,0.5,4.644,5000);
+  lSng->SetLineColor(kOrange-3);
+  lSng->SetLineWidth(2);
+  lSng->Draw();
+
+  TLatex *TSng = new TLatex(.5,.5,"S_{n}");
+    TSng->SetTextColor(kOrange-3);
+    TSng->SetTextSize(0.06);
+    TSng->SetX(4.70);
+    TSng->SetY(1000);
+    TSng->Draw("same");
+
+  TLatex *EgT = new TLatex(.5,.5,"#gamma-rays coincident with upstream proton");
+    EgT->SetTextAlign(22);
+    EgT->SetTextFont(132);
+    EgT->SetTextColor(kBlack);
+    EgT->SetTextSize(0.08);
+    EgT->SetX(2.25);
+    EgT->SetY(2000);
+    EgT->Draw("same");
+
+
+}
+
+void Testing_BetaCorrection_dt(){
+
+TCanvas* canv = new TCanvas("canv","canv",1000,1000);
+
+chain->Draw("AGATA_OrigBetaMag:ThetaLab>>hAll3(60,0,30,250,0.125,0.127)",
+	    "abs(T_MUGAST_VAMOS-280)<30 && MUST2.TelescopeNumber<5 && cutTritons && cutTime && (abs(Ex-2.0)<0.05 || abs(Ex-3.4)<0.05 || abs(Ex-0.6)<0.05)",
+	    //"abs(Ex-2.0)<0.05 || abs(Ex-3.4)<0.05 || abs(Ex-0.6)<0.05",
+	    "");
+
+TH1F* hAll3 = (TH1F*) gDirectory->Get("hAll3");
+hAll3->Draw();
+
+auto t0p6 = TMarker(5.0,0.12658,22);
+t0p6.SetMarkerColor(kRed);
+t0p6.SetMarkerSize(3);
+t0p6.SetMarkerStyle(22);
+
+t0p6.DrawMarker(5.0 ,12.6576);
+t0p6.DrawMarker(10.0,12.6567);
+t0p6.DrawMarker(15.0,12.6551);
+t0p6.DrawMarker(20.0,12.6526);
+
+
+auto t2p0 = TMarker(5.0,0.12658,22);
+t2p0.SetMarkerColor(kOrange);
+t2p0.SetMarkerSize(3);
+t2p0.SetMarkerStyle(23);
+
+t2p0.DrawMarker(5.0 ,12.6224);
+t2p0.DrawMarker(10.0,12.6211);
+t2p0.DrawMarker(15.0,12.6187);
+t2p0.DrawMarker(20.0,12.6150);
+
+
+
+auto t3p4 = TMarker(5.0,0.12658,22);
+t3p4.SetMarkerColor(kViolet+3);
+t3p4.SetMarkerSize(3);
+t3p4.SetMarkerStyle(20);
+
+t3p4.DrawMarker(5.0 ,12.5846);
+t3p4.DrawMarker(10.0,12.5828);
+t3p4.DrawMarker(15.0,12.5793);
+t3p4.DrawMarker(20.0,12.5738);
+
+
+
+}

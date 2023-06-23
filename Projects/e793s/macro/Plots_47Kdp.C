@@ -118,6 +118,7 @@ void CS(){
 // Overload function //
   cout << "- CS(stateE, stateSp, orb_l, orb_j, binEx, options) "      << endl;
   cout << "|-----------------| GOOD |-----------------|"     << endl;
+  cout << "---- 0.000, p3/2 = CS(0.000, 1, 1, 1.5, 0.05, \"\") "   << endl;    
   cout << "---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5, 0.05, \"\") "   << endl;    
   cout << "---- 0.279, NOT POPULATED "                      << endl;
   cout << "---- 0.728, WEAKLY POPULATED "                   << endl;
@@ -129,14 +130,10 @@ void CS(){
   cout << "---- 2.908, f5/2 = CS(2.908, 2, 3, 2.5, 0.05, \"mixed\") "   << endl;
   cout << "---- 3.254, f5/2 = CS(3.254, 3, 3, 2.5, 0.05, \"\") "   << endl;
   cout << "---- 3.601, f5/2 = CS(3.601, 3, 3, 2.5, 0.05, \"\") "   << endl;
-  cout << endl;
   cout << "---- 3.792 (x-?) "                                << endl;
   cout << "       FIT TOGETHER = CS(3.830, 2, 3, 2.5, 0.05, \"\")" << endl;
   cout << "---- 3.868 (2-?) "                                << endl;
-  cout << endl;
-  cout << "|----------------| UNSURE |----------------|"     << endl;
-  cout << "---- 4.061, f5/2 = CS(4.061, 3, 3, 2.5, 0.05, \"\") "   << endl;
-  cout << "---- 4.387, f5/2 = CS(4.387, 3, 3, 2.5, 0.05, \"\") "   << endl;
+  cout << "---- >4MeV, f5/2 = CS(4.363, 3, 3, 2.5, 0.05, \"\") "   << endl;
 }
 
 void CompareGammas_ParticleRegions_48K(double binwidth, double minEx, double maxEx, double stepEx){
@@ -215,7 +212,8 @@ cout << "test" << endl;
   gStyle->SetOptStat("nemMrRi");
 
 cout << "test" << endl;
-  tCentre = 2700;  tRange = 400;
+  tCentre = 270;  tRange = 40;
+  //tCentre = 2700;  tRange = 400;
   timegate = "abs(T_MUGAST_VAMOS-" + to_string(tCentre) + ")<" + to_string(tRange);
   det_gate = "Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8";
   reactionName = "47K(d,p)";

@@ -26,6 +26,7 @@ int numPeaks_CS;
 double widthAngleBins;
 double firstAngle;
 double CSangleL, CSangleH;
+double CSvertL,  CSvertH;
 vector<double> means_CS;
 bool GammaGate = false;
 double globGammaGate;
@@ -34,7 +35,7 @@ bool doDoublet = false;
 double globalBinning;
 
 /* Output volume toggle */
-bool loud = 1;
+bool loud = 0;
 
 /* Scale method toggle */
 bool scaleTogether = 1;
@@ -357,9 +358,9 @@ void FigureTest(){
          gTp->GetYaxis()->SetTitleSize(25);
          gTp->GetYaxis()->SetTitleOffset(6);
          gTp->GetYaxis()->CenterTitle();
-         //gTp->GetYaxis()->SetRangeUser(0.000006,0.015);
-         //gTp->GetYaxis()->SetRangeUser(0.00009,0.006);
-         gTp->GetYaxis()->SetRangeUser(0.00002,0.0011);
+         ////gTp->GetYaxis()->SetRangeUser(0.000006,0.015);
+         ////gTp->GetYaxis()->SetRangeUser(0.00009,0.006);
+         //gTp->GetYaxis()->SetRangeUser(0.00002,0.0011);
          gTp->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
  
          // TICKS Y Axis
@@ -647,10 +648,10 @@ void FigureTest_dt(){
          gTp->GetYaxis()->SetTitleSize(25);
          gTp->GetYaxis()->SetTitleOffset(6);
          gTp->GetYaxis()->CenterTitle();
-         //gTp->GetYaxis()->SetRangeUser(0.000006,0.015);
-         //gTp->GetYaxis()->SetRangeUser(0.00009,0.006);
-         //gTp->GetYaxis()->SetRangeUser(0.00002,0.0011);
-         gTp->GetYaxis()->SetRangeUser(0.0002,0.02);
+         ////gTp->GetYaxis()->SetRangeUser(0.000006,0.015);
+         ////gTp->GetYaxis()->SetRangeUser(0.00009,0.006);
+         ////gTp->GetYaxis()->SetRangeUser(0.00002,0.0011);
+         //gTp->GetYaxis()->SetRangeUser(0.0002,0.02);
          gTp->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
  
          // TICKS Y Axis
@@ -814,80 +815,82 @@ double YtoPad(double y){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Figure_AllCSFigures(){
-  string baseEx = "./CS2_TextFiles/24Mar22_Exp_";
-  string baseTp = "./CS2_TextFiles/24Mar22_TheoryP_";
-  string baseTf = "./CS2_TextFiles/24Mar22_TheoryF_";
-  string baseTm = "./CS2_TextFiles/24Mar22_TheoryMixed_";
+  string baseEx = "./CS2_TextFiles/18May23_Exp_";
+  string baseTp = "./CS2_TextFiles/18May23_TheoryP_";
+  string baseTf = "./CS2_TextFiles/18May23_TheoryF_";
+  string baseTm = "./CS2_TextFiles/18May23_TheoryM_";
 
   vector<string> states = 
-        {"0143", "0967", "1409", "1978", "2407", "2909", "3601", "3830"};
+        {"0000", "0143", "0967", "1409", "1978", "2407", "2909", "3601", "3830", "4300"};
   vector<int> l = 
-        {    1,       1,      1,      1,      1,      2,      3,      3};
+        {     1,      1,      1,      1,      1,      1,      2,      3,      3,      3};
+  vector<string> stateNames = 
+        {"0.000 MeV", "0.143 MeV", "0.967 MeV", "1.409 MeV", "1.978 MeV", "2.407 MeV", "2.909 MeV", "3.601 MeV", "3.792 MeV, S=0.161", "Region above 4.00 MeV"};
+  vector<string> specFactors = 
+        {"S=0.233", "S=0.417", "S=0.244", "S=0.238", "S=0.491", "S=0.313", "S_{L=1}=0.0019 & S_{L=3}=0.068", "S=0.243", "3.868 MeV, S=0.138", "S=0.381"};
 
-  TCanvas *c = new TCanvas("c","c",700,1000);
+  TCanvas *c = new TCanvas("c","c",600,1000);
 
-  CanvasPartition(c, 2, 4, 0.15,0.10,0.15,0.10);
-  TPad *pad[2][4];
+  TPad *pad[2][states.size()/2];
 
-//  c->SetBottomMargin(0.2);
-//  c->Divide(2,4,0,0);
-//  c->cd();
-//
-//  vector<TPad*> pads;
-//  TPad * p1 = new TPad("p1","p1", 0.1, 0.7, 0.5, 1.0);
-//  TPad * p2 = new TPad("p2","p2", 0.5, 0.7, 1.0, 1.0);
-//  TPad * p3 = new TPad("p3","p3", 0.1, 0.4, 0.5, 0.7);
-//  TPad * p4 = new TPad("p4","p4", 0.5, 0.4, 1.0, 0.7);
-//  TPad * p5 = new TPad("p5","p5", 0.1, 0.1, 0.5, 0.4);
-//  TPad * p6 = new TPad("p6","p6", 0.5, 0.1, 1.0, 0.4);
-//  pads.push_back(p1);
-//  pads.push_back(p2);
-//  pads.push_back(p3);
-//  pads.push_back(p4);
-//  pads.push_back(p5);
-//  pads.push_back(p6);
-//
-//  for (int i = 0; i < states.size(); i++){
-//  }
+  c->SetBottomMargin(0.2);
+  c->Divide(2,states.size()/2,0,0);
+  c->cd();
 
+  double xa = 0.04, xc = 0.99;
+  double ya = 0.09, yc = 0.99;
+  double xb = (xc-xa)/2.;
+  double yb = (yc-ya)/(0.5*states.size());
+  
+  TLatex latex;
+  latex.SetTextFont(133);
+  latex.SetTextAlign(22);
+  latex.SetTextSize(2);
 
   for (int p = 0; p < states.size(); p++){
-  //for (int ii = 0; i < 1; i++){
- 
     int i,j;
     if(p%2==0){ i=0; } 
     else { i=1; }
     j=(p-i)/2;
 
-    cout << p << " " << i << " " << j << endl;
- 
-    pad[i][j] = (TPad*) c->FindObject(TString::Format("pad_%d_%d",i,j).Data());
-    pad[i][j]->Draw();
-    pad[i][j]->cd();
+    c->cd(p+1)->SetPad(xa+(i*xb), yc-(j*yb), xa+((i+1)*xb), yc-((j+1)*yb));
 
-    vector<double> xTp, xTf,  yTp, yTf;
-
+    vector<double> xTp, xTf, yTp, yTf;
     string sEx = baseEx + states[p] + ".txt";
     string sTp = baseTp + states[p] + ".txt";
     string sTf = baseTf + states[p] + ".txt";
     string sTm = baseTm + states[p] + ".txt";
-
   
     cout << sEx << endl;
     TGraphErrors* gEx = GetExpDCS_ForFig(sEx);
     gEx->SetMarkerStyle(7);
     gEx->GetYaxis()->SetTitleSize(0.08);
-    gEx->GetYaxis()->SetLabelSize(0.05);
+    gEx->GetYaxis()->SetLabelSize(0.08);
 
     TGraphErrors* gTp = GetExpDCS_ForFig(sTp);
     gTp->SetLineColor(kRed);
-    gTp->GetXaxis()->SetRangeUser(102.,158.);
-    gTp->GetYaxis()->SetRangeUser(0.000008,0.015);
+    if(reactionName=="47K(d,p)") {
+      gTp->GetXaxis()->SetRangeUser(102.,158.);
+      gTp->GetYaxis()->SetRangeUser(0.00002,0.018);
+    } else if (reactionName=="47K(d,t)") {
+      gTp->GetXaxis()->SetRangeUser(2.,12.);
+      gTp->GetYaxis()->SetRangeUser(0.002,0.18);
+    }
+    ////gTp->GetYaxis()->SetRangeUser(0.0002,0.008);
+    ////gTp->GetYaxis()->SetRangeUser(0.0002,0.002);
     gTp->SetTitle(" ");
-    gTp->GetXaxis()->SetTitleSize(0.08);
-    gTp->GetXaxis()->SetLabelSize(0.05);
-    gTp->GetYaxis()->SetTitleSize(0.08);
-    gTp->GetYaxis()->SetLabelSize(0.05);
+    gTp->GetXaxis()->SetTitleFont(133);
+    gTp->GetXaxis()->SetTitleSize(22);
+    gTp->GetXaxis()->SetLabelFont(133);
+    gTp->GetXaxis()->SetLabelSize(18);
+    gTp->GetXaxis()->SetTickSize(0.06);
+    gTp->GetXaxis()->SetTitleOffset(5.0);
+    gTp->GetYaxis()->SetTitleFont(133);
+    gTp->GetYaxis()->SetTitleSize(22);
+    gTp->GetYaxis()->SetLabelFont(133);
+    gTp->GetYaxis()->SetLabelSize(18);
+    gTp->GetYaxis()->SetTickSize(0.06);
+    gTp->GetYaxis()->SetTitleOffset(6.0);
     gTp->GetXaxis()->SetTitle("#theta_{lab} [deg]");
     gTp->GetXaxis()->CenterTitle(true);
     gTp->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
@@ -907,44 +910,34 @@ void Figure_AllCSFigures(){
     } else if (l[p] == 2){
       gTp->SetLineStyle(7);
       gTf->SetLineStyle(7);
-
       gTm = GetExpDCS_ForFig(sTm);
       gTm->SetLineColor(kMagenta);
       gTm->SetLineWidth(2);
-
     }
-
-
-
 
     c->cd(p+1);
     c->cd(p+1)->SetLogy();
     c->cd(p+1)->SetFixedAspectRatio();
-//    pads[i]->Draw();
-//    pads[i]->SetLogy();
     
     if(p%2==0){
-      c->cd(p+1)->SetLeftMargin(  0.2);
-      c->cd(p+1)->SetRightMargin( 0.0);
+      c->cd(p+1)->SetLeftMargin(  0.30);
+      c->cd(p+1)->SetRightMargin( 0.00);
+      c->cd(p+1)->SetTopMargin(   0.00);
+      c->cd(p+1)->SetBottomMargin(0.00);
     } else {
-      c->cd(p+1)->SetLeftMargin(  0.0);
-      c->cd(p+1)->SetRightMargin( 0.1);
+      c->cd(p+1)->SetLeftMargin(  0.00);
+      c->cd(p+1)->SetRightMargin( 0.30);
+      c->cd(p+1)->SetTopMargin(   0.00);
+      c->cd(p+1)->SetBottomMargin(0.00);
+    }
+    if(states.size()-p<3){
+      c->cd(p+1)->SetBottomMargin(0.26);
+      c->cd(p+1)->SetPad(xa+(i*xb), yc-(j*yb), xa+((i+1)*xb), yc-((j+1)*yb)-(0.325*yb));
+
     }
 
-//    switch(i){
-//      case 0:
-//	p1->cd();
-//	break;
-//      case 1:
-//	p2->cd();
-//	break;
-//      case 2:
-//	p3->cd();
-//	break;
-//      case 3:
-//	p4->cd();
-//	break;
-//    }
+    latex.DrawLatex(130., 0.001, (stateNames.at(p)).c_str());
+
 
     gTp->Draw("ac");
     gTf->Draw("same c");
@@ -1101,7 +1094,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
   numAngleBins=numAngleBinsBase;
   globalBinning = binning;
 
-  //gROOT->SetBatch(1);
+//  gROOT->SetBatch(1);
 
   double spdf2, angmom2 = 0;
   doMix = false;
@@ -1156,6 +1149,8 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
     saFileName.append("_47Kdp_");
     CSangleL = 100.;
     CSangleH = 160.;
+    CSvertL  = 2e-6;
+    CSvertH  = 5e-3;
   } else if(reactionName=="47K(d,t)"){
     // Which angular bin set to pull from
     numAngleBins=18; numAngleBinsBase=18; widthAngleBins=1.0; firstAngle=2.0;
@@ -1169,6 +1164,8 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
     saFileName.append("_47Kdt_");
     CSangleL = 00.;
     CSangleH = 30.;
+    CSvertL  = 2e-5;
+    CSvertH  = 5e-2;
   }
 
   // Extract spin orbit name
@@ -1338,7 +1335,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
   }
   //delete c_SolidAngle;
   
-  //gROOT->SetBatch(0);
+  gROOT->SetBatch(0);
 
   /* Graph of Area/Solid Angle*/
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
@@ -1428,7 +1425,6 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
   gdSdO2->SetName("gdSdO2");
   gdSdO2->SetTitle("gdSdO2");
 
-
   TGraph* Final;
 
   if(doMix){
@@ -1472,7 +1468,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
   gdSdO->GetYaxis()->SetTitleSize(0.042);
   gdSdO->GetXaxis()->SetRangeUser(CSangleL,CSangleH); 
   //gdSdO->GetYaxis()->SetRangeUser(5e-6,5e-3); //Same vertical range for all? WNC suggestion
-  gdSdO->GetYaxis()->SetRangeUser(2e-6,5e-3); //Same vertical range for all? WNC suggestion
+  gdSdO->GetYaxis()->SetRangeUser(CSvertL,CSvertH); //Same vertical range for all? WNC suggestion
   gdSdO->GetXaxis()->SetNdivisions(512,kTRUE);
   gdSdO->Draw("AP");
 
@@ -1480,11 +1476,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double binning, 
 
   pad2->cd();
 
-cout << "!!! !!! !!! !!! here1" << endl;
-
   GenerateResidual(gdSdO,Final);
-
-cout << "!!! !!! !!! !!! here2" << endl;
 
   string savestring1 = "./CS2_Figures/"+tempstr+".root";
   string savestring2 = "./CS2_Figures/"+tempstr+".pdf";
@@ -1586,18 +1578,26 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
       numAngleBins = (int)(thetaMax - firstAngle)/2.5;
     }
-  } 
-  else if(reactionName=="47K(d,t)"){
-    double thetaMax = 0.23*pow(means_dt[indexE],2) 
-	            + 0.76*means_dt[indexE]
-		    + 9.01;
-    thetaMax = floor(thetaMax);
+  }else if(reactionName=="47K(d,t)"){
+    //double thetaMax = 0.23*pow(means_dt[indexE],2) 
+    //                + 0.76*means_dt[indexE]
+    //    	    + 9.01;
+    //thetaMax = floor(thetaMax);
+    //double thetaMin = 0.10*pow(means_dt[indexE],2) 
+    //                + 0.06*means_dt[indexE]
+    //    	    + 1.58;
+    //thetaMin = ceil(thetaMin);
+   
+    double thetaMin = 2;
+    if(Energy>3.0){thetaMin=3;}
+    if(Energy>4.0){thetaMin=4;}
 
-    double thetaMin = 0.10*pow(means_dt[indexE],2) 
-	            + 0.06*means_dt[indexE]
-		    + 1.58;
-    thetaMin = ceil(thetaMin);
-    
+    double thetaMax = 11;
+    if(Energy<0.5){thetaMax=7;}
+    else if(Energy<2.0){thetaMax=8;}
+    else if(Energy<3.0){thetaMax=9;}
+    else if(Energy<4.0){thetaMax=10;}
+
     numAngleBins = (int)thetaMax - (int)thetaMin;
     firstAngle = (int)thetaMin;
 
@@ -1736,9 +1736,11 @@ TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
 ////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaCMHist(int i, double minTheta, double gatesize){
   //TFile* file = new TFile("GateThetaCMHistograms_47Kdt_18Oct22_bin0p1.root","READ");
-  string name = "GateThetaCMHistograms_47Kdt_18Oct22_";
+  //string name = "GateThetaCMHistograms_47Kdt_18Oct22_";
+  string name = "GateThetaCMHistograms_47Kdt_09Jun23";
   if(!GammaGate){
-    name = name + "bin0p1.root";
+    //name = name + "bin0p1.root";
+    name = name + ".root";
   } else {
     name = name + to_string((int)(globGammaGate*1000))
 	        + "GammaGate.root";
@@ -1751,6 +1753,12 @@ TH1F* PullThetaCMHist(int i, double minTheta, double gatesize){
   cout << "Loading " << histname << endl;
   TList *list = (TList*)file->Get("GateThetaCMHistograms");
   TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
+
+  double pulledBin = hist->GetBinWidth(10);
+  int ratio = (int)(globalBinning / pulledBin);
+  hist->Rebin(ratio);
+  file->Close();
+
   return hist;
 }
 
@@ -1816,8 +1824,15 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   int johnson, tandyval, modelA, modelB;
   string njjj;
   if(reactionName=="47K(d,p)"){
-    cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
-    cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
+    //cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
+    //cout << "Using Johnson-Tandy1 ..."; johnson=6; tandyval=1;
+    //cout << "Using Johnson-Tandy2 ..."; johnson=6; tandyval=2;
+    //cout << "Using Johnson-Tandy3 ..."; johnson=6; tandyval=3;
+    cout << "Using Johnson-Tandy4 ..."; johnson=6; tandyval=4;
+    
+    //cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
+    cout << " ... and Koning-Delaroche." << endl; modelA=6; modelB=4;
+    
     //QValue = 2.274 - E;
     QValue = 2.419 - E;
     njjj.append("24.jjj");
@@ -1946,19 +1961,29 @@ double Chi2(TGraph* theory, TGraphErrors* exper){
   //cout << setprecision(8);
   //for(int i = 1 ; i < exper->GetN() ; i++){
   for(int i = 0 ; i < exper->GetN() ; i++){
-    if(exper->GetPointY(i)>1.0e-10){ //0){
-      ////chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
-      //chi=(exper->GetPointY(i) - theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
-      ////cout << "COMPARE::::: " << exper->Eval(anglecentres[i]) << " TO " << exper->GetPointY(i) << endl;
-      //Chi2 +=chi*chi;
-      
-      Chi2 += pow((exper->GetPointY(i) - theory->Eval(anglecentres[i])), 2 ) / theory->Eval(anglecentres[i]);
+    if(exper->GetPointY(i)>1.0e-4){//10){ //0){
+//      cout << setprecision(6) 
+//	   << "COMPARE::::: " 
+//	   << exper->GetPointY(i) << " +- " << exper->GetErrorY(1) 
+//	   << " TO " 
+//	   << theory->Eval(anglecentres[i]) 
+//	   << endl;
+    
+      //////////////////////////////////////////////////////////////////////////////////////////
+      // ---------------------------------------------------------------------------------------
+      // | Louis Lyons pg 102:
+      // |   Least squares should minimize sum(y_obs - y_th / err)^2
+      // |   Err SHOULD in principle be error in THEORY
+      // |   However it is common practive to use error in OBS for various reasons (pg 103-104)
+      // ---------------------------------------------------------------------------------------
+      //////////////////////////////////////////////////////////////////////////////////////////
 
+      //Chi2 += pow((exper->GetPointY(i) - theory->Eval(anglecentres[i])), 2 ) / theory->Eval(anglecentres[i]);
+      Chi2 += pow(((exper->GetPointY(i) - theory->Eval(anglecentres[i]))) / exper->GetErrorY(i) , 2 );
     }
   }
-  if(loud){cout << "Chi2 = " << Chi2 << endl;}
+  if(loud){cout << setprecision(10) << "Chi2 = " << Chi2 << "  #dof = " << exper->GetN()-1 << "   Chi2/#dof = " << Chi2/(double)exper->GetN()-1 << setprecision(4)<< endl;}
   return Chi2;
-  //cout << setprecision(3);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1988,10 +2013,6 @@ double ToMininize(const double* parameter){
 TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
   /* (dSdO)meas = S * (dSdO)calc */
 
-
-cout << "!! !! !! TEST HERE1" << endl;
-
-
   // Set global variable
   currentThry = theory;
   staticExp = experiment;
@@ -2002,8 +2023,6 @@ cout << "!! !! !! TEST HERE1" << endl;
     ROOT::Math::Factory::CreateMinimizer(minName, algoName);
   min->SetValidError(true);
 
-cout << "!! !! !! TEST HERE2" << endl;
-
   // Number of parameters (should only be 1 for me)
   int mysize = 1;
 
@@ -2011,28 +2030,33 @@ cout << "!! !! !! TEST HERE2" << endl;
   // a IMultiGenFunction type
   ROOT::Math::Functor f(&ToMininize,mysize);
   min->SetFunction(f);
-  
-cout << "!! !! !! TEST HERE3" << endl;
+
+  int SpecFactorUpperLimit = 2;
+  if(reactionName=="47K(d,t)"){
+    SpecFactorUpperLimit = 12;
+  }
 
   // Set range of parameter(??)
   double* parameter = new double[mysize];
   for(unsigned int i = 0 ; i < mysize ; i++){
-    parameter[i] = 0.8;
+    parameter[i] = 0.5;
     char name[4];
     sprintf(name,"S%d",i+1);
-    min->SetLimitedVariable(i,name,parameter[i],0.01,0,10);
+    min->SetLimitedVariable(i,name,parameter[i],0.01,0,SpecFactorUpperLimit);
   }
  
-  min->SetPrintLevel(3);
+  //min->SetPrintLevel(3);
 
   ///// TO IMPROVE: FIND WAY OF OBTAINING NDF AND PRINT CHI2/NDF /////
 
   // Minimise
+  min->ProvidesError();
+  min->SetValidError(true);
   min->Minimize();
   const double *xs = min->X();
   const double *err = min->Errors(); 
 
-  cout << "#################### " << min->ErrorDef() << endl;
+  cout << "IS THE MINIMIZATION GOOD? -> " << min->IsValidError() << endl;
 
   // Write out
   for(int i = 0  ; i < mysize ; i++){
@@ -2042,8 +2066,6 @@ cout << "!! !! !! TEST HERE3" << endl;
   /* Store S value in global variable, to access for drawing on plots */
   globalS = xs[0];
   globalSerr = err[0];
-
-cout << "!! !! !! TEST HERE4" << endl;
 
   // Return the Fitted CS
   TGraph* g = new TGraph(); 
@@ -2055,10 +2077,7 @@ cout << "!! !! !! TEST HERE4" << endl;
     cout << "multip by " << xs[0] << endl;
   }
   
-  //for(int i=0; i<theory->GetN(); i++){ g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]); }
   for(int i=0; i<theory->GetN(); i++){ g->SetPoint(i,X[i],xs[0]*Y[i]); }
-
-cout << "!! !! !! TEST HERE5" << endl;
 
   if(loud){
     cout << "End:   X[0] = " << g->GetPointX(4) << " Y[0] = " << g->GetPointY(4) << endl;

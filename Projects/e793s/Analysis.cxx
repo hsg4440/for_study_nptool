@@ -128,10 +128,12 @@ void Analysis::Init() {
   // energy losses
   string light = NPL::ChangeNameToG4Standard(reaction.GetParticle3()->GetName());
   string beam = NPL::ChangeNameToG4Standard(reaction.GetParticle1()->GetName());
+  string heavy = NPL::ChangeNameToG4Standard(reaction.GetParticle4()->GetName());
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table" ,"G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table" ,"G4Table",100);
   BeamTargetELoss = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",100);
+  //HeavyTargetELoss = NPL::EnergyLoss(heavy+"_"+TargetMaterial+".G4table","G4Table",100);
 
   FinalBeamEnergy = BeamTargetELoss.Slow(OriginalBeamEnergy, 0.5*TargetThickness, 0);
   reaction.SetBeamEnergy(FinalBeamEnergy); 
@@ -312,7 +314,8 @@ void Analysis::TreatEvent(){
 
     /************************************************/
     // Part 3 : Excitation Energy Calculation
-    Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+    //Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+    Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp, philab_tmp));
     Ecm.push_back(Energy*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     /************************************************/
 
@@ -430,7 +433,8 @@ void Analysis::TreatEvent(){
 
     // Part 3 : Excitation Energy Calculation
     //if(!isSim){ //TESTING!!!!
-      Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+      //Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+      Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp, philab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     //}
 
@@ -541,6 +545,7 @@ void Analysis::TreatEvent(){
     AGATA_OrigBetaX.push_back(beta.X());
     AGATA_OrigBetaY.push_back(beta.Y());
     AGATA_OrigBetaZ.push_back(beta.Z());
+    AGATA_OrigBetaMag.push_back(beta.Mag());
 
     /* Other fills */
     double ThetaGamma = GammaDirection.Angle(BeamDirection)/deg;
@@ -553,7 +558,14 @@ void Analysis::TreatEvent(){
     GammaLV.Boost(beta);
     // Get EDC
     AddBack_EDC.push_back(GammaLV.Energy());
-    AddBack_EDC2.push_back(GammaLV.Energy());
+
+    if(i==0){
+      //First event in loop
+      AddBack_EDC_Event1.push_back(GammaLV.Energy());
+    } else {
+      //second, third, fourth...
+      AddBack_EDC_Event2.push_back(GammaLV.Energy());
+    }
 
   }
 
@@ -801,7 +813,8 @@ void Analysis::InitOutputBranch(){
   //RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC,"EDC/D");
   RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC);
   RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC",&AddBack_EDC);
-  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC2",&AddBack_EDC2);
+  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC_Event1",&AddBack_EDC_Event1);
+  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC_Event2",&AddBack_EDC_Event2);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPx",&AGATA_GammaPx);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPy",&AGATA_GammaPy);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPz",&AGATA_GammaPz);
@@ -809,6 +822,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaX",&AGATA_OrigBetaX);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaY",&AGATA_OrigBetaY);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaZ",&AGATA_OrigBetaZ);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaMag",&AGATA_OrigBetaMag);
   RootOutput::getInstance()->GetTree()->Branch("EAgata",&EAgata,"EAgata/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
   RootOutput::getInstance()->GetTree()->Branch("Ecm",&Ecm);
@@ -1065,8 +1079,8 @@ void Analysis::ReInitValue(){
   Ex.clear();
   Ecm.clear();
   AddBack_EDC.clear();
-  AddBack_EDC2.clear();
-  AddBack_EDC2.push_back(-1.0); //offset by 1
+  AddBack_EDC_Event1.clear();
+  AddBack_EDC_Event2.clear();
   AGATA_GammaPx.clear();
   AGATA_GammaPy.clear();
   AGATA_GammaPz.clear();
@@ -1074,6 +1088,7 @@ void Analysis::ReInitValue(){
   AGATA_OrigBetaX.clear();
   AGATA_OrigBetaY.clear();
   AGATA_OrigBetaZ.clear();
+  AGATA_OrigBetaMag.clear();
   EAgata = -1000;
   ELab.clear();
   RawEnergy.clear(); 
