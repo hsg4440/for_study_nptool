@@ -29,6 +29,8 @@
 #include "NPEnergyLoss.h"
 #include "NPReaction.h"
 #include "TRandom3.h"
+#include "TChain.h"
+
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -45,45 +47,70 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   private:
-    double OriginalBeamEnergy;
-    double OriginalEx;
     double BeamEnergy;
-    double R;
-    double Xpista;
-    double Ypista;
-    double Zpista;
     double Xcalc;
     double Ycalc;
     double Zcalc;
     double XTarget;
     double YTarget;
     double ZTarget;
-    double OriginalElab;
     double Elab;
     double DeltaE;
+    double DeltaEcorr;
     double Eres;
     double ThetaLab;
+    double PhiLab;
     double ThetaCM;
-    double OptimumEx;
-    double Ex;
+    double Ex240Pu;
+    double Ex236U;
+    double Ex238U;
     double PID;
-    double OriginalThetaLab;
-    NPL::Reaction* Transfer;
+    double Chio_DE;
+    double Chio_E;
+
+    NPL::Reaction* Transfer10Be;
+    NPL::Reaction* Transfer14C;
+    NPL::Reaction* Elastic;
 
     TRandom3 Rand;
     double ThetaNormalTarget;
     double ThetaDetectorSurface;
     double TargetThickness;
 
-    NPL::EnergyLoss Be10C;
     NPL::EnergyLoss C12C;
+    NPL::EnergyLoss Be10C;
     NPL::EnergyLoss U238C;
 
   private:
     TPISTAPhysics* PISTA;
-    TInteractionCoordinates* InteractionCoordinates;
-    TInitialConditions* InitialConditions;
-    TReactionConditions* ReactionConditions;
+    TChain* chain;
+   
+    Float_t fIC[11];
+    Float_t fTP_X;
+    Float_t fTP_Y;
+    ULong64_t fTS_TMW;
+    Float_t fTAC_MW1_PISTA;
+    Float_t fTAC_TMW1_FPMW0;
+    Float_t fTAC_TMW1_FPMW1;
+    Float_t fTAC_TMW2_FPMW0;
+    Float_t fTAC_TMW2_FPMW1;
+
+    // ECOGAM //
+   Int_t           Inner6MVM;
+   Float_t         Inner6MV[12];   //[Inner6MVM]
+   UShort_t        Inner6MVN[12];   //[Inner6MVM]
+   ULong64_t       Inner6MVTS[12];   //[Inner6MVM]
+   Int_t           Inner20MVM;
+   Float_t         Inner20MV[12];   //[Inner20MVM]
+   UShort_t        Inner20MVN[12];   //[Inner20MVM]
+   ULong64_t       Inner20MVTS[12];   //[Inner20MVM]
+   Int_t           DeltaTVM;
+   Float_t         DeltaTV[12];   //[DeltaTVM]
+   UShort_t        DeltaTVN[12];   //[DeltaTVM]
+   ULong64_t       DeltaTVTS[12];   //[DeltaTVM]
+   Int_t           OutersVM;
+   Float_t         OutersV[24];   //[OutersVM]
+   UShort_t        OutersVN[24];   //[OutersVM]
 
 };
 #endif
