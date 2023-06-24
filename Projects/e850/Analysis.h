@@ -29,6 +29,7 @@
 #include "NPEnergyLoss.h"
 #include "NPReaction.h"
 #include "TRandom3.h"
+#include "TSpline.h"
 #include "TChain.h"
 
 class Analysis: public NPL::VAnalysis{
@@ -43,6 +44,7 @@ class Analysis: public NPL::VAnalysis{
     void InitOutputBranch();
     void InitInputBranch();
     void ReInitValue();
+    int FindClosestZ(double, double);
 
     static NPL::VAnalysis* Construct();
 
@@ -62,11 +64,20 @@ class Analysis: public NPL::VAnalysis{
     double PhiLab;
     double ThetaCM;
     double Ex240Pu;
+    double Ex240PuNoCorr;
     double Ex236U;
     double Ex238U;
     double PID;
     double Chio_DE;
     double Chio_E;
+
+    UShort_t FPMWPat;
+    double M1;
+    double Q1;
+    double M_Q1;
+    double Mass;
+    double E1;
+    double Z;
 
     NPL::Reaction* Transfer10Be;
     NPL::Reaction* Transfer14C;
@@ -81,6 +92,9 @@ class Analysis: public NPL::VAnalysis{
     NPL::EnergyLoss Be10C;
     NPL::EnergyLoss U238C;
 
+    TSpline3* gSpline3[34];
+    double Reference[34];
+
   private:
     TPISTAPhysics* PISTA;
     TChain* chain;
@@ -94,6 +108,19 @@ class Analysis: public NPL::VAnalysis{
     Float_t fTAC_TMW1_FPMW1;
     Float_t fTAC_TMW2_FPMW0;
     Float_t fTAC_TMW2_FPMW1;
+    ULong64_t fPISTA_TS;
+
+    // For masses
+    Float_t fT_TMW1_FPMW0_C;
+    UShort_t fFPMWPat_0RawNr[20];
+    Int_t fFPMWPat_0RawM; // should be 1 always.
+    
+    Float_t fPath;
+    Float_t fBrho;
+    Float_t fPf;
+    Float_t fTf;
+    Float_t fTP_Theta;
+    Float_t fTP_Phi;
 
     // ECOGAM //
    Int_t           Inner6MVM;
