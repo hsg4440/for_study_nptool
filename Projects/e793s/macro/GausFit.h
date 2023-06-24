@@ -97,8 +97,8 @@ vector<double> DoubleGausNumbs(TH1F* hist, double minFit, double maxFit, double 
     bg->SetParameter(0, 5.0);//FOR ELASTICS
       bg->SetParLimits(0, 0.0, 20.0);//FOR ELASTICS
 
-    hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
-    hist->Fit(g2, "WWR", "", mean2-5, maxFit);//minFit, maxFit);
+    hist->Fit(g1, "WWRL", "", minFit, mean1+5);//maxFit);
+    hist->Fit(g2, "WWRL", "", mean2-5, maxFit);//minFit, maxFit);
 
     Double_t par[7];
     g1->GetParameters(&par[0]);
@@ -112,7 +112,7 @@ vector<double> DoubleGausNumbs(TH1F* hist, double minFit, double maxFit, double 
 
     if(bgbool==false){bg->FixParameter(0,0.); f1->FixParameter(6,0.);}
 
-    hist->Fit(f1, "WWR", "", minFit, maxFit);
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
     hist->Draw();
  
     Double_t finalPar[7];
@@ -193,8 +193,6 @@ vector<double> DoubleGausNumbs(TH1F* hist, double minFit, double maxFit, double 
   return areasOut; 
 
 }
-
-
 	
 void DoubleGaus(TH1F* hist){
   bool repeat=true;
@@ -418,8 +416,8 @@ void TripleGaus(TH1F* hist){
       g3->SetParLimits(2, 0.05, 0.30);
 
 
-    hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
-    hist->Fit(g2, "WWR", "", mean2-5, maxFit);//minFit, maxFit);
+    hist->Fit(g1, "WWRL", "", minFit, mean1+5);//maxFit);
+    hist->Fit(g2, "WWRL", "", mean2-5, maxFit);//minFit, maxFit);
 
     Double_t par[10];
     g1->GetParameters(&par[0]);
@@ -428,7 +426,7 @@ void TripleGaus(TH1F* hist){
     bg->GetParameters(&par[9]);
     f1->SetParameters(par);
 
-    hist->Fit(f1, "WWR", "", minFit, maxFit);
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
     //hist->GetXaxis()->SetTitle("ThetaLab (degrees)");
     //hist->GetYaxis()->SetTitle("Counts (per 0.5 degrees)");
     //hist->SetTitle(titleString.c_str());
@@ -509,7 +507,6 @@ void TripleGaus(TH1F* hist){
 
 }
 
-
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 
@@ -537,7 +534,7 @@ void SingleGausNoBG(TH1F* hist){
     
     g1->SetParNames("Area*BinWidth", "Mean", "Sigma");
 
-    TF1 *f1 = new TF1("single_gaus", "([0]/([2]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[2],2))", 
+    TF1 *f1 = new TF1("single_gaus", "([0]/([2]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[2],2)) + [3]", 
 		      minFit, maxFit);
     f1->SetParNames("Area*BinWidth 1", "Mean 1", "Sigma 1");
     f1->SetLineColor(kBlack);
@@ -566,13 +563,14 @@ void SingleGausNoBG(TH1F* hist){
     g1->SetParameter(2, 0.15);
       g1->SetParLimits(2, 0.05, 1.00);
 
-    hist->Fit(g1, "WWR", "", minFit, maxFit);//maxFit);
+    hist->Fit(g1, "WWRL", "", minFit, maxFit);//maxFit);
 
     Double_t par[4];
     g1->GetParameters(&par[0]);
     f1->SetParameters(par);
+    f1->FixParameter(3,0.0);
 
-    hist->Fit(f1, "WWR", "", minFit, maxFit);
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
     hist->Draw();
  
     Double_t finalPar[4];
@@ -611,8 +609,6 @@ void SingleGausNoBG(TH1F* hist){
   }
 
 }
-
-
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -726,7 +722,118 @@ void SingleGaus(TH1F* hist, bool isGamma){
 
 }
 
+void SingleGaus_StepBG(TH1F* hist, bool isGamma){
+  bool repeat=true;
+  int repeatInt;
+  double minFit, maxFit, mean; 
 
+  double binWidth = hist->GetXaxis()->GetBinWidth(3);
+
+  while (repeat){
+    cout << "====================================================================" << endl;
+    cout << " Input range to fit:" << endl;
+    cout << " Min = ";
+      cin >> minFit;
+    cout << " Max = ";
+      cin >> maxFit;
+    cout << " Peak = ";
+      cin >> mean;
+
+    TF1 *g1 = new TF1 ("m1", "([0]/([2]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[2],2))",
+		       minFit, maxFit);
+    g1->SetLineColor(kRed);
+    g1->SetLineStyle(2);
+    
+    TF1 *bg = new TF1 ("bg","-[0]*erf(x-[1])+[0]",minFit, maxFit);
+    bg->SetLineColor(kGreen);
+    bg->SetLineStyle(9);
+
+    g1->SetParNames("Area*BinWidth", "Mean", "Sigma");
+    bg->SetParNames("Background");
+
+    TF1 *f1 = new TF1("single_gaus", "([0]/([2]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[2],2))-[3]*erf(x-[1])+[3]", 
+		      minFit, maxFit);
+    f1->SetParNames("Area*BinWidth 1", "Mean 1", "Sigma 1",
+		    "BG Step Height");//, "BG Step Sharpness");
+    f1->SetLineColor(kBlack);
+
+    double areaSet, areaMax, meanRange;
+    double sigSet, sigMin, sigMax;
+    double bgMax;
+
+    if(isGamma){
+      areaSet = 1000.; areaMax = 10000.; meanRange = 0.005;
+      sigSet = 0.001; sigMin = 0.0005; sigMax = 0.015;
+      bgMax = 1000.;
+    } else {
+      areaSet = 100.; areaMax = 1000.; meanRange = 1.0;
+      sigSet = 0.15; sigMin = 0.05; sigMax = 0.3;
+      bgMax = 50.;
+    }
+
+    g1->SetParameter(0, areaSet);
+      g1->SetParLimits(0, 0.0, areaMax);
+    g1->SetParameter(1, mean);
+      g1->SetParLimits(1, mean-meanRange, mean+meanRange);
+    g1->SetParameter(2, sigSet);
+      g1->SetParLimits(2, sigMin, sigMax);
+    bg->SetParameter(0, 10.);
+      bg->SetParLimits(0, 5., 100.);
+
+    hist->Fit(g1, "WWRL", "", minFit, maxFit);//maxFit);
+
+    Double_t par[5];
+    g1->GetParameters(&par[0]);
+    
+    bg->SetParameter(1, par[1]);
+    hist->Fit(bg, "WWRL", "", minFit, maxFit);//maxFit);
+    
+    bg->GetParameters(&par[3]);
+    f1->SetParameters(par);
+
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
+    hist->Draw();
+ 
+    Double_t finalPar[5];
+    Double_t finalErr[5];
+    f1->GetParameters(&finalPar[0]);
+    for (int i=0; i<5; i++){finalErr[i] = f1->GetParError(i);}
+    g1->SetParameters(finalPar[0], finalPar[1], finalPar[2]);
+    bg->SetParameter(0,finalPar[3]);
+    bg->SetParameter(1,finalPar[1]);
+
+    g1->Draw("SAME");
+    bg->Draw("SAME");
+    f1->Draw("SAME");
+
+    cout << fixed << setprecision(5);
+
+    cout << "\033[91m Mean: \t" << finalPar[1]
+	    << "\t +- " << finalErr[1]
+	    << endl;
+    cout << "\033[91m Sigm: \t" << finalPar[2]
+	    << "\t +- " << finalErr[2]
+	    << endl;
+    cout << "\033[91m Area: \t" << finalPar[0]/binWidth 
+	    << "\t  +-  " << (finalPar[0]/binWidth) * (finalErr[0]/finalPar[0])
+            << endl;
+
+    TLegend *legend=new TLegend(0.7,0.7,0.9,0.9);
+    legend->AddEntry(f1,"Total fit","l");
+    legend->AddEntry(g1,"Peak","l");
+    legend->AddEntry(bg,"Background","l");
+    legend->Draw();
+
+    //cGate->Draw("SAME");
+    gPad->Modified();
+    gPad->Update();
+
+    cout << "\033[37m Refit? " << endl;
+    cin >> repeatInt;
+    if(repeatInt!=1){ repeat=false; }
+  }
+
+}
 
 void DoubleGausForElasticsFitting(TH1F* hist){
   bool repeat=true, bgbool = true;
@@ -797,8 +904,8 @@ void DoubleGausForElasticsFitting(TH1F* hist){
     bg->SetParameter(0,25.);
       bg->SetParLimits(0,1.,75.);
 
-    hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
-    hist->Fit(g2, "WWR", "", mean2-5, maxFit);//minFit, maxFit);
+    hist->Fit(g1, "WWRL", "", minFit, mean1+5);//maxFit);
+    hist->Fit(g2, "WWRL", "", mean2-5, maxFit);//minFit, maxFit);
 
     Double_t par[7];
     g1->GetParameters(&par[0]);
@@ -812,7 +919,7 @@ void DoubleGausForElasticsFitting(TH1F* hist){
 
     if(bgbool==false){bg->FixParameter(0,0.); f1->FixParameter(6,0.);}
 
-    hist->Fit(f1, "WWR", "", minFit, maxFit);
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
     hist->Draw();
  
     Double_t finalPar[7];
@@ -884,10 +991,6 @@ void DoubleGausForElasticsFitting(TH1F* hist){
 
 }
 
-
-
-
-
 void SingleGausForElasticsFitting(TH1F* hist){
   bool repeat=true, bgbool = true;
   int repeatInt;
@@ -941,7 +1044,7 @@ void SingleGausForElasticsFitting(TH1F* hist){
     bg->SetParameter(0,25.);
       bg->SetParLimits(0,1.,50.);
 
-    hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
+    hist->Fit(g1, "WWRL", "", minFit, mean1+5);//maxFit);
 
     Double_t par[7];
     g1->GetParameters(&par[0]);
@@ -954,7 +1057,7 @@ void SingleGausForElasticsFitting(TH1F* hist){
 
     if(bgbool==false){bg->FixParameter(0,0.); f1->FixParameter(3,0.);}
 
-    hist->Fit(f1, "WWR", "", minFit, maxFit);
+    hist->Fit(f1, "WWRL", "", minFit, maxFit);
     hist->Draw();
  
     Double_t finalPar[4];

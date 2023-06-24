@@ -86,7 +86,8 @@ class Analysis: public NPL::VAnalysis{
     //double EDC;
     std::vector<double> EDC;
     vector<double> AddBack_EDC;
-    vector<double> AddBack_EDC2;
+    vector<double> AddBack_EDC_Event1;
+    vector<double> AddBack_EDC_Event2;
     vector<double> AGATA_GammaPx;
     vector<double> AGATA_GammaPy;
     vector<double> AGATA_GammaPz;
@@ -94,6 +95,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> AGATA_OrigBetaX;
     vector<double> AGATA_OrigBetaY;
     vector<double> AGATA_OrigBetaZ;
+    vector<double> AGATA_OrigBetaMag;
     double EAgata;
     std::vector<double> ELab;
     std::vector<double> Ex;
@@ -118,6 +120,7 @@ class Analysis: public NPL::VAnalysis{
     NPL::EnergyLoss LightAl;
     NPL::EnergyLoss LightSi;
     NPL::EnergyLoss BeamTargetELoss;
+    NPL::EnergyLoss HeavyTargetELoss;
 
     double TargetThickness ;
     double WindowsThickness;
@@ -199,7 +202,7 @@ class Analysis: public NPL::VAnalysis{
     float DC3_X;
     float DC3_Y;
 
-    float Xf;
+    //float Xf;
     float Tf;
 
     float Brho;

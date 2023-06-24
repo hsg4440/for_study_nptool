@@ -327,6 +327,7 @@ void PISTA::ReadSensitive(const G4Event* ){
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
       int StripFront = 92-FirstStageScorer->GetStripWidth(i);
       m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
+      m_Event->SetPISTA_DE_BackDetector(DetNbr);
     }
   }
   FirstStageScorer->clear();
@@ -343,6 +344,7 @@ void PISTA::ReadSensitive(const G4Event* ){
       int DetNbr  = SecondStageScorer->GetDetectorLength(i);
       int StripFront = SecondStageScorer->GetStripLength(i);
       m_Event->SetPISTA_E(DetNbr, StripFront, Energy, Energy, Time, Time);
+      m_Event->SetPISTA_E_BackDetector(DetNbr);
     }
   }
   SecondStageScorer->clear();
