@@ -358,6 +358,10 @@ void TPISTAPhysics::BuildPhysicalEvent() {
     EventMultiplicity=0;
   else
     EventMultiplicity = DetectorNumber.size();
+
+  if(EMult>0 && DEMult>0 && EventMultiplicity==0){
+    m_DE_E_NoMatching++;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -402,7 +406,7 @@ void TPISTAPhysics::PreTreat() {
   unsigned int sizeDE = m_EventData->GetPISTADEMult();
   unsigned int sizeDE_back = m_EventData->GetPISTADEBackMult();
   for (UShort_t i = 0; i < sizeDE ; ++i) {
-    if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i))) {
+    if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i)) && m_EventData->GetPISTA_DE_StripEnergy(i)<4094) {
       int DetNbr = m_EventData->GetPISTA_DE_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_DE_StripNbr(i);
       double StripE = m_EventData->GetPISTA_DE_StripEnergy(i);
@@ -427,12 +431,15 @@ void TPISTAPhysics::PreTreat() {
       }
     }
   }
+  if(sizeDE_back>0 && sizeDE>0 && m_PreTreatedData->GetPISTADEBackMult()==0){
+    m_DE_NoMatching++; 
+  }
 
   // E
   unsigned int sizeE = m_EventData->GetPISTAEMult();
   unsigned int sizeE_back = m_EventData->GetPISTAEBackMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
-    if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i))) {
+    if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i)) && m_EventData->GetPISTA_E_StripEnergy(i)<4094) {
       int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
       double StripE = m_EventData->GetPISTA_E_StripEnergy(i);
@@ -453,6 +460,10 @@ void TPISTAPhysics::PreTreat() {
         }
       }
     }
+  }
+
+  if(sizeE_back>0 &&  sizeE>0 && m_PreTreatedData->GetPISTAEBackMult()==0){
+    m_E_NoMatching++; 
   }
 }
 
@@ -541,6 +552,10 @@ void TPISTAPhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::Clear() {
   EventMultiplicity = 0;
+  m_E_NoMatching = 0;
+  m_DE_NoMatching = 0;
+  m_DE_E_NoMatching = 0;
+
 
   // Position Information
   PosX.clear();

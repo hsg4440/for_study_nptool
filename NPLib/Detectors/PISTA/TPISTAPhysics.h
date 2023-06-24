@@ -66,6 +66,9 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
   // output ROOT file
   public:
     Int_t EventMultiplicity;
+    Int_t m_E_NoMatching;
+    Int_t m_DE_NoMatching;
+    Int_t m_DE_E_NoMatching;
     vector<int>     DetectorNumber;
     vector<double>  E;
     vector<double>  DE;
