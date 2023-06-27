@@ -82,6 +82,8 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
 
   if(fileNameBase.at(0)!='/' && pBaseName.at(pBaseName.length() - 1)!='/')
     pBaseName += "/"+fileNameBase;
+  else
+    pBaseName+=fileNameBase;
 
   if (fileNameBase.find("root")==std::string::npos) 
     pBaseName += ".root";
