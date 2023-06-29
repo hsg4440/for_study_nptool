@@ -339,10 +339,10 @@ void TPISTAPhysics::BuildPhysicalEvent() {
           E_Time.push_back(m_PreTreatedData->GetPISTA_E_StripTime(j));
           back_E_Time.push_back(m_PreTreatedData->GetPISTA_E_BackTime(j));
 
-          if(StripNbr_DE>0 && StripNbr_DE<92 && StripNbr_E>0 && StripNbr_E<57){
-            PosX.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).x());
-            PosX.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).y());
-            PosX.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).z());
+          if(StripNbr_DE>0 && StripNbr_DE<92 && StripNbr_E>0 && StripNbr_E<58){
+            PosX.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).X());
+            PosY.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).Y());
+            PosZ.push_back(GetPositionOfInteraction(DE_DetNbr, StripNbr_E, StripNbr_DE).Z());
           }
         }
       }
