@@ -69,8 +69,10 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   //        *------------*
   //         D----------C
 
-  double Height = 61.7; // mm
-  double LongBase = 78.1; // mm
+  //double Height = 61.7; // mm
+  double Height = 57.7; // mm
+  //double LongBase = 78.1; // mm
+  double LongBase = 72.29; // mm
   double NumberOfStripsX = 57;
   double NumberOfStripsY = 91;
   double StripPitchY = Height/NumberOfStripsY; // mm
