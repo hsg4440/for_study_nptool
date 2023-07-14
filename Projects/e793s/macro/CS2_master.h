@@ -1825,10 +1825,10 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   string njjj;
   if(reactionName=="47K(d,p)"){
     //cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
-    //cout << "Using Johnson-Tandy1 ..."; johnson=6; tandyval=1;
+    cout << "Using Johnson-Tandy1 ..."; johnson=6; tandyval=1;
     //cout << "Using Johnson-Tandy2 ..."; johnson=6; tandyval=2;
     //cout << "Using Johnson-Tandy3 ..."; johnson=6; tandyval=3;
-    cout << "Using Johnson-Tandy4 ..."; johnson=6; tandyval=4;
+    //cout << "Using Johnson-Tandy4 ..."; johnson=6; tandyval=4;
     
     //cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
     cout << " ... and Koning-Delaroche." << endl; modelA=6; modelB=4;

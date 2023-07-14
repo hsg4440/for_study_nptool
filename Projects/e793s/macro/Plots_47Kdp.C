@@ -3,6 +3,7 @@ string reactionName; /* defined by choice of dp or dt */
 #include "GausFit.h"
 #include "KnownPeakFitter.h"
 #include "DrawPlots.h"
+#include "SimHistFitter.h"
 
 #include "CS2_master.h"
 //#include "CS2.h"

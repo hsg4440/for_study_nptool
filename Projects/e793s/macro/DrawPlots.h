@@ -5,6 +5,7 @@
 using namespace std;
 
 TChain* chain=NULL ;
+TChain* chainps=NULL ;
 char cond[1000];
 
 NPL::Reaction Cadp("47Ca(d,p)48Ca@355");
@@ -53,6 +54,17 @@ TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventLi
   return chain;
 }
 
+void LoadChainPhaseSpace(){
+  vector<string> files;
+ 
+  for(int i=1; i<47; i++){
+   string base = "../../../Outputs/Analysis/Sim_18Oct22_PhaseSpace_RandomSeed-";
+   files.push_back((base + to_string(i) + ".root").c_str());
+  }
+
+  chainps = Chain("PhysicsTree",files,true);
+}
+
 void LoadChain47Kdp(){
   vector<string> files;
   
@@ -77,25 +89,19 @@ void LoadChain47Kdp(){
   //files.push_back("../../../Outputs/Analysis/47Kdp_22Sep22_RmvMM5_NoRun51-52_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_22Sep22_RmvMM5_NoRun51-52_PartII.root");
   
-  /*************************/
-
   //files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_PartII.root");
   
-  //files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_RetestForFailure_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_RetestForFailure_PartII.root");
-
-  //files.push_back("../../../Outputs/Analysis/20Feb23_NewGammaMatching_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/20Feb23_NewGammaMatching_PartII.root");
-
   //files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartI.root");
   //files.push_back("../../../Outputs/Analysis/23Feb23_AfterNPLGRITchanges_PartII.root");
 
-  //files.push_back("../../../Outputs/Analysis/27May23_47Kdp_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/27May23_47Kdp_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartII.root");
+  
+  /*************************/
 
-  files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdp_02Jun23_PhiFix_BetaMag_PartII.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_10Jul23_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_10Jul23_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -374,6 +380,69 @@ void Load_1DParticle_SubPhaseSpace(){
   TFile *file = new TFile("LoadHistograms/Load_1DParticle_SubPhaseSpace.root","READ");
   hSub = (TH1F*)file->Get("ExSubPSpace");
   hSub->Draw();
+}
+
+void CompareExAndPhaseSpace(){
+  double scale = 0.065;
+
+  LoadChainPhaseSpace();
+
+  TCanvas *cExPS = new TCanvas("cExPS","cExPS",1000,1000);
+
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1";
+
+  string gateps = "EventWeight*("
+	        + det_gate
+		+ ")"; 
+
+
+  chain->Draw("Ex>>hEx(300,-5,10)",gate.c_str(),"");
+  TH1F* hEx = (TH1F*) gDirectory->Get("hEx");
+  hEx->SetLineColor(kBlue);
+  hEx->Draw("E");
+
+  //Copy Ex for fit-peak subtraciton
+  TH1F *subFit = (TH1F*) hEx->Clone();
+  subFit->SetLineColor(kViolet);
+  subFit->SetName("subFit");
+  subFit = RemoveKnownPeaks(subFit);
+  subFit->Draw("same");
+
+  chainps->Draw("Ex>>hPS(300,-5,10)",gateps.c_str(),"same");
+  TH1F* hPS = (TH1F*) gDirectory->Get("hPS");
+  hPS->Scale(scale);
+
+  hEx->GetXaxis()->SetRangeUser(-5.0,-1.5);
+  TF1* linbg = new TF1("linbg","[0] + [1]*x",-5.0,15.0);
+  hEx->Fit("linbg","RWBL");
+  linbg->SetLineColor(kBlack);
+  linbg->Draw("same");
+  hEx->GetXaxis()->SetRangeUser(-5.0,15.0);
+ 
+  hPS->SetLineColor(kBlack);
+  TH1F* PSBG = (TH1F*) hPS->Clone();
+  PSBG->SetName("PSBG");
+  PSBG->SetTitle("PSBG");
+  PSBG->SetLineColor(kRed);
+
+  for(int b=1; b<PSBG->GetNbinsX()-1; b++){
+    double bcont = PSBG->GetBinContent(b);
+    cout << bcont << " ";
+    bcont += linbg->Eval(PSBG->GetBinCenter(b));
+    cout << bcont << endl;
+    PSBG->SetBinContent(b,(int)bcont);
+  }
+
+  cout << "here9" << endl;
+
+  PSBG->Draw("same");
+
+  hEx->Draw();
+  subFit->Draw("same");
+  hPS->Draw("same");
+
 }
 
 void Draw_1DParticle(){
@@ -2503,7 +2572,8 @@ void GatePhaseSpaceByThetaLab_MultiWrite(double startTheta, double finishTheta, 
 
   //TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_02Mar_47Kdp_PhaseSpace.root","READ");
   //TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_PhaseSpace_11Jul22.root","READ");
-  TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_18Oct22_PhaseSpace.root","READ");
+  //TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_18Oct22_PhaseSpace.root","READ");
+  TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_PhaseSpace.root","READ");
   TTree* PSTree = (TTree*) psfile->FindObjectAny("PhysicsTree");
 
   for (int i=0; i<numGates; i++){
@@ -3543,10 +3613,6 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
   hEg->GetYaxis()->SetLabelSize(20);
   hEg->GetYaxis()->SetTitleOffset(0.45);
 
-
-
-
-
   double height = hEg->GetMaximum();
   Func_AddGatingLines(gamma1, width1, height, kRed); 
   Func_AddGatingLines(gamma2, width2, height, kBlue); 
@@ -3561,24 +3627,24 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
  
   string egytit = "Counts / " + to_string(particleBin) + " MeV";
 
-  hExTotal->SetTitle("");
-  hExTotal->GetXaxis()->CenterTitle();
-  hExTotal->GetXaxis()->SetTitleFont(133);
-  hExTotal->GetXaxis()->SetTitleSize(22);
-  hExTotal->GetXaxis()->SetLabelFont(133);
-  hExTotal->GetXaxis()->SetLabelSize(20);
-  hExTotal->GetXaxis()->SetNdivisions(511);
-  hExTotal->GetYaxis()->CenterTitle();
-  hExTotal->GetYaxis()->SetTitleFont(133);
-  hExTotal->GetYaxis()->SetTitleSize(22);
-  hExTotal->GetYaxis()->SetLabelFont(133);
-  hExTotal->GetYaxis()->SetLabelSize(20);
-  hExTotal->GetYaxis()->SetTitleOffset(0.45);
-
-  hExTotal->SetLineColor(kBlack);
-  hExTotal->Scale(0.02);
-
-  hExTotal->Draw();
+  ////// Un-comment for preseentable figure //////
+  //hExTotal->SetTitle("");
+  //hExTotal->GetXaxis()->CenterTitle();
+  //hExTotal->GetXaxis()->SetTitleFont(133);
+  //hExTotal->GetXaxis()->SetTitleSize(22);
+  //hExTotal->GetXaxis()->SetLabelFont(133);
+  //hExTotal->GetXaxis()->SetLabelSize(20);
+  //hExTotal->GetXaxis()->SetNdivisions(511);
+  //hExTotal->GetYaxis()->CenterTitle();
+  //hExTotal->GetYaxis()->SetTitleFont(133);
+  //hExTotal->GetYaxis()->SetTitleSize(22);
+  //hExTotal->GetYaxis()->SetLabelFont(133);
+  //hExTotal->GetYaxis()->SetLabelSize(20);
+  //hExTotal->GetYaxis()->SetTitleOffset(0.45);
+  //hExTotal->SetLineColor(kBlack);
+  //hExTotal->Scale(0.02);
+  //hExTotal->Draw();
+  ////////////////////////////////////////////////
   
   TH1F* hEx = (TH1F*)h2D->ProjectionY("hEx",
         	              h2D->GetXaxis()->FindBin(gamma1-width1),
@@ -3588,10 +3654,6 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma1, double width1, double gam
   hEx->SetLineColor(kRed);
   hEx->Draw();
   //hEx->Draw("same");
-
-
-
-
 
   TH1F* hEx2 = (TH1F*)h2D->ProjectionY("hEx2",
         	              h2D->GetXaxis()->FindBin(gamma2-width2),
@@ -3662,31 +3724,29 @@ void GateGamma_SeeParticle_LoadFromFile(double gamma, double width, double gamma
   Func_AddGatingLines(gamma2, width2, height, kBlue); 
   Func_AddGatingLines(gamma3, width3, height, kGreen); 
 
-  
-
   cGGSP->cd(2);
 
   string exytit = "Counts / " + to_string(particleBin) + " MeV";
 
-  hExTotal->SetTitle("");
-  hExTotal->GetXaxis()->SetTitle(exytit.c_str());
-  hExTotal->GetXaxis()->CenterTitle();
-  hExTotal->GetXaxis()->SetTitleFont(133);
-  hExTotal->GetXaxis()->SetTitleSize(22);
-  hExTotal->GetXaxis()->SetLabelFont(133);
-  hExTotal->GetXaxis()->SetLabelSize(20);
-  hExTotal->GetXaxis()->SetNdivisions(511);
-  hExTotal->GetYaxis()->CenterTitle();
-  hExTotal->GetYaxis()->SetTitleFont(133);
-  hExTotal->GetYaxis()->SetTitleSize(22);
-  hExTotal->GetYaxis()->SetLabelFont(133);
-  hExTotal->GetYaxis()->SetLabelSize(20);
-  hExTotal->GetYaxis()->SetTitleOffset(0.45);
-
-  hExTotal->SetLineColor(kBlack);
-  hExTotal->Scale(0.15);
-
-  hExTotal->Draw();
+  //////// Un-comment for presentable figure ////////
+  //hExTotal->SetTitle("");
+  //hExTotal->GetXaxis()->SetTitle(exytit.c_str());
+  //hExTotal->GetXaxis()->CenterTitle();
+  //hExTotal->GetXaxis()->SetTitleFont(133);
+  //hExTotal->GetXaxis()->SetTitleSize(22);
+  //hExTotal->GetXaxis()->SetLabelFont(133);
+  //hExTotal->GetXaxis()->SetLabelSize(20);
+  //hExTotal->GetXaxis()->SetNdivisions(511);
+  //hExTotal->GetYaxis()->CenterTitle();
+  //hExTotal->GetYaxis()->SetTitleFont(133);
+  //hExTotal->GetYaxis()->SetTitleSize(22);
+  //hExTotal->GetYaxis()->SetLabelFont(133);
+  //hExTotal->GetYaxis()->SetLabelSize(20);
+  //hExTotal->GetYaxis()->SetTitleOffset(0.45);
+  //hExTotal->SetLineColor(kBlack);
+  //hExTotal->Scale(0.15);
+  //hExTotal->Draw();
+  ///////////////////////////////////////////////////
 
   TH1F* hEx = (TH1F*)h2D->ProjectionY("hEx",
 		              h2D->GetXaxis()->FindBin(gamma-width),
@@ -4379,3 +4439,353 @@ t3p4.DrawMarker(20.0,12.5738);
 
 
 }
+
+double sq(double val){
+  return pow(val,2.);
+}
+
+void BranchingRatioErrorCalculator(double area1, double error1, double area2, double error2){
+  double part1 = 1./sq(area1 + area2);
+  double part2 = ( sq(area1)*sq(error2) ) + ( sq(area2)*sq(error1) );
+
+  cout << "BR Error 1 : " <<  part1 * sqrt(part2) << endl;
+  cout << "BR Error 2 : " <<  part1 * sqrt(part2) << endl;
+}
+
+void BranchingRatioErrorCalculator(double area1, double error1, double area2, double error2, double area3, double error3){
+  double part1 = 1./sq(area1 + area2 + area3);
+ 
+  double part2x = ( sq(area2+area3)*sq(error1) ) + ( sq(error2+error3)*sq(area1) );
+  double part2y = ( sq(area1+area3)*sq(error2) ) + ( sq(error1+error3)*sq(area2) );
+  double part2z = ( sq(area1+area2)*sq(error3) ) + ( sq(error1+error2)*sq(area3) );
+
+
+  cout << "BR Error 1 : " <<  part1 * sqrt(part2x) << endl;
+  cout << "BR Error 2 : " <<  part1 * sqrt(part2y) << endl;
+  cout << "BR Error 3 : " <<  part1 * sqrt(part2z) << endl;
+}
+
+void BranchingRatioErrorCalculator(double area1, double error1, double area2, double error2, double area3, double error3, double area4, double error4){
+  //could probably generalise this for n peaks, but this will do for now!
+  double part1 = 1./sq(area1 + area2 + area3 + area4);
+ 
+  double part2x = ( sq(area2+area3+area4)*sq(error1) ) + ( sq(error2+error3+error4)*sq(area1) );
+  double part2y = ( sq(area1+area3+area4)*sq(error2) ) + ( sq(error1+error3+error4)*sq(area2) );
+  double part2z = ( sq(area1+area2+area4)*sq(error3) ) + ( sq(error1+error2+error4)*sq(area3) );
+  double part2a = ( sq(area1+area2+area3)*sq(error4) ) + ( sq(error1+error2+error3)*sq(area4) );
+
+
+  cout << "BR Error 1 : " <<  part1 * sqrt(part2x) << endl;
+  cout << "BR Error 2 : " <<  part1 * sqrt(part2y) << endl;
+  cout << "BR Error 3 : " <<  part1 * sqrt(part2z) << endl;
+  cout << "BR Error 4 : " <<  part1 * sqrt(part2a) << endl;
+}
+
+void Func_SetXYAxisSize(TH1F* hist, int labSize, int titSize, double labOff, double titOff){
+  hist->GetXaxis()->SetLabelFont(133);
+  hist->GetXaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetYaxis()->SetLabelFont(133);
+  hist->GetYaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetXaxis()->SetLabelOffset(labOff);
+  hist->GetYaxis()->SetLabelOffset(labOff);
+
+
+  hist->GetXaxis()->SetTitleFont(133);
+  hist->GetXaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetYaxis()->SetTitleFont(133);
+  hist->GetYaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetXaxis()->SetTitleOffset(titOff);
+  hist->GetYaxis()->SetTitleOffset(titOff);
+  
+  hist->GetXaxis()->CenterTitle();
+  hist->GetYaxis()->CenterTitle();
+}
+
+void Func_SetXYAxisSize(TH2F* hist, int labSize, int titSize, double labOff, double titOff){
+  hist->GetXaxis()->SetLabelFont(133);
+  hist->GetXaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetYaxis()->SetLabelFont(133);
+  hist->GetYaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetXaxis()->SetLabelOffset(labOff);
+  hist->GetYaxis()->SetLabelOffset(labOff);
+
+
+  hist->GetXaxis()->SetTitleFont(133);
+  hist->GetXaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetYaxis()->SetTitleFont(133);
+  hist->GetYaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetXaxis()->SetTitleOffset(titOff);
+  hist->GetYaxis()->SetTitleOffset(titOff);
+  
+  hist->GetXaxis()->CenterTitle();
+  hist->GetYaxis()->CenterTitle();
+}
+
+void Func_SetXYAxisSize(TGraph* hist, int labSize, int titSize, double labOff, double titOff){
+  hist->GetXaxis()->SetLabelFont(133);
+  hist->GetXaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetYaxis()->SetLabelFont(133);
+  hist->GetYaxis()->SetLabelSize(labSize); //in pixels
+  hist->GetXaxis()->SetLabelOffset(labOff);
+  hist->GetYaxis()->SetLabelOffset(labOff);
+
+
+  hist->GetXaxis()->SetTitleFont(133);
+  hist->GetXaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetYaxis()->SetTitleFont(133);
+  hist->GetYaxis()->SetTitleSize(titSize); //in pixels
+  hist->GetXaxis()->SetTitleOffset(titOff);
+  hist->GetYaxis()->SetTitleOffset(titOff);
+  
+  hist->GetXaxis()->CenterTitle();
+  hist->GetYaxis()->CenterTitle();
+}
+
+void Func_RotateFigure(TH1F* hist){
+//TGraph* Func_RotateFigure(TH1F* hist){
+  /////////////////// ROTATING Ex FIGURE /////////////////////
+  // From root-forum.cern.ch/t/rotation-of-1d-histogram/758 //
+  Double_t x, y, dx2, dy2, err;
+  TGraph * g;
+  TGraphErrors * ge;
+
+  Bool_t logZscale = kFALSE;
+  Bool_t logXscale = kFALSE;
+  Bool_t logYscale = kFALSE;
+  TString option_2dim("COLZ");
+  TString option_1dim("HIST Y+");                   // options for the 1-dim hists
+  TString option_1dim_y(option_1dim.Data());  // y-projection is a TGraph
+
+  TString fill_option("");    
+  Int_t fill_style = 0;
+  Int_t fill_color = 0;
+
+   Int_t nbins = hist->GetNbinsX();
+   Double_t ymin = hist->GetXaxis()->GetXmin();    // nota bene; x <-> y
+   Double_t ymax = hist->GetXaxis()->GetXmax();
+   Double_t xmin = hist->GetMinimum();
+   Double_t xmax = hist->GetMaximum();
+   Double_t logxmin = xmax;
+   xmax += 0.1 * xmax;
+
+   Double_t * xv = new Double_t[nbins];
+   Double_t * yv = new Double_t[nbins];
+   Double_t * xe = new Double_t[nbins];
+   Double_t * ye = new Double_t[nbins];
+   Double_t logymin = ymax;
+
+   for(Int_t i=1; i <= nbins; i++){
+      y = hist->GetBinLowEdge(i);
+      dy2 = 0.5 * hist->GetBinWidth(i);
+      x = hist->GetBinContent(i);
+      if(x > 0 && x < logxmin) logxmin = x;
+      err = hist->GetBinError(i);
+
+      xv[i-1] = x;
+      yv[i-1] = y+dy2;
+      xe[i-1] = err;
+      ye[i-1] = dy2;
+   }
+   if(logZscale)xmin = logxmin;
+   else if (xmin>0) xmin =0;
+
+   TH2F * hy = new TH2F("hy", "", 10, xmin, xmax, 10, ymin, ymax);
+   hy->Draw();
+   hy->GetXaxis()->SetNdivisions(505);
+   if(option_1dim_y.Contains("E", TString::kIgnoreCase)){
+      if(!option_1dim_y.Contains("1", TString::kIgnoreCase)){
+        option_1dim_y += "z";    // switch off the little lines at error bars
+      }
+      ge = new TGraphErrors(nbins,xv,yv, xe, ye);
+      ge->Draw(option_1dim_y.Data());
+   } else {
+      if(option_1dim_y.Contains("H", TString::kIgnoreCase)){
+         yv[0] -= dy2;
+         yv[1] = yv[nbins-1] + dy2;
+         option_1dim_y += "R";       // rotate
+         g = new TGraph(nbins, xv, yv);
+         if(fill_option.Contains("F", TString::kIgnoreCase)){
+            option_1dim_y += "F";
+            g->SetFillStyle(fill_style);
+            g->SetFillColor(fill_color);
+         }
+      } else {
+         g = new TGraph(nbins, xv, yv);
+         cout <<xv[nbins-1] << " " << yv[nbins-1] << endl;
+      }
+
+      int labSize = 20;
+      int titSize = 20;
+      double labOff = 0.005;
+      double titOff = 1.0;
+
+      g->GetXaxis()->SetLabelFont(133);
+      g->GetXaxis()->SetLabelSize(labSize); //in pixels
+      g->GetYaxis()->SetLabelFont(133);
+      g->GetYaxis()->SetLabelSize(labSize); //in pixels
+      g->GetXaxis()->SetLabelOffset(labOff);
+      g->GetYaxis()->SetLabelOffset(labOff);
+    
+      g->GetXaxis()->SetTitleFont(133);
+      g->GetXaxis()->SetTitleSize(titSize); //in pixels
+      g->GetYaxis()->SetTitleFont(133);
+      g->GetYaxis()->SetTitleSize(titSize); //in pixels
+      g->GetXaxis()->SetTitleOffset(titOff);
+      g->GetYaxis()->SetTitleOffset(titOff);
+      
+      g->GetXaxis()->CenterTitle();
+      g->GetYaxis()->CenterTitle();
+
+      g->Draw(option_1dim_y.Data());
+
+   }
+   delete [] xv;
+   delete [] yv;
+   if(xe) {delete [] xe; xe = 0;};
+   if(ye) {delete [] ye; ye = 0;};
+
+   //return g;
+  ////////////////////////////////////////////////////////////
+
+}
+
+void Figure_ExEg(){
+ 
+  int xwidth = 1000;
+  int ywidth = 1000;
+  int border = 5;
+  int single = 300;
+
+  
+  TH2F* h2D = (TH2F*)Func_LoadIn2DPartGamma();
+
+  h2D->RebinX(2);
+  h2D->RebinY(10);
+  h2D->GetYaxis()->SetRangeUser(-1.,8.);
+
+  TCanvas *cExEg = new TCanvas("cExEg","cExEg",xwidth,ywidth);
+  gStyle->SetOptStat(0);
+  gStyle->SetCanvasColor(0);
+
+  ////////////////////////////////
+  // ---------- ExEg ---------- //
+  cExEg->cd();
+  TPad *pExEg = new TPad("pExEg","pExEg",0.3,0.3,0.9,0.9);
+  pExEg->SetPad("pExEg","pExEg",
+		  cExEg->AbsPixeltoX(0      + border),
+		  cExEg->AbsPixeltoY(single + border),
+		  cExEg->AbsPixeltoX(xwidth - border - single),
+		  cExEg->AbsPixeltoY(ywidth - border)
+		  );
+  pExEg->Draw();
+  pExEg->SetTopMargin(   0.00001);
+  pExEg->SetBottomMargin(0.11);
+  pExEg->SetLeftMargin(  0.11);
+  pExEg->SetRightMargin( 0.00001);
+  pExEg->SetFillStyle(0);
+  pExEg->cd();
+  h2D->GetXaxis()->SetRangeUser(0.0,4.75);
+  h2D->GetYaxis()->SetRangeUser(-1.0,7.5);
+  Func_SetXYAxisSize(h2D, 20, 22, 0.005, 1.2);
+//  h2D->GetXaxis()->SetLabelFont(133);
+//  h2D->GetXaxis()->SetLabelSize(16); //in pixels
+//  h2D->GetYaxis()->SetLabelFont(133);
+//  h2D->GetYaxis()->SetLabelSize(16); //in pixels
+//  h2D->GetXaxis()->SetTitleFont(133);
+//  h2D->GetXaxis()->SetTitleSize(20); //in pixels
+//  h2D->GetXaxis()->CenterTitle();
+//  h2D->GetYaxis()->SetTitleFont(133);
+//  h2D->GetYaxis()->SetTitleSize(20); //in pixels
+//  h2D->GetYaxis()->CenterTitle();
+
+  h2D->Draw();
+
+  ////////////////////////////////
+  // ----------- Eg ----------- //
+  cExEg->cd();
+  TPad *pEg = new TPad("pEg","pEg",0.3,0.3,0.9,0.9);
+  pEg->SetPad("pEg","pEg",
+		  cExEg->AbsPixeltoX(0      + border),
+		  cExEg->AbsPixeltoY(0      + border),
+		  cExEg->AbsPixeltoX(xwidth - border - single),
+		  cExEg->AbsPixeltoY(single + border)
+		  );
+  pEg->Draw();
+  pEg->SetTopMargin(   0.11);
+  pEg->SetBottomMargin(0.00001);
+  pEg->SetLeftMargin(  0.11);
+  pEg->SetRightMargin( 0.00001);
+  pEg->SetFillStyle(0);
+  pEg->SetBorderMode(0);
+  pEg->SetLogy();
+  pEg->SetTickx();
+  pEg->SetTicky();
+  pEg->cd();
+
+  TH1F* hEg = (TH1F*)h2D->ProjectionX("hEg",0,10000);
+  hEg->SetLineColor(kBlack);
+  hEg->GetXaxis()->SetRangeUser(0.0,4.75);
+  Func_SetXYAxisSize(hEg, 20, 22, 0.005, 1.2);
+  hEg->Draw();
+
+  ////////////////////////////////
+  // ----------- Ex ----------- //
+  cExEg->cd();
+  TPad *pEx = new TPad("pEx","pEx",0.3,0.3,0.9,0.9);
+  pEx->SetPad("pEx","pEx",
+		  cExEg->AbsPixeltoX(xwidth - border - single),
+		  cExEg->AbsPixeltoY(single + border),
+		  cExEg->AbsPixeltoX(xwidth - border),
+		  cExEg->AbsPixeltoY(ywidth - border)
+		  );
+  pEx->Draw();
+  pEx->SetTopMargin(   0.00001);
+  pEx->SetBottomMargin(0.11);
+  pEx->SetLeftMargin(  0.00001);
+  pEx->SetRightMargin( 0.11);
+  pEx->SetFillStyle(0);
+  pEx->SetBorderMode(0);
+  pEx->SetTickx();
+  pEg->SetTicky();
+  pEx->cd();
+
+  TH1F* hEx = (TH1F*)h2D->ProjectionY("hEx",0,10000);
+  hEx->GetXaxis()->SetRangeUser(-1.0,7.5);
+  Func_SetXYAxisSize(hEx, 20, 22, 0.005, 1.2);
+  hEx->Draw();
+
+  Func_RotateFigure(hEx);
+  //auto gEx = Func_RotateFigure(hEx);
+
+  //TH1F* hExG1 = (TH1F*)h2D->ProjectionY("hExG1",
+  //      	              h2D->GetXaxis()->FindBin(0.140),
+  //      	              h2D->GetXaxis()->FindBin(0.145)
+  //      		      );
+  //hExG1->SetLineColor(kRed);
+
+  //auto gExG1 = Func_RotateFigure(hExG1);
+
+
+  //gEx->Draw("hist");
+
+//  TMultiGraph* mg = new TMultiGraph();
+//  mg->Add(gEx,  "hist");
+//  mg->Add(gExG1, "hist");
+//  mg->Draw("a");
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

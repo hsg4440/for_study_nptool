@@ -3,6 +3,9 @@
 #include <cmath>
 #include "stdlib.h"
 
+bool removing = false;
+vector<double> fitContByBin; //each entry is a bin, containing eval of fit function in that bin for removal function
+
 vector<double> means = { 0.000,
                            0.143,
                            0.279,
@@ -169,12 +172,14 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
   } 
 
   //Subtract flat background equal to smallest bin in range
-  hist->GetXaxis()->SetRange(hist->FindBin(-0.8), hist->FindBin(-0.0));
-  double bgmin = hist->GetBinContent(hist->GetMinimumBin());
-  hist->GetXaxis()->UnZoom();
-  cout << "Subtracting background of " << bgmin << endl;
-  for(int b=1; b<hist->GetNbinsX() ; b++){
-      hist->SetBinContent(b,hist->GetBinContent(b)-bgmin);
+  if(!removing){
+    hist->GetXaxis()->SetRange(hist->FindBin(-0.8), hist->FindBin(-0.0));
+    double bgmin = hist->GetBinContent(hist->GetMinimumBin());
+    hist->GetXaxis()->UnZoom();
+    cout << "Subtracting background of " << bgmin << endl;
+    for(int b=1; b<hist->GetNbinsX() ; b++){
+        hist->SetBinContent(b,hist->GetBinContent(b)-bgmin);
+    }
   }
 
   //Build background function
@@ -298,156 +303,17 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
     cout << "-------------" << endl;
   }
 
+  if(removing){
+    
+
+    for(int b=1; b<hist->GetNbinsX()-1; b++){
+      cout << b << " " << hist->GetBinContent(b) << " " << full->Eval(hist->GetBinCenter(b)) << endl;
+      fitContByBin.push_back(full->Eval(hist->GetBinCenter(b)));
+    }
+  }
+
   return allpeaks;
 }
-
-////vector<vector<double>> FitKnownPeaks_dt_RtrnArry(TH1F* hist, double slideshift){
-////  double minFit=-1.0, maxFit=8.0; 
-////  double binWidth = hist->GetXaxis()->GetBinWidth(3);
-////  double sigma = 0.18;
-////
-////  hist->Sumw2();
-////
-////  /* Construct flat BG to subtract */ 
-////  /**
-////  cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
-////  cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
-////  cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
-////  double ConstBG = 36.0; double ErrBG = 1.0;
-////  int xbins = hist->GetXaxis()->GetNbins();
-////  double xmin = hist->GetXaxis()->GetXmin();
-////  double xmax = hist->GetXaxis()->GetXmax();
-////  TH1F *FlatBG = new TH1F("FlatBG","FlatBG", xbins, xmin, xmax);
-////  for(int i=0; i<xbins;i++){
-////    FlatBG->SetBinContent(i,ConstBG);
-////    FlatBG->SetBinError(i,ErrBG);
-////  }
-////  hist->Add(FlatBG,-1);
-////  **/
-////
-////  //Build individual peak fit functions
-////  string nameBase = "Peak ";
-////  string function = "([2]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[0],2))";
-////  TF1 **allPeaks = new TF1*[numPeaks_dt];
-////  for(int i=0; i<numPeaks_dt; i++) {
-////    string nameHere = nameBase;
-////    nameHere +=to_string(i);
-////
-////    allPeaks[i] = new TF1(nameHere.c_str(), function.c_str(), minFit, maxFit);
-////    //allPeaks[i] = new TF1(nameHere.c_str(), f_peak, -1, 5);
-////    allPeaks[i]->SetLineColor(kBlack);  
-////    allPeaks[i]->SetLineStyle(7);  
-////    allPeaks[i]->SetParNames("Sigma", "Mean", "Area*BinWidth");
-////  } 
-////
-////  //Subtract flat background equal to smallest bin in range
-////  hist->GetXaxis()->SetRange(hist->FindBin(-0.8), hist->FindBin(-0.0));
-////  double bgmin = hist->GetBinContent(hist->GetMinimumBin());
-////  hist->GetXaxis()->UnZoom();
-////  cout << "Subtracting background of " << bgmin << endl;
-////  for(int b=1; b<hist->GetNbinsX() ; b++){
-////      hist->SetBinContent(b,hist->GetBinContent(b)-bgmin);
-////  }
-////  
-////  ////Subtract flat background equal to average bin in range
-////  //double bgavg = 0;
-////  //int bgcount = 0;
-////  //for(int i = hist->FindBin(-0.8); i<hist->FindBin(0.1); i++){
-////  //  bgavg += hist->GetBinContent(i);
-////  //  bgcount++;
-////  //}
-////  //bgavg = bgavg/(double)bgcount;
-////  //hist->GetXaxis()->UnZoom();
-////  //cout << "Subtracting background of " << bgavg << endl;
-////  //for(int b=1; b<hist->GetNbinsX() ; b++){
-////  //    hist->SetBinContent(b,hist->GetBinContent(b)-bgavg);
-////  //}
-//// 
-////
-////  //Build background function
-////  TF1 *bg = new TF1 ("bg","[0]",minFit, maxFit);
-////  bg->SetLineColor(kGreen);
-////  bg->SetLineStyle(9);
-////  bg->SetParNames("Background");
-////
-////  //Build IMPROVED total function
-////  TF1 *full = new TF1("fitAllPeaks", f_full_dt, minFit, maxFit, (int) 1+(3*numPeaks_dt));
-////  full->SetLineColor(kRed);
-////  const int numParams = (numPeaks_dt*3)+1;
-////  for(int i=0; i<numPeaks_dt; i++) {
-////    //full->FixParameter((i*3)+1,sigma);
-////    //full->FixParameter((i*3)+2,means_dt.at(i));
-////    //full->SetParameter((i*3)+3,1e1);
-////    //full->SetParLimits((i*3)+3,0.0,1e5);
-////    ////full->SetParLimits((i*3)+3,10.0,1e5);
-////    //
-////    //
-////    //
-////    //
-////    full->FixParameter((i*3)+1,means.at(i)); //GRADIENT REMOVED FOR NOW
-////    full->FixParameter((i*3)+2,sigma);
-////    full->SetParameter((i*3)+0,1e1);
-////    full->SetParLimits((i*3)+0,0.0,1e5);
-////
-////
-////  }
-////  //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
-////  //full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
-////  //full->FixParameter(0,0.); /* FOR ANGLE GATED FITTING WITH BG SUBTRACTED */
-////  
-////  //Fit full function to histogram
-////  //hist->Fit(full, "RWQB", "", minFit, maxFit);
-////  hist->Fit(full, "RWQBL", "", minFit, maxFit); cout << GREEN << "FITTING WITH MAX LIKELYHOOD METHOD" << RESET << endl;
-////  hist->Draw();
-////
-////  //Extract fitted variables, assign them to individual fits, and draw them
-////  const Double_t* finalPar = full->GetParameters();
-////  const Double_t* finalErr = full->GetParErrors();
-////  for (int i=0; i<numPeaks_dt; i++){
-////    allPeaks[i]->SetParameters(sigma, means_dt.at(i), finalPar[3+(i*3)]);
-////  }
-////  bg->SetParameter(0,finalPar[0]);
-////  bg->Draw("SAME");
-////  full->Draw("SAME");
-////
-////  for (int i=0; i<numPeaks_dt; i++){
-////    allPeaks[i]->Draw("SAME");
-////  }
-////
-//// /* Error propogation:
-////  * (Abin) +- deltaAbin, B+-0 (no uncertainty)
-////  * A = Abin/B
-////  * deltaA/A = deltaAbin/Abin
-////  * deltaA = A x deltaAbin/Abin
-////  */
-////
-////  //Write to screen
-////  cout << "===========================" << endl;
-////  cout << "== PEAK =========== AREA ==" << endl;
-////  
-////  vector<vector<double>> allpeaks;
-////  for(int i=0; i<numPeaks_dt; i++){
-////    double A = finalPar[(i*3)+3]/binWidth;
-////    double deltaA = A *  (finalErr[(i*3)+3]/finalPar[(i*3)+3]);
-////
-////    cout << fixed << setprecision(3) 
-////	 << " #" << i << "  " 
-////	 << finalPar[(i*3)+2] << "\t" << setprecision(0)
-////	 << A << "\t+- " 
-////	 << deltaA << setprecision(3)
-////	 << endl;
-////
-////    vector<double> onepeak; //energy, area and error for one peak
-////    onepeak.push_back(finalPar[(i*3)+2]);
-////    onepeak.push_back(A);
-////    onepeak.push_back(deltaA);
-////    allpeaks.push_back(onepeak);
-////  }
-////  cout << " BG  " << full->GetParameter(0) 
-////       << " +- " << full->GetParError(0) << endl;
-////
-////  return allpeaks;
-////}
 
 void FitKnownPeaks(TH1F* hist){
   //Shell function to call Rtrn_Arry without writing vector<vector<double>> to screen
@@ -458,5 +324,26 @@ void FitKnownPeaks_dt(TH1F* hist){
   //Shell function to call Rtrn_Arry without writing vector<vector<double>> to screen
   //vector<vector<double>> shell = FitKnownPeaks_dt_RtrnArry(hist,0.0);
   vector<vector<double>> shell = FitKnownPeaks_RtrnArry(hist,0.0);
+}
+
+TH1F* RemoveKnownPeaks(TH1F* hist){
+  
+  removing=true;
+  vector<vector<double>> shell = FitKnownPeaks_RtrnArry(hist,0.0);
+
+  TH1F *hcopy = (TH1F*) hist->Clone();
+  hcopy->SetName("hcopy");
+
+  hist->Draw();
+  for(int b=1; b<hist->GetNbinsX()-2; b++){
+    hist->SetBinContent(b, hist->GetBinContent(b) - fitContByBin.at(b));
+  }
+  hist->Draw();
+  hcopy->Draw("same");
+
+  removing=false;
+  fitContByBin.clear();
+
+  return hist;
 }
 
