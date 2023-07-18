@@ -29,6 +29,9 @@
 #include <vector>
 // ROOT headers
 #include "TFile.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TTreeReaderArray.h"
 #include "TChain.h"
 
 // NPL
@@ -70,6 +73,8 @@ public:
 public:
    // Return the private chain and file
    TChain*  GetChain()  {return pRootChain;}
+   TTreeReader*  GetTreeReader()  {return pTreeReader;}
+   std::vector<TTreeReaderValue<std::vector<double>>> *  GetTreeReaderValue()  {return pTreeReaderValue;}
    TFile*   GetFile()   {return pRootFile;}
    void     SetChain(TChain* c)  {pRootChain = c;} 
 
@@ -80,7 +85,9 @@ public:
 
 private:
    TChain   *pRootChain;
+   TTreeReader *pTreeReader = new TTreeReader();
    TFile    *pRootFile;
+   std::vector<TTreeReaderValue<std::vector<double>>> *pTreeReaderValue;
    std::string pTreeName;// the main tree name
    std::vector<std::string> pTreePath;// the main tree path
    // Used for user made tree friends

@@ -7,6 +7,7 @@ bin
 ClassList.txt
 Utility/Makefile
 Utility/npanalysis
+Utility/npreader
 Utility/nptool-installer
 Utility/nptool-wizard
 *.pcm

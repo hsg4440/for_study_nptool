@@ -107,6 +107,7 @@ class NPOptionManager{
       bool   GetCircularTree()             {return fCircularTree;}
       bool   IsAnalysis()                  {return fIsAnalysis;};
       bool   IsSimulation()                {return fIsSimulation;}
+      bool   IsReader()                    {return fReader;}
       bool   IsSplit()                     {return fIsSplit;}
 
       int    GetVerboseLevel()             {return fVerboseLevel;}
@@ -127,6 +128,7 @@ class NPOptionManager{
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
       void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
       void SetIsSimulation(bool val=true){fIsSimulation=val;}
+      void SetReader(bool reader=false){fReader=reader;}
 
    public: // user definition
       bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
@@ -161,6 +163,7 @@ class NPOptionManager{
       bool   fCircularTree;
       bool   fIsAnalysis;
       bool   fIsSimulation;
+      bool   fReader;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)

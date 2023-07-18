@@ -1,5 +1,5 @@
-#ifndef NPAnalysis_h 
-#define NPAnalysis_h
+#ifndef TMUSETTSPECTRA_H
+#define TMUSETTSPECTRA_H
 /*****************************************************************************
  * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
  *                                                                           *
@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
+ * Original Author: N. de Sereville  contact address: matta@lpccaen.in2p3.fr *
  *                                                                           *
- * Creation Date  : march 2015                                               *
+ * Creation Date  : February 2019                                            *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- * Class describing the property of an Analysis object                       *
+ *  This class holds all the online spectra needed for MUSETT                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -22,27 +22,40 @@
  *                                                                           *
  *****************************************************************************/
 
-#include"NPDetectorManager.h"
-#include"TTreeReader.h"
-namespace NPL{
-  class VAnalysis{
-    public:
-     VAnalysis();
-     ~VAnalysis();
+// NPLib headers
+#include "NPVSpectra.h"
+#include "TMUSETTData.h"
+#include "TMUSETTPhysics.h"
 
-    public: 
-      virtual void TreatEvent(){};
-      virtual bool UnallocateBeforeBuild(){return true;};
-      virtual bool UnallocateBeforeTreat(){return true;};
-      virtual bool FillOutputCondition(){return true;};
-      virtual void Init(){};
-      virtual void InitTreeReader(TTreeReader* TreeReader){};
-      virtual void End(){};
-      void SetDetectorManager(NPL::DetectorManager* det ) {m_DetectorManager=det;};
-      //virtual TObject RawDataData(){}; 
+// ForwardDeclaration
+class TMUSETTPhysics ;
 
-    protected:
-      NPL::DetectorManager* m_DetectorManager;
-  };
-}
+class TMUSETTSpectra:public VSpectra{
+  public:
+    // constructor and destructor
+    TMUSETTSpectra();
+    TMUSETTSpectra(std::map<int,int> DetectorIndex);
+    ~TMUSETTSpectra();
+
+  private:
+    // Initialization methods
+    void InitRawSpectra();
+    void InitPreTreatedSpectra();
+    void InitPhysicsSpectra();
+
+  public:
+    // Filling methods
+    void FillRawSpectra(TMUSETTData*);
+    void FillPreTreatedSpectra(TMUSETTData*);
+    void FillPhysicsSpectra(TMUSETTPhysics*);
+
+  private: // Information on MUSETT
+    std::map<int,int> fDetectorToIndex;
+    std::map<int,int> fIndexToDetector;
+    unsigned int fNumberOfDetector;
+    unsigned int fStripX;
+    unsigned int fStripY;
+    unsigned int fStripSecondLayer;
+};
+
 #endif

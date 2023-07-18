@@ -34,13 +34,15 @@
 #include <string>
 #include <vector>
 
+
 // NPL
 #include "NPCore.h"
 #include "NPInputParser.h"
+#include "NPVTreeReader.h"
 
 namespace NPL {
 
-  class VDetector {
+  class VDetector: public VTreeReader {
    public:
     //  Default Constructor and destructor
     VDetector();
@@ -79,6 +81,8 @@ namespace NPL {
     // Method related to the TSpectra classes, aimed at providing a framework for online applications
     // Instantiate the Spectra class and the histogramm throught it
     virtual void InitSpectra(){};
+    
+    virtual void SetTreeReader(TTreeReader* Reader){};
     // Fill the spectra hold by the spectra class
     virtual void FillSpectra(){};
     // Write the spectra to a file
@@ -87,6 +91,7 @@ namespace NPL {
     virtual void CheckSpectra(){};
     // Used for Online only, clear all the spectra hold by the Spectra class
     virtual void ClearSpectra(){};
+    virtual TObject* GetRawData(){return NULL;};
     // Used for Online only, get all the spectra hold by the Spectra class
     virtual std::map<std::string, TH1*> GetSpectra() {
       std::map<std::string, TH1*> x;

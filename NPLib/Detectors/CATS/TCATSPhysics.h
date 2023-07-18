@@ -23,6 +23,7 @@
 
 //   STL
 #include <vector>
+#include <set>
 //   ROOT
 #include "TObject.h"
 #include "TVector3.h"
@@ -30,17 +31,19 @@
 #include <TRandom2.h>
 #include <TRandom3.h>
 //   NPLib
-#include "TCATSData.h"
+#include "TCATSPhysicsReader.h"
 #include "TCATSSpectra.h"
+#include "NPVTreeReader.h"
 #include "NPVDetector.h"
 #include "NPCalibrationManager.h"
 #include "NPDetectorFactory.h"
 #include "NPInputParser.h"
+
 // forward declaration
 class TCATSSpectra;
 using namespace std ;
 
-class TCATSPhysics : public TObject, public NPL::VDetector
+class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsReader
 {
 
   public:   //   Constructor and Destructor
@@ -54,48 +57,37 @@ class TCATSPhysics : public TObject, public NPL::VDetector
     TCATSPhysics*    m_EventPhysics;//!
 
   public :
-    //   Vector of dim = multiplicity of event on all detector
-    vector<int>      DetNumberX; 
-    vector<int>      StripX;
-    vector<double>   ChargeX; 
-
-    //   Vector of dim = number of CATS
-    vector<int>      StripMaxX;
-    vector<double>   ChargeMaxX;
-    vector<int>      DetMaxX;
-
-    //   Vector of dim = multiplicity of event on all detector
-    vector<int>      DetNumberY; 
-    vector<int>      StripY;
-    vector<double>   ChargeY;
-
-    //   Vector of dim = number of CATS  
-    vector<int>      StripMaxY;
-    vector<double>   ChargeMaxY;
-    vector<int>      DetMaxY;
-
-    //   Vector of dim = number of CATS
-    vector<double>   PositionX;
-    vector<double>   PositionY;
-    vector<double>   StripNumberX;
-    vector<double>   StripNumberY;
-    vector<double>   PositionZ;
-    vector<double>	 QsumX;
-    vector<double>	 QsumY;
+    vector<UShort_t>    DetNumber;
+    vector<double>      PositionX;
+    vector<double>      PositionY;
+    vector<double>      PositionZ;
+    vector<double>      StripNumberX;
+    vector<double>      StripNumberY;
+    vector<double>      ChargeX;
+    vector<double>      ChargeY;
     double           PositionOnTargetX;
     double           PositionOnTargetY;
-    double           m_Zproj;;
+    double           PositionOnMask1X;
+    double           PositionOnMask1Y;
+    double           PositionOnMask2X;
+    double           PositionOnMask2Y;
+    double           m_Zproj;
 
     TVector3         BeamDirection;//!
 
-    // Vector of Charge Array (one for each CATS fired)
-    vector< vector<double> > Buffer_X_Q;//!
-    vector< vector<double> > Buffer_Y_Q;//!
+    
 
   private :
-    vector< vector< vector<double> > >   StripPositionX;//!
-    vector< vector< vector<double> > >   StripPositionY;//!
-    vector<double>                       StripPositionZ;//!  
+    std::map<UShort_t, std::vector<std::pair<UShort_t,UShort_t>>> MapX;//!
+    std::map<UShort_t, std::vector<std::pair<UShort_t,UShort_t>>> MapY;//!
+    std::map<UShort_t,std::pair<UShort_t,UShort_t>> MaxQX;//!
+    std::map<UShort_t,std::pair<UShort_t,UShort_t>> MaxQY;//!
+    std::map<UShort_t,Double_t> QSumX;//!
+    std::map<UShort_t,Double_t> QSumY;//!
+    std::map<UShort_t, std::pair<Double_t,std::pair<Double_t,Double_t>>> Positions;//!
+    std::map<UShort_t,vector< vector<double> > >   StripPositionX;//!
+    std::map<UShort_t,vector< vector<double> > >   StripPositionY;//!
+    std::map<UShort_t,double>             StripPositionZ;//!
     int m_NumberOfCATS;
     double m_TargetAngle; //!
     double m_TargetThickness; //!
@@ -106,8 +98,8 @@ class TCATSPhysics : public TObject, public NPL::VDetector
     // Methods are declared in the CATS namespace outside the class
     // CINT can't handle such complex vector, so the ifndef part is there to hide it away 
     #ifndef __CINT__
-    vector<double(*)(vector<double>&,int&)> ReconstructionFunctionX;//!
-    vector<double(*)(vector<double>&,int&)> ReconstructionFunctionY;//!
+    std::map<UShort_t,double(*)(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t)> ReconstructionFunctionY;//!
+    std::map<UShort_t,double(*)(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t)> ReconstructionFunctionX;//!
     #endif /* __CINT __ */
   
   public:
@@ -159,6 +151,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector
     // Used for Online only, clear all the spectra hold by the Spectra class
     void ClearSpectra();
 
+    void SetTreeReader(TTreeReader* TreeReader);
 
     //   Those two method all to clear the Event Physics or Data
     void ClearEventPhysics() {Clear();}      
@@ -176,7 +169,8 @@ class TCATSPhysics : public TObject, public NPL::VDetector
     void AddParameterToCalibrationManager();
     void ReadAnalysisConfig();
     void ReadConfiguration(NPL::InputParser);
-    void AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y28, TVector3 C_X28_Y28);
+    void AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y28, TVector3 C_X28_Y28, UShort_t N);
+    void AddMask(Double_t Z, UShort_t N);
 
   public:
     TVector3 GetBeamDirection();
@@ -185,6 +179,40 @@ class TCATSPhysics : public TObject, public NPL::VDetector
     double GetPositionOnTargetX()  {return PositionOnTargetX;}  
     double GetPositionOnTargetY()  {return PositionOnTargetY;}
 
+  public:
+    /////////////////////           GETTERS           ////////////////////////
+    // X
+    inline UShort_t	GetCATSMult()		              const {return DetNumber.size();}
+    inline UShort_t	GetCATSDet(const Int_t& i)		const {return DetNumber[i];}
+    
+    inline UShort_t	GetCATSStripX(const Int_t& i)   const {return StripNumberX[i];}
+    inline double	GetCATSChargeX(const Int_t& i)	const {return ChargeX[i];}
+    inline double	GetCATSPosX(const Int_t& i)	const {return PositionX[i];} 
+    
+    inline UShort_t	GetCATSStripY(const Int_t& i)   const {return StripNumberY[i];}
+    inline double	GetCATSChargeY(const Int_t& i)	const {return ChargeY[i];}
+    inline double	GetCATSPosY(const Int_t& i)	const {return PositionY[i];} 
+    
+
+
+  private:
+    unsigned int sizeY;//! 
+    unsigned int sizeX;//! 
+    unsigned int sizeDet;//!
+    Double_t Mask1_Z = 0;//!
+    Double_t Mask2_Z = 0;//!
+
+    UShort_t StrX;//! 
+    UShort_t NX;//! 
+    UShort_t CATS_X_Q;//! 
+    UShort_t StrY;//! 
+    UShort_t NY;//! 
+    UShort_t CATS_Y_Q;//! 
+  // Look how many CATS were fired
+  // use a set to identify which detector has been hit
+  std::set<int> DetectorHitX;//! 
+  std::set<int> DetectorHit;//! 
+  std::map<UShort_t, std::vector<double>>	 QsumSample;//!
 
   private: // Spectra Class   
     TCATSSpectra*      m_Spectra;//! 
@@ -195,8 +223,9 @@ class TCATSPhysics : public TObject, public NPL::VDetector
   public: // Spectra Getter
     map< string , TH1*> GetSpectra();
 
-    public: // Static constructor to be passed to the Detector Factory
-     static NPL::VDetector* Construct();
+  public: // Static constructor to be passed to the Detector Factory
+    static NPL::VDetector* Construct();
+    static NPL::VTreeReader* ConstructReader();
      ClassDef(TCATSPhysics,1)  // CATSPhysics structure
 };
 
@@ -204,10 +233,10 @@ class TCATSPhysics : public TObject, public NPL::VDetector
 namespace CATS_LOCAL{
   // The reconstruction methods need to be outside the class for practical purpose
   // of dealing with the function pointer
-  double AnalyticHyperbolicSecant(vector<double>& ChargeArray,int& StripMax);
-  double FittedHyperbolicSecant(vector<double>& ChargeArray,int& StripMax);
-  double AnalyticGaussian(vector<double>& ChargeArray,int& StripMax);
-  double Centroide(vector<double>& ChargeArray,int& StripMax); 
+  double AnalyticHyperbolicSecant(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t);
+  //double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
+  //double AnalyticGaussian(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
+  //double Centroide(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
 
 
   //   tranform an integer to a string

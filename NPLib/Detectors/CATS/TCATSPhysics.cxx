@@ -28,8 +28,13 @@ using namespace CATS_LOCAL;
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <set>
 #include <cstdlib>
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <utility>
+#include <vector>
 using namespace std;
 //	NPL
 #include "RootInput.h"
@@ -111,105 +116,81 @@ void TCATSPhysics::BuildSimplePhysicalEvent(){
 void TCATSPhysics::BuildPhysicalEvent(){
 
 
+  // std::cout << "test 1" << std::endl;
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    m_EventData = &(**r_ReaderEventData);
+  }
+  //m_EventData->Dump();
 
+
+  // std::cout << "test 2" << std::endl;
   PreTreat();
 
-  // Look how many CATS were fired
-  // use a set to identify which detector has been hit
-  set<int> DetectorHitX; // X only
-  set<int> DetectorHit; // X and Y
 
-  unsigned int sizeX = m_PreTreatedData->GetCATSMultX() ;
-  for( unsigned short i = 0 ; i < m_PreTreatedData->GetCATSMultX() ; i++ ){ 
+  sizeX = m_PreTreatedData->GetCATSMultX() ;
+  for( unsigned short i = 0 ; i < sizeX; i++ ){ 
     // Insert detector number in the set, if the key already exist, do nothing
     DetectorHitX.insert(m_PreTreatedData->GetCATSDetX(i));
   }
 
+  // std::cout << "test 3" << std::endl;
   // Correspond to CATS with both X and Y
-  unsigned int sizeY = m_PreTreatedData->GetCATSMultY() ;
-  for( unsigned short i = 0 ; i < m_PreTreatedData->GetCATSMultY() ; i++ ){ 
+  sizeY = m_PreTreatedData->GetCATSMultY() ;
+  for( unsigned short i = 0 ; i < sizeY ; i++ ){ 
     // Insert detector number in the set, if the key already exist, do nothing
     // Only if the detector was hit on X as well
     if(DetectorHitX.find(m_PreTreatedData->GetCATSDetY(i))!=DetectorHitX.end())
       DetectorHit.insert(m_PreTreatedData->GetCATSDetY(i));
   }
   // The number of CATS hit, i.e. the number of CATS that we are going to analyse
-  unsigned int NumberOfCATSHit = DetectorHit.size();
+  sizeDet = DetectorHit.size();
 
-  vector<double> ChargeArray;
-  ChargeArray.resize(28,0);
 
-  // INITIALISATION OF VECTORS : DIM = NumberOfCATSHit
-  for(set<int>::iterator it=DetectorHit.begin(); it!=DetectorHit.end(); ++it){
-    // Assign order for the detector number
-    DetMaxX.push_back(*it);
-    DetMaxY.push_back(*it);
-    // X
-    StripMaxX.push_back(1); 
-    ChargeMaxX.push_back(1);
-    QsumX.push_back(0);
-    // Y
-    StripMaxY.push_back(1); 
-    ChargeMaxY.push_back(1);
-    QsumY.push_back(0);
-
-    Buffer_X_Q.push_back(ChargeArray);
-    Buffer_Y_Q.push_back(ChargeArray);  
+    
+  //std::cout << "StripX mult " << sizeX << std::endl;
+  for( unsigned short i = 0 ; i < sizeX; i++ ){ 
+    StrX					         = m_PreTreatedData->GetCATSStripX(i);
+    NX						         = m_PreTreatedData->GetCATSDetX(i);
+    CATS_X_Q				       = m_PreTreatedData->GetCATSChargeX(i) ;
+    if(DetectorHit.find(NX)!=DetectorHit.end()){
+      MapX[NX].push_back(std::make_pair(StrX,CATS_X_Q));
+      QSumX[NX]+= CATS_X_Q;
+      if(MaxQX.find(NX)==MaxQX.end()|| MaxQX[NX].second < CATS_X_Q ){
+        MaxQX[NX] = make_pair(StrX,CATS_X_Q);
+      }
+    }
   }
-
-  // Fill up the Charge And Max field for X
-  for(unsigned int i = 0 ; i < sizeX ; i++ ){
-    int StrX					         = m_PreTreatedData->GetCATSStripX(i);
-    int NX						         = m_PreTreatedData->GetCATSDetX(i);
-    double CATS_X_Q				     = m_PreTreatedData->GetCATSChargeX(i) ;
-    ChargeX.push_back(CATS_X_Q);
-    StripX.push_back(StrX);
-    DetNumberX.push_back(NX);
-    for(unsigned int j = 0 ; j < NumberOfCATSHit ; j++){
-      if(NX == DetMaxX[j] ){
-        Buffer_X_Q[j][StrX-1]= CATS_X_Q;
-        QsumX[j]+= CATS_X_Q;	
-        if(CATS_X_Q > Buffer_X_Q[j][StripMaxX[j]-1]){ 
-          StripMaxX[j] = StrX ; 
-          ChargeMaxX[j]= CATS_X_Q; 
-        }
+  for( unsigned short i = 0 ; i < sizeY; i++ ){ 
+    StrY					         = m_PreTreatedData->GetCATSStripY(i);
+    NY						         = m_PreTreatedData->GetCATSDetY(i);
+    CATS_Y_Q				       = m_PreTreatedData->GetCATSChargeY(i) ;
+    if(DetectorHit.find(NY)!=DetectorHit.end()){
+      MapY[NY].push_back(std::make_pair(StrY,CATS_Y_Q));
+      QSumY[NY]+= CATS_Y_Q;
+      if(MaxQY.find(NY)==MaxQY.end()|| MaxQY[NY].second < CATS_Y_Q ){
+        MaxQY[NY] = make_pair(StrY,CATS_Y_Q);
       }
     }
   }
 
-  // Fill up the Charge And Max field for Y
-  for(unsigned int i = 0 ; i < sizeY ; i++ ){
-    int StrY					         = m_PreTreatedData->GetCATSStripY(i);
-    int NY						         = m_PreTreatedData->GetCATSDetY(i);
-    double CATS_Y_Q				     = m_PreTreatedData->GetCATSChargeY(i) ;
-    ChargeY.push_back(CATS_Y_Q);
-    StripY.push_back(StrY);
-    DetNumberY.push_back(NY);
+  // std::cout << "test 5" << std::endl;
 
-    for(unsigned int j = 0 ; j < NumberOfCATSHit ; j++){
-      if(NY == DetMaxY[j] ){
-        Buffer_Y_Q[j][StrY-1]= CATS_Y_Q;
-        QsumY[j]+= CATS_Y_Q;	
-        if(CATS_Y_Q > Buffer_Y_Q[j][StripMaxY[j]-1]){ 
-          StripMaxY[j] = StrY ; 
-          ChargeMaxY[j]= CATS_Y_Q; 
-        }
-      }
-    }
-  }
-
-  //  double CalculatedStripX = 0, CalculatedStripY = 0;
-  //  double posX = 0 , posY = 0;
-
-  for(unsigned int i  = 0 ; i < NumberOfCATSHit ; i++ ){       
+  for(auto &DetN : DetectorHit){       
+  // std::cout << "test 6" << std::endl;
     // Return the position in strip unit
     // Convention: the collected charge is atrributed to the center of the strip
     // (histogram convention) so that a reconstructed position for a single strip
     // goes from strip index -0.5 to strip index +0.5
-    double PosX =  ReconstructionFunctionX[DetMaxX[i]-1](Buffer_X_Q[i],StripMaxX[i]);
-    double PosY =  ReconstructionFunctionY[DetMaxY[i]-1](Buffer_Y_Q[i],StripMaxY[i]);
+     double PosX =  ReconstructionFunctionX[DetN](MaxQX[DetN],MapX[DetN], QSumX[DetN]);
+  // std::cout << "test 7" << std::endl;
+     double PosY =  ReconstructionFunctionY[DetN](MaxQY[DetN],MapY[DetN], QSumY[DetN]);
+    //std::cout << "test " << std::reduce(QsumSample[DetN].begin(),QsumSample[DetN].end()) /(QsumSample[DetN]).size() << std::endl;
+    //std::cout << "test Pos " << PosX << " " << PosY << std::endl;
     StripNumberX.push_back(PosX);
-    StripNumberY.push_back(PosY);   
+    StripNumberY.push_back(PosY);
+    DetNumber.push_back(DetN);   
+    ChargeX.push_back(QSumX[DetN]);   
+    ChargeY.push_back(QSumY[DetN]);
 
     // a shift - -1 is made to have PosX in between -0.5 and 27.5
     // for the following calculation of the position in the lab.
@@ -224,65 +205,82 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
     if(PosX>-1000 && PosY>-1000 && sx0 > -1 && sx1 < 28 && sy0 > -1  && sy1 < 28){
       // px and py are the x and y coordinate of strip sx and sy 
-      double px0 = StripPositionX[DetMaxX[i]-1][sx0][sy0];
-      double px1 = StripPositionX[DetMaxX[i]-1][sx1][sy1];
+      double px0 = StripPositionX[DetN][sx0][sy0];
+      double px1 = StripPositionX[DetN][sx1][sy1];
 
-      double py0 = StripPositionY[DetMaxY[i]-1][sx0][sy0];
-      double py1 = StripPositionY[DetMaxY[i]-1][sx1][sy1];
+      double py0 = StripPositionY[DetN][sx0][sy0];
+      double py1 = StripPositionY[DetN][sx1][sy1];
 
+      // Positon [Detector] = <PosZ,<PosX,PosY>>
+      Positions[DetN] = make_pair(StripPositionZ[DetN], make_pair(px0+(px1-px0)*(PosX-sx0),py0+(py1-py0)*(PosY-sy0)));
       PositionX.push_back(px0+(px1-px0)*(PosX-sx0));  
-      PositionY.push_back(py0+(py1-py0)*(PosY-sy0));  
-      //PositionX.push_back(2.54*(PosX-14));  
-      //PositionY.push_back(2.54*(PosY-14));  
-
-      PositionZ.push_back(StripPositionZ[DetMaxX[i]-1]);
+      PositionY.push_back(py0+(py1-py0)*(PosY-sy0));
+      PositionZ.push_back(StripPositionZ[DetN]); 
     }
-
-  }
-
-  // At least two CATS need to gave back position in order to reconstruct on Target 
-  if(PositionX.size()>1){
-    if(DetMaxX[0]<DetMaxX[1]){
-
-      // cout << "Test  " << m_Zproj << endl ;
-      // cout << "Test2  " <<  PositionZ[0]<< endl ;
-      // cout << "Test3  " <<  PositionZ[1]<< endl ;
-      double t = (m_Zproj-PositionZ[1])/(PositionZ[1]-PositionZ[0]);
-      // cout << "t  " << t << endl ;
-      // cout << "X1  " << PositionX[0] << endl ;
-      // cout << "X2  " << PositionX[1] << endl ;
-      PositionOnTargetX= PositionX[1] + (PositionX[1]-PositionX[0])*t;
-      PositionOnTargetY= PositionY[1] + (PositionY[1]-PositionY[0])*t; 
-
-      //cout << "X3  " << PositionOnTargetX << endl ;
-      BeamDirection = GetBeamDirection();
-    }
-
     else{
-      double t = (m_Zproj-PositionZ[1])/(PositionZ[0]-PositionZ[1]);
-      PositionOnTargetX= PositionX[0] + (PositionX[0]-PositionX[1])*t;
-      PositionOnTargetY= PositionY[0] + (PositionY[0]-PositionY[1])*t; 
-      BeamDirection = GetBeamDirection();
+      PositionX.push_back(-1000);  
+      PositionY.push_back(-1000);
+      PositionZ.push_back(-1000); 
     }
   }
 
-  // Does not meet the conditions for target position and beam direction 
+  // Sorting Positions depending on Z
+ // std::sort(Positions.begin(), Positions.end(), 
+ // [&](const auto& Pos1, const auto& Pos2){
+ //   return Pos1.first < Pos2.first;
+ // });
+  // At least two CATS need to gave back position in order to reconstruct on Target 
+  if(Positions.size()>1){
+      double t = (m_Zproj-Positions[2].first)/(Positions[2].first-Positions[1].first);
+      PositionOnTargetX= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*t;
+      PositionOnTargetY= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*t;
+    if(Mask1_Z != 0 && Mask2_Z != 0)
+     { 
+      double tmask1 = (Mask1_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
+      double tmask2 = (Mask2_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
+      PositionOnMask1X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask1;
+      PositionOnMask1Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask1;
+      PositionOnMask2X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask2;
+      PositionOnMask2Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask2;
+     }
+     else{
+      PositionOnMask1X= -1000;
+      PositionOnMask1Y= -1000;
+      PositionOnMask2X= -1000;
+      PositionOnMask2Y= -1000;
+     }
+    }
   else{
     BeamDirection = TVector3 (1,0,0);
     PositionOnTargetX = -1000	;
     PositionOnTargetY = -1000	;
+      PositionOnMask1X= -1000;
+      PositionOnMask1Y= -1000;
+      PositionOnMask2X= -1000;
+      PositionOnMask2Y= -1000;
   }
+  BeamDirection = GetBeamDirection();
+
+  // Does not meet the conditions for target position and beam direction 
+  
   return;
 }
 
+void TCATSPhysics::SetTreeReader(TTreeReader* TreeReader) {
+   TCATSPhysicsReader::r_SetTreeReader(TreeReader);
+ }
 ///////////////////////////////////////////////////////////////////////////
 //	Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
 void TCATSPhysics::ReadConfiguration(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("CATSDetector");
+  vector<NPL::InputBlock*> blocksMask = parser.GetAllBlocksWithToken("MASK");
+  
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocksMask.size() << " masks found " << endl; 
 
-  vector<string> token = {"X1_Y1","X28_Y1","X1_Y28","X28_Y28"};
+  vector<string> token = {"X1_Y1","X28_Y1","X1_Y28","X28_Y28","CATSNumber"};
+  vector<string> tokenMask = {"Z","MaskNumber"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
@@ -290,14 +288,23 @@ void TCATSPhysics::ReadConfiguration(NPL::InputParser parser){
       TVector3 B = blocks[i]->GetTVector3("X28_Y1","mm");
       TVector3 C = blocks[i]->GetTVector3("X1_Y28","mm");
       TVector3 D = blocks[i]->GetTVector3("X28_Y28","mm");
+      UShort_t N = blocks[i]->GetInt("CATSNumber");
 
-      AddCATS(A,B,C,D);
+      AddCATS(A,B,C,D,N);
     }
-
     else{
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
+  for(unsigned int i = 0 ; i < blocksMask.size() ; i++){
+    if(blocksMask[i]->HasTokenList(tokenMask)){
+      AddMask(blocksMask[i]->GetDouble("Z","mm"),blocksMask[i]->GetInt("MaskNumber"));
+    }
+    else{
+      cout << "ERROR: check your input file formatting " << endl;
+      exit(1);
+    }
+  }
   }
 
   InitializeStandardParameter();
@@ -309,9 +316,18 @@ void TCATSPhysics::ReadConfiguration(NPL::InputParser parser){
 //	In this method mother Branches (Detector) AND daughter leaf (fDetector_parameter) have to be activated
 void TCATSPhysics::InitializeRootInputRaw() {
   TChain* inputChain = RootInput::getInstance()->GetChain()	;
-  inputChain->SetBranchStatus( "CATS" , true )			;
-  inputChain->SetBranchStatus( "fCATS_*" , true )		;
-  inputChain->SetBranchAddress( "CATS" , &m_EventData )           ;
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
+    std::cout << "////////////////////////////// TEST" << std::endl;
+    inputChain->SetBranchStatus( "CATS" , true )			;
+    inputChain->SetBranchStatus( "fCATS_*" , true )		;
+    inputChain->SetBranchAddress( "CATS" , &m_EventData )           ;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -319,28 +335,35 @@ void TCATSPhysics::InitializeRootInputRaw() {
 //   In this method mother Branches (Detector) AND daughter leaf (parameter) have to be activated
 void TCATSPhysics::InitializeRootInputPhysics() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
-  inputChain->SetBranchStatus( "CATS" , true );
-  inputChain->SetBranchStatus( "DetNumberX" , true );
-  inputChain->SetBranchStatus( "StripX" , true );
-  inputChain->SetBranchStatus( "ChargeX" , true );
-  inputChain->SetBranchStatus( "StripMaxX" , true );
-  inputChain->SetBranchStatus( "DetNumberY" , true );
-  inputChain->SetBranchStatus( "StripY" , true );
-  inputChain->SetBranchStatus( "ChargeY" , true );
-  inputChain->SetBranchStatus( "StripMaxY" , true );
-  inputChain->SetBranchStatus( "DetMaxX" , true );
-  inputChain->SetBranchStatus( "DetMaxY" , true );
-  inputChain->SetBranchStatus( "PositionX" , true );
-  inputChain->SetBranchStatus( "PositionY" , true );
-  inputChain->SetBranchStatus( "PositionZ" , true );
-  inputChain->SetBranchStatus( "StripNumberX" , true );
-  inputChain->SetBranchStatus( "StripNumberY" , true );
-  inputChain->SetBranchStatus( "PositionOnTargetX" , true );
-  inputChain->SetBranchStatus( "PositionOnTargetY" , true );
-  inputChain->SetBranchStatus( "QsumX" , true );
-  inputChain->SetBranchStatus( "QsumY" , true );
-  inputChain->SetBranchAddress( "CATS" , &m_EventPhysics );
-
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
+    inputChain->SetBranchStatus( "CATS" , true );
+    inputChain->SetBranchStatus( "DetNumberX" , true );
+    inputChain->SetBranchStatus( "StripX" , true );
+    inputChain->SetBranchStatus( "ChargeX" , true );
+    inputChain->SetBranchStatus( "StripMaxX" , true );
+    inputChain->SetBranchStatus( "DetNumberY" , true );
+    inputChain->SetBranchStatus( "StripY" , true );
+    inputChain->SetBranchStatus( "ChargeY" , true );
+    inputChain->SetBranchStatus( "StripMaxY" , true );
+    inputChain->SetBranchStatus( "DetMaxX" , true );
+    inputChain->SetBranchStatus( "DetMaxY" , true );
+    inputChain->SetBranchStatus( "PositionX" , true );
+    inputChain->SetBranchStatus( "PositionY" , true );
+    inputChain->SetBranchStatus( "PositionZ" , true );
+    inputChain->SetBranchStatus( "StripNumberX" , true );
+    inputChain->SetBranchStatus( "StripNumberY" , true );
+    inputChain->SetBranchStatus( "PositionOnTargetX" , true );
+    inputChain->SetBranchStatus( "PositionOnTargetY" , true );
+    inputChain->SetBranchStatus( "QsumX" , true );
+    inputChain->SetBranchStatus( "QsumY" , true );
+    inputChain->SetBranchAddress( "CATS" , &m_EventPhysics );
+  }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -351,7 +374,7 @@ void TCATSPhysics::InitializeRootOutput(){
 }
 
 /////////////////////////////////////////////////////////////////////
-void TCATSPhysics::AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y28, TVector3 C_X28_Y28){
+void TCATSPhysics::AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y28, TVector3 C_X28_Y28, UShort_t N){
   m_NumberOfCATS++			;
 
   // remove warning
@@ -402,36 +425,45 @@ void TCATSPhysics::AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y2
 
   OneDetectorStripPositionZ = C_X1_Y1.Z();
 
-  StripPositionX.push_back(OneDetectorStripPositionX)	;
-  StripPositionY.push_back(OneDetectorStripPositionY)	;
-  StripPositionZ.push_back(OneDetectorStripPositionZ)	;
+  StripPositionX[N] = OneDetectorStripPositionX	;
+  StripPositionY[N] = OneDetectorStripPositionY	;
+  StripPositionZ[N] = OneDetectorStripPositionZ	;
 
+}
+
+void TCATSPhysics::AddMask(Double_t Z, UShort_t MaskNumber){
+  if(MaskNumber == 1){
+    Mask1_Z = Z;
+  }
+  else if(MaskNumber == 2){
+    Mask2_Z = Z;
+  }
+  else{
+    std::cout << "Wrong Number for MASKS" << std::endl;
+  }
 }
 
 ///////////////////////////////////////////////////////////////
 void TCATSPhysics::Clear(){  
-  DetNumberX.clear(); 
-  StripX.clear();
-  ChargeX.clear();  
-  StripMaxX.clear();
-  ChargeMaxX.clear();
-  DetMaxX.clear();
-  DetNumberY.clear(); 
-  StripY.clear();
-  ChargeY.clear(); 
-  StripMaxY.clear();
-  ChargeMaxY.clear();
-  DetMaxY.clear();
+  DetNumber.clear(); 
+  ChargeX.clear(); 
   PositionX.clear();
+  ChargeY.clear(); 
   PositionY.clear();
   PositionZ.clear();
+
   StripNumberX.clear();
   StripNumberY.clear();
-  QsumX.clear();
-  QsumY.clear();
-
-  Buffer_X_Q.clear();
-  Buffer_Y_Q.clear();
+  QSumX.clear();
+  QSumY.clear();
+  Positions.clear();
+  MapX.clear();
+  MapY.clear();
+  MaxQX.clear();
+  MaxQY.clear();
+  
+  DetectorHit.clear();
+  DetectorHitX.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -551,14 +583,23 @@ void TCATSPhysics::ReadAnalysisConfig(){
           *(m_CATSXInversion[Detector-1].begin()+channel1-1) = channel2;
           *(m_CATSXInversion[Detector-1].begin()+channel2-1) = channel1;
         }
-
-        else if (DataBuffer.compare(0,4,"STRY") == 0) {
-          channel1 = atoi(DataBuffer.substr(4).c_str());
-          AnalysisConfigFile >> DataBuffer;
-          cout << " " << DataBuffer << endl;
-          channel2 = atoi(DataBuffer.substr(4).c_str());
-          *(m_CATSYInversion[Detector-1].begin()+channel1-1) = channel2;
-          *(m_CATSYInversion[Detector-1].begin()+channel2-1) = channel1;
+      }
+      
+      else if (whatToDo == "INVERSIONX") {
+        AnalysisConfigFile >> DataBuffer;
+        cout << whatToDo << "  " << DataBuffer;
+        int Detector = atoi(DataBuffer.substr(4,1).c_str());
+        for(unsigned int strip = 0; strip < 28; strip ++){
+          *(m_CATSXInversion[Detector-1].begin()+strip) = 27-strip;
+        }
+      }
+      
+      else if (whatToDo == "INVERSIONY") {
+        AnalysisConfigFile >> DataBuffer;
+        cout << whatToDo << "  " << DataBuffer;
+        int Detector = atoi(DataBuffer.substr(4,1).c_str());
+        for(unsigned int strip = 0; strip < 28; strip ++){
+          *(m_CATSYInversion[Detector-1].begin()+strip) = 27-strip;
         }
       }
 
@@ -647,24 +688,20 @@ void TCATSPhysics::AddParameterToCalibrationManager()	{
 ////////////////////////////////////////////////////////////////
 void TCATSPhysics::SetReconstructionMethod(unsigned int CATSNumber, string XorY, string MethodName){
   if(XorY=="X"){
-    if(ReconstructionFunctionX.size() < CATSNumber)
-      ReconstructionFunctionX.resize(CATSNumber);
 
-    if(MethodName=="ASECH") ReconstructionFunctionX[CATSNumber-1] = &(AnalyticHyperbolicSecant);
-    else if(MethodName=="FSECH") ReconstructionFunctionX[CATSNumber-1] = &(FittedHyperbolicSecant);
-    else if(MethodName=="AGAUSS") ReconstructionFunctionX[CATSNumber-1] = &(AnalyticGaussian);
-    else if(MethodName=="CENTROIDE")  ReconstructionFunctionX[CATSNumber-1] = &(Centroide); 
+    if(MethodName=="ASECH") ReconstructionFunctionX[CATSNumber] = &(AnalyticHyperbolicSecant);
+    //else if(MethodName=="FSECH") ReconstructionFunctionX[CATSNumber] = &(FittedHyperbolicSecant);
+    //else if(MethodName=="AGAUSS") ReconstructionFunctionX[CATSNumber] = &(AnalyticGaussian);
+    //else if(MethodName=="CENTROIDE")  ReconstructionFunctionX[CATSNumber] = &(Centroide); 
     else cout <<"WARNING: Wrong name for reconsctuction Method, using default AGAUSS" << endl;
   }
 
   if(XorY=="Y"){
-    if(ReconstructionFunctionY.size() < CATSNumber)
-      ReconstructionFunctionY.resize(CATSNumber);
 
-    if(MethodName=="ASECH") ReconstructionFunctionY[CATSNumber-1] = &(AnalyticHyperbolicSecant);
-    else if(MethodName=="FSECH") ReconstructionFunctionY[CATSNumber-1] = &(FittedHyperbolicSecant);
-    else if(MethodName=="AGAUSS") ReconstructionFunctionY[CATSNumber-1] = &(AnalyticGaussian);
-    else if(MethodName=="CENTROIDE")  ReconstructionFunctionY[CATSNumber-1] = &(Centroide); 
+    if(MethodName=="ASECH") ReconstructionFunctionY[CATSNumber] = &(AnalyticHyperbolicSecant);
+    //else if(MethodName=="FSECH") ReconstructionFunctionY[CATSNumber] = &(FittedHyperbolicSecant);
+    //else if(MethodName=="AGAUSS") ReconstructionFunctionY[CATSNumber] = &(AnalyticGaussian);
+    //else if(MethodName=="CENTROIDE")  ReconstructionFunctionY[CATSNumber] = &(Centroide); 
     else cout <<"WARNING: Wrong name for reconsctuction Method, using default AGAUSS" << endl;
   }
 
@@ -673,21 +710,15 @@ void TCATSPhysics::SetReconstructionMethod(unsigned int CATSNumber, string XorY,
 ///////////////////////////////////////////////////////////////
 TVector3 TCATSPhysics::GetBeamDirection(){
   TVector3 Direction;
-  if(PositionX.size() <2)return Direction;
-
-  if(DetMaxX[0]<DetMaxX[1]){
-    Direction = TVector3 (PositionX[1]-PositionX[0] ,
-        PositionY[1]-PositionY[0] ,
-        PositionZ[1]-PositionZ[0] );
-    Direction.Unit();
-  }
+  if(Positions.size() <2)return Direction;
 
   else{
-    Direction = TVector3 (PositionX[0]-PositionX[1] ,
-        PositionY[0]-PositionY[1] ,
-        PositionZ[0]-PositionZ[1] );
+    Direction = TVector3 (Positions[2].second.first-Positions[1].second.first ,
+    Positions[2].second.second-Positions[1].second.second,
+    Positions[2].first-Positions[1].first );
     Direction.Unit();
   }
+
 
   return(Direction) ;	
 }
@@ -704,8 +735,8 @@ TVector3 TCATSPhysics::GetPositionOnTarget(){
 ////////////////////////////////////////////////////////////////////////
 namespace CATS_LOCAL{
   ////////////////////////////////////////////////////////////////////
-  double AnalyticGaussian(vector<double>& Buffer_Q,int& StripMax){
-    double gauss = -1000;  
+  /*double AnalyticGaussian(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map, Double_t QSum){
+    /*double gauss = -1000;  
     double Q[3];
     double StripPos[3];
     for(int j = 0; j<3 ; j++){
@@ -713,44 +744,44 @@ namespace CATS_LOCAL{
       StripPos[j] = 0;
     }
 
-    if(StripMax> 3 && StripMax< 26){
+    if(MaxQ.first> 3 && MaxQ.first< 26){
       // central value taken using the Strip with Max charge
-      Q[0] = Buffer_Q[StripMax-1] ;
+      Q[0] = Buffer_Q[MaxQ.first-1] ;
 
       // Look at the next strip on the left
-      if(Buffer_Q[StripMax-2]!=-1){
-        Q[1] = Buffer_Q[StripMax-2];
-        StripPos[1] = StripMax-2;
+      if(Buffer_Q[MaxQ.first-2]!=-1){
+        Q[1] = Buffer_Q[MaxQ.first-2];
+        StripPos[1] = MaxQ.first-2;
       }
 
       // Look at the next next strip on the left
-      else if(Buffer_Q[StripMax-3]!=-1){
-        Q[1] = Buffer_Q[StripMax-3];
-        StripPos[1] = StripMax-3;
+      else if(Buffer_Q[MaxQ.first-3]!=-1){
+        Q[1] = Buffer_Q[MaxQ.first-3];
+        StripPos[1] = MaxQ.first-3;
       }
 
       // Look at the next next next strip on the left
-      else if(Buffer_Q[StripMax-4]!=-1){
-        Q[1] = Buffer_Q[StripMax-4];
-        StripPos[1] = StripMax-4;
+      else if(Buffer_Q[MaxQ.first-4]!=-1){
+        Q[1] = Buffer_Q[MaxQ.first-4];
+        StripPos[1] = MaxQ.first-4;
       }
 
       // Look at the next strip on the right
-      if(Buffer_Q[StripMax]!=-1){
-        Q[2] = Buffer_Q[StripMax];
-        StripPos[2] = StripMax;
+      if(Buffer_Q[MaxQ.first]!=-1){
+        Q[2] = Buffer_Q[MaxQ.first];
+        StripPos[2] = MaxQ.first;
       }
 
       // Look at the next next strip on the right
-      else if(Buffer_Q[StripMax+1]!=-1){
-        Q[2] = Buffer_Q[StripMax+1];
-        StripPos[2] = StripMax+1;
+      else if(Buffer_Q[MaxQ.first+1]!=-1){
+        Q[2] = Buffer_Q[MaxQ.first+1];
+        StripPos[2] = MaxQ.first+1;
       }
 
       // Look at the next next next strip on the right 
-      else if(Buffer_Q[StripMax+2]!=-1){
-        Q[2] = Buffer_Q[StripMax+2];
-        StripPos[2] = StripMax+2;
+      else if(Buffer_Q[MaxQ.first+2]!=-1){
+        Q[2] = Buffer_Q[MaxQ.first+2];
+        StripPos[2] = MaxQ.first+2;
       }
 
     }
@@ -770,11 +801,11 @@ namespace CATS_LOCAL{
     }
 
     return gauss;
-
+  return 0;
   }
 
   ///////////////////////////////////////////////////////////////
-  double Centroide(vector<double>& Buffer_Q, int& StripMax){
+  double Centroide(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map, Double_t QSum){
     double Centroide = 0 ;
     double ChargeTotal = 0;
 
@@ -793,51 +824,65 @@ namespace CATS_LOCAL{
     } 
 
     return Centroide ;
+  return 0;
   }
-
+*/
   /////////////////////////////////////////////////////////////////////
-  double AnalyticHyperbolicSecant(vector<double>& Buffer_Q, int& StripMax){
+  double AnalyticHyperbolicSecant(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map,Double_t QSum){
     double sech = -1000 ;
 
-    if(StripMax > 2 && StripMax<27){	
-      if(Buffer_Q[StripMax-1+1]==0||Buffer_Q[StripMax-1-1]==0)
-        return sech;
+  // std::cout << "test AnH 1" << std::endl;
+    if(MaxQ.second > 0 && MaxQ.first > 2 && MaxQ.first<27){	
+//      if(Buffer_Q[MaxQ.first-1+1]==0||Buffer_Q[MaxQ.first-1-1]==0)
+//        return sech;
+  // std::cout << "test AnH 2" << std::endl;
+      double q2 = MaxQ.second;
+      double q1 = 0,q3 = 0;
+      for(auto &strip : Map){
+        if(strip.first == MaxQ.first - 1){
+          q1 = strip.second;
+        }
+        else if(strip.first == MaxQ.first + 1){
+          q3 = strip.second;
+        }
+      }
+      //std::cout << "test q " << q1 << " " << q2 << " " << q3 << std::endl;
+      double vs[6];
+  // std::cout << "test AnH 3" << std::endl;
+      if(q1 > 0 && q3 > 0)    
+        {
+         // QsumSample[DetNum].push_back(QSum);
+        vs[0] = sqrt(q2/q3);
+        vs[1] = sqrt(q2/q1);
+        vs[2] = 0.5*(vs[0] + vs[1]);
+        vs[3] = log( vs[2] + sqrt(vs[2]*vs[2]-1.0) );
+        vs[4] = abs((vs[0] - vs[1])/(2.0*sinh(vs[3])));	
+        vs[5] = 0.5*log( (1.0+vs[4])/(1.0-vs[4]) ) ;
+  // std::cout << "test AnH 4" << std::endl;
 
-      double vs1 = sqrt( Buffer_Q[StripMax-1]/Buffer_Q[StripMax-1+1] );
-      double vs2 = sqrt( Buffer_Q[StripMax-1]/Buffer_Q[StripMax-1-1] );
-      double vs3 = 0.5*( vs1 + vs2 );
-      double vs4 = log( vs3 + sqrt(vs3*vs3-1.0) );
-      double vs5 = (vs1 - vs2)/(2.0*sinh(vs4));	
-
-      if(vs5<0) 
-        vs5=-vs5 ;
-
-      double vs6 = 0.5*log( (1.0+vs5)/(1.0-vs5) ) ;
-
-      if ( Buffer_Q[StripMax-1+1]>Buffer_Q[StripMax-1-1] ) 
-        sech = StripMax + vs6/vs4 ;
-
-
-      else 
-        sech = StripMax - vs6/vs4 ;
-
+        if ( q3>q1 ) 
+          sech = MaxQ.first + vs[5]/vs[3] ;
+        else 
+          sech = MaxQ.first - vs[5]/vs[3] ;
+          //std::cout << "test sech " << sech << std::endl;
+        }
     }
 
     return sech ;
   }
 
   /////////////////////////////////////////////////////////////////////
-  double FittedHyperbolicSecant(vector<double>& Buffer_Q, int& StripMax){
+  /*double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map, Double_t QSum){
     // Warning: should not delete static variable
     static TF1* f = new TF1("sechs","[0]/(cosh(TMath::Pi()*(x-[1])/[2])*cosh(TMath::Pi()*(x-[1])/[2]))",1,28);
 
     // Help the fit by computing the position of the maximum by analytic method
-    double StartingPoint = AnalyticHyperbolicSecant(Buffer_Q,StripMax);
+    double StartingPoint = AnalyticHyperbolicSecant(Buffer_Q,MaxQ.first);
     // if analytic method fails then the starting point in strip max
-    if(StartingPoint==-1000) StartingPoint = StripMax; 
+    if(StartingPoint==-1000) StartingPoint = MaxQ.first; 
 
     // Maximum is close to charge max, Mean value is close to Analytic one, typical width is 3.8 strip
-    f->SetParameters(Buffer_Q[StripMax-1],StartingPoint,3.8);
+    f->SetParameters(Buffer_Q[MaxQ.first-1],StartingPoint,3.8);
 
     static vector<double> y ;
     static vector<double> q ; 
@@ -846,7 +891,7 @@ namespace CATS_LOCAL{
     unsigned int sizeQ = Buffer_Q.size(); 
 
     for(unsigned int i = 0 ; i < sizeQ ; i++){
-      if(Buffer_Q[i] > Buffer_Q[StripMax-1]*0.2){
+      if(Buffer_Q[i] > Buffer_Q[MaxQ.first-1]*0.2){
         q.push_back(Buffer_Q[i]);
         y.push_back(i+1);
         final_size++;
@@ -862,9 +907,11 @@ namespace CATS_LOCAL{
     g->Fit(f,"QN0");
     delete g;
     return f->GetParameter(1)  ;
+
+  return 0;
   }
 
-
+*/
 
   ////////////////////////////////////////////////////////////////////////
   double fCATS_X_Q(const TCATSData* m_EventData , const int& i){
@@ -876,6 +923,8 @@ namespace CATS_LOCAL{
     name+= "_Q";
     return CalibrationManager::getInstance()->ApplyCalibration( name,   
         m_EventData->GetCATSChargeX(i) + gRandom->Rndm() );
+    //return CalibrationManager::getInstance()->ApplyCalibration( name,   
+    //    m_EventData->GetCATSChargeX(i) + gRandom->Rndm() );
     //m_EventData->GetCATSChargeX(i) + gRandom->Rndm() - fCATS_Ped_X(m_EventData, i) );
   }
   ////////////////////////////////////////////////////////////////////////
@@ -888,6 +937,8 @@ namespace CATS_LOCAL{
     name+= "_Q";
     return CalibrationManager::getInstance()->ApplyCalibration( name ,   
         m_EventData->GetCATSChargeY(i) + gRandom->Rndm() );
+    //return CalibrationManager::getInstance()->ApplyCalibration( name ,   
+    //    m_EventData->GetCATSChargeY(i) + gRandom->Rndm() );
     //m_EventData->GetCATSChargeY(i) + gRandom->Rndm() - fCATS_Ped_Y(m_EventData, i) );
   }
   ////////////////////////////////////////////////////////////////////////
@@ -937,6 +988,8 @@ NPL::VDetector* TCATSPhysics::Construct(){
   return (NPL::VDetector*) new TCATSPhysics();
 }
 
+NPL::VTreeReader* TCATSPhysics::ConstructReader() { return (NPL::VTreeReader*)new TCATSPhysicsReader(); }
+
 ////////////////////////////////////////////////////////////////////////////////
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -946,6 +999,7 @@ extern "C"{
       proxy_cats(){
         NPL::DetectorFactory::getInstance()->AddToken("CATSDetector","CATS");
         NPL::DetectorFactory::getInstance()->AddDetector("CATSDetector",TCATSPhysics::Construct);
+        NPL::DetectorFactory::getInstance()->AddDetectorReader("CATSDetector", TCATSPhysics::ConstructReader);
       }
   };
 

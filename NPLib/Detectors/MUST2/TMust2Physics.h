@@ -29,9 +29,11 @@
 #include "NPCalibrationManager.h"
 #include "NPInputParser.h"
 #include "NPVDetector.h"
+#include "NPVTreeReader.h"
 #include "TMust2Data.h"
 #include "TMust2Spectra.h"
-
+#include "TMust2PhysicsReader.h"
+#include "NPDetectorFactory.h"
 // ROOT
 #include "TH1.h"
 #include "TObject.h"
@@ -43,7 +45,7 @@ using namespace std;
 // Forward Declaration
 class TMust2Spectra;
 
-class TMust2Physics : public TObject, public NPL::VDetector {
+class TMust2Physics : public TObject, public NPL::VDetector, public TMust2PhysicsReader{
 public:
   TMust2Physics();
   ~TMust2Physics();
@@ -58,6 +60,7 @@ public:
   bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
   bool             Match_Si_SiLi(int X, int Y, int PadNbr);
   bool             ResolvePseudoEvent();
+  bool m_reader = true;
 
 public:
   //   Provide Physical Multiplicity
@@ -100,7 +103,7 @@ public:
 public: //   Innherited from VDetector Class
   //   Read stream at ConfigFile to pick-up parameters of detector
   //   (Position,...) using Token
-  void ReadConfiguration(NPL::InputParser parser);
+  void ReadConfiguration(NPL::InputParser parser); 
 
   //   Add Parameter to the CalibrationManger
   void AddParameterToCalibrationManager();
@@ -138,10 +141,13 @@ public: //   Innherited from VDetector Class
   //   Those two method all to clear the Event Physics or Data
   void ClearEventPhysics() { Clear(); }
   void ClearEventData() { m_EventData->Clear(); }
-
   // Method related to the TSpectra classes, aimed at providing a framework for
   // online applications
   // Instantiate the Spectra class and the histogramm throught it
+  
+  bool UnallocateBeforeBuild();
+  bool UnallocateBeforeTreat();
+  
   void InitSpectra();
   // Fill the spectra hold by the spectra class
   void FillSpectra();
@@ -150,6 +156,8 @@ public: //   Innherited from VDetector Class
   void CheckSpectra();
   // Used for Online only, clear all the spectra hold by the Spectra class
   void ClearSpectra();
+
+  void SetTreeReader(TTreeReader* TreeReader);
 
 public: //   Specific to MUST2 Array
   //   Clear The PreTeated object
@@ -189,8 +197,11 @@ public: //   Specific to MUST2 Array
     m_EventData = (TMust2Data*)rawDataPointer;
   }
   // Retrieve raw and pre-treated data
-  TMust2Data* GetRawData() const { return m_EventData; }
+  TMust2Data* GetRawData() const {//std::cout << "test" << std::endl; 
+  return m_EventData; }
+  //TMust2Data* GetRawDataRead() const {std::cout << "test getrawdata" << std::endl; return r_EventData; }
   TMust2Data* GetPreTreatedData() const { return m_PreTreatedData; }
+  //TMust2Physics* GetPhysicsData() const {return m_EventPhysics;}
 
   // Use to access the strip position
   double GetStripPositionX(const int N, const int X, const int Y) const {
@@ -276,6 +287,7 @@ private: //   Root Input and Output tree classes
   TMust2Data*    m_EventData; //!
   TMust2Data*    m_PreTreatedData; //!
   TMust2Physics* m_EventPhysics; //!
+  //TMust2Data* r_EventData;
 
 private: //   Map of activated channel
   map<int, vector<bool>> m_XChannelStatus; //!
@@ -313,8 +325,10 @@ public:
 public: // Spectra Getter
   map<string, TH1*> GetSpectra();
 
+
 public: // Static constructor to be passed to the Detector Factory
   static NPL::VDetector* Construct();
+  static NPL::VTreeReader* ConstructReader();
   ClassDef(TMust2Physics, 1) // Must2Physics structure
 };
 
