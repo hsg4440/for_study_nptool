@@ -1,0 +1,97 @@
+.x ExtractRawHisto_E_Pedestals.C
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.x ExtractRawHisto_E_Pedestals.C
+ExtractRawHistos("run_1_pedestals","MUST2")
+.x ExtractRawHisto_E_Pedestals.C
+ExtractRawHistos("run_1_pedestals","MUST2")
+.x ExtractRawHisto_E_Pedestals.C
+ExtractRawHistos("run_1_pedestals","MUST2")
+.qqqqqqqqqqq
+.x ExtractRawHisto_E_Pedestals.C
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.x ExtractRawHisto_E_Pedestals.C
+.L ExtractRawHisto_E_Pedestals.C+
+we 
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+q
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+.x ExtractRawHisto_E_Pedestals.C
+.q
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.q
+.L ExtractRawHisto_E_Pedestals.C+
+.q
+.L ExtractRawHisto_E.C+
+ExtractRawHistos("run_1_pedestals","MUST2")
+.ls
+.q
+TFile *_file0 = TFile::Open("Histograms/run_1_pedestals_RawMUST2Histos.root")
+new TBrowser
+.q
+.L ExtractRawHisto_E.C+
+.q
+.L ExtractRawHisto_E.C+
+ExtractRawHistos("run_7_pedestals","MUST2")
+ew TBrowser
+new TBrowser
+.q
+.L EnergyCalibrator.C+
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+ls
+.ls
+.q
+ExtractRawHistos("run_9","MUST2")
+.L ExtractRawHisto_E.C+
+ExtractRawHistos("run_9","MUST2")
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q
+.L ExtractRawHisto_E.C+
+ExtractRawHistos("run_19","MUST2")
+ls
+.ls
+.L EnergyCalibrator+
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q 
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q
+.L EnergyCalibrator.C+
+AutoCalibration(1,4,"MUST2")
+.q

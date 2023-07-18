@@ -1,0 +1,4 @@
+TTreeName 
+	AutoTree
+RootFileName 
+  /data/mugastX/mugast/acquisition/root/run_0627.root 

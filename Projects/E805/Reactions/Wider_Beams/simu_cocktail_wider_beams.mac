@@ -1,0 +1,11 @@
+/run/beamOn 10000 
+/gen/open Reactions/Wider_Beams/48Cr_pd_test.reaction
+/run/beamOn 100000
+/gen/open Reactions/Wider_Beams/50Mn_p3He_0+_CSfresco_30MeV.reaction
+/run/beamOn 10000 
+/gen/open Reactions/Wider_Beams/50Mn_pd_test.reaction
+/run/beamOn 100000 
+/gen/open Reactions/Wider_Beams/46V_p3He_0+_CSfresco_30MeV.reaction
+/run/beamOn 10000 
+/gen/open Reactions/Wider_Beams/46V_pd_test.reaction
+/run/beamOn 100000 

@@ -1,0 +1,13 @@
+Exogam1 : 2
+Exogam2 : 3
+Exogam3 : 4
+Exogam4 : 5
+Exogam5 : 6
+Exogam6 : 7
+Exogam7 : 8
+Exogam8 : 9
+Exogam9 : 10
+Exogam10 : 11
+Exogam11 : 12
+Exogam12 : 13
+
