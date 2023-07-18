@@ -24,7 +24,7 @@ CMakeCache.txt
 *.toc
 install_manifest.txt
 .DS_store
-#*Projects*
+*Projects*
 Projects/MUSETT/Simu_Damien
 Projects/E805/E805
 Projects/E805/E843
