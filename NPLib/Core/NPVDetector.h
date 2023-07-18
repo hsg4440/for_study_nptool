@@ -64,6 +64,15 @@ namespace NPL {
 
     //  Create associated branches and associated private member DetectorPhysics address
     virtual void InitializeRootOutput(){};
+    
+    //  Create folders and histograms for calibration
+    virtual void InitializeRootHistogramsCalib(){};
+    
+    //  Fill histograms for calibration
+    virtual void FillHistogramsCalib(){};
+    
+    //  Write histograms for calibration
+    virtual void WriteHistogramsCalib(){};
 
     //  This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract
     //  physical parameter.

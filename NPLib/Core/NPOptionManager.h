@@ -107,6 +107,7 @@ class NPOptionManager{
       bool   GetCircularTree()             {return fCircularTree;}
       bool   IsAnalysis()                  {return fIsAnalysis;};
       bool   IsSimulation()                {return fIsSimulation;}
+      bool   IsCalibration()               {return fIsCalibration;}
       bool   IsReader()                    {return fReader;}
       bool   IsSplit()                     {return fIsSplit;}
 
@@ -120,6 +121,7 @@ class NPOptionManager{
       std::string GetLastFile();                 
       std::string GetAnalysisOutputPath(){return m_AnalysisOutputPath;};
       std::string GetSimulationOutputPath(){return m_SimulationOutputPath;};
+      std::string GetCalibrationOutputPath(){return m_CalibrationOutputPath;};
       std::string GetEnergyLossPath(){return m_EnergyLossPath;};
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
@@ -128,6 +130,7 @@ class NPOptionManager{
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
       void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
       void SetIsSimulation(bool val=true){fIsSimulation=val;}
+      void SetIsCalibration(bool val=true){fIsCalibration=val;}
       void SetReader(bool reader=false){fReader=reader;}
 
    public: // user definition
@@ -163,6 +166,7 @@ class NPOptionManager{
       bool   fCircularTree;
       bool   fIsAnalysis;
       bool   fIsSimulation;
+      bool   fIsCalibration;
       bool   fReader;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
@@ -176,6 +180,7 @@ class NPOptionManager{
       std::set<std::string> fDefinition; // a set of user defined definition 
       std::string m_AnalysisOutputPath;// output path of analysed tree
       std::string m_SimulationOutputPath;// output path of simulated tree
+      std::string m_CalibrationOutputPath;// output path of calibration histograms
       std::string m_EnergyLossPath;// input/output path of energy loss table
 
 };

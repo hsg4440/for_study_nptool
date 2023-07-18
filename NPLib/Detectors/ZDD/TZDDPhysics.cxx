@@ -96,16 +96,16 @@ void TZDDPhysics::BuildPhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::Treat_DC(){
-  // Dont have anything to modify for the moment
+ /* // Dont have anything to modify for the moment
   unsigned int mysizeDC = m_PreTreatedData->GetMultDrift();
   for(int i = 0; i < mysizeDC; i++){
     DC_DetectorNumber.push_back(m_PreTreatedData->GetDrift_DetectorNbr(i));
     DC_DriftTime.push_back(m_PreTreatedData->Get_DriftTime(i));
-  }
+  }*/
 }
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::Match_E_T(std::string Detector){
-  unsigned int mysizeE = m_PreTreatedData->GetMultEnergy(Detector);
+  /*unsigned int mysizeE = m_PreTreatedData->GetMultEnergy(Detector);
   unsigned int mysizeT = m_PreTreatedData->GetMultTime(Detector);
   for (UShort_t e = 0; e < mysizeE ; e++) {
     for (UShort_t t = 0; t < mysizeT ; t++) {
@@ -127,6 +127,7 @@ void TZDDPhysics::Match_E_T(std::string Detector){
       }
     }
   }
+*/
 }
 
 
@@ -155,7 +156,7 @@ void TZDDPhysics::PreTreat() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::PreTreatEnergy(std::string Detector, CalibrationManager* Cal){
-  unsigned int mysize = m_EventData->GetMultEnergy(Detector);
+  /*unsigned int mysize = m_EventData->GetMultEnergy(Detector);
   for (UShort_t i = 0; i < mysize ; ++i) {
     if (m_EventData->Get_Energy(Detector, i) > m_E_RAW_Threshold) {
       Double_t Energy = Cal->ApplyCalibration("ZDD/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(Detector, i)),m_EventData->Get_Energy(Detector, i));
@@ -168,11 +169,12 @@ void TZDDPhysics::PreTreatEnergy(std::string Detector, CalibrationManager* Cal){
       }
     }
   }
+*/
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::PreTreatTime(std::string Detector, CalibrationManager* Cal){
-  unsigned int mysize = m_EventData->GetMultTime(Detector);
+/*  unsigned int mysize = m_EventData->GetMultTime(Detector);
   for (UShort_t i = 0; i < mysize; ++i) {
     Double_t Time= Cal->ApplyCalibration("ZDD/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(Detector, i)),m_EventData->Get_Time(Detector,i));
     if(Detector == "IC")
@@ -182,6 +184,7 @@ void TZDDPhysics::PreTreatTime(std::string Detector, CalibrationManager* Cal){
     else if(Detector == "DC")
       m_PreTreatedData->Set_DC_Time(m_EventData->GetT_DetectorNbr(Detector, i), Time);
   }
+*/
 }
 
 

@@ -67,7 +67,7 @@ void TExogamPhysics::BuildSimplePhysicalEvent()
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::PreTreat()	
 {
-  ClearPreTreatedData();
+  /*ClearPreTreatedData();
 
   //E 
 
@@ -159,13 +159,13 @@ void TExogamPhysics::PreTreat()
 
   //cout << "EXOGAM pretreat ok!" << endl;
   return;
-  
+  */
 }
 ///////////////////////////////////////////////////////////////////////////
 	
 void TExogamPhysics::BuildPhysicalEvent()
 { 
-  PreTreat();
+  /*PreTreat();
   
   if(PreTreatedData -> GetECCEMult() != PreTreatedData -> GetECCTMult()) cout << PreTreatedData -> GetECCEMult() << " " <<  PreTreatedData -> GetECCTMult() << endl;
 
@@ -391,6 +391,7 @@ void TExogamPhysics::BuildPhysicalEvent()
   CloverMult = GetClover_Mult();
 
   //cout << "Exogam fine" << endl;	
+  */
 }	
 
 

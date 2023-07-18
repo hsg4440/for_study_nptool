@@ -111,6 +111,7 @@ void TZDDSpectra::FillRawSpectra(TZDDData* RawData) {
   static string name;
   static string family;
 
+/*
   // Energy 
   unsigned int sizeE = RawData->GetMultEnergy("Plastic");
   for (unsigned int i = 0; i < sizeE; i++) {
@@ -128,6 +129,7 @@ void TZDDSpectra::FillRawSpectra(TZDDData* RawData) {
 
     FillSpectra(family,name,RawData->Get_Time("Plastic", i));
   }
+*/
 }
 
 
@@ -137,7 +139,7 @@ void TZDDSpectra::FillPreTreatedSpectra(TZDDData* PreTreatedData) {
   static string name;
   static string family;
   
-  // Energy 
+  /*// Energy 
   unsigned int sizeE = PreTreatedData->GetMultEnergy("Plastic");
   for (unsigned int i = 0; i < sizeE; i++) {
     name = "ZDD"+NPL::itoa(PreTreatedData->GetE_DetectorNbr("Plastic", i))+"_ENERGY_CAL";
@@ -154,6 +156,7 @@ void TZDDSpectra::FillPreTreatedSpectra(TZDDData* PreTreatedData) {
 
     FillSpectra(family,name,PreTreatedData->Get_Time("Plastic", i));
   }
+*/
 }
 
 

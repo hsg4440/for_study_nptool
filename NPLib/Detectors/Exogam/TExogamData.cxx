@@ -43,31 +43,21 @@ TExogamData::~TExogamData()
 
 void TExogamData::Clear()
 {
-   fEXO_Clover.clear();
-   fEXO_Cristal.clear();
-   fEXO_Energy.clear();
-   fEXO_Time.clear();
-   // ECC / E
-   fEXO_ECC_E_Clover.clear();
-   fEXO_ECC_E_Cristal.clear();
-   fEXO_ECC_E_Energy.clear();
-   // ECC / T
-   fEXO_ECC_T_Clover.clear();
-   fEXO_ECC_T_Cristal.clear();
-   fEXO_ECC_T_Time.clear();
-   // GOCCE / E
-   fEXO_GOCCE_E_Clover.clear();
-   fEXO_GOCCE_E_Cristal.clear();
-   fEXO_GOCCE_E_Segment.clear();
-   fEXO_GOCCE_E_Energy.clear();
-   // GOCCE / T
-   fEXO_GOCCE_T_Clover.clear();
-   fEXO_GOCCE_T_Cristal.clear();
-   fEXO_GOCCE_T_Segment.clear();
-   fEXO_GOCCE_T_Time.clear();
-
-   //GeFill
-   fEXO_Fill = -1;
+  fEXO_E.clear();
+  fEXO_E_CrystalNbr.clear();
+  fEXO_E_TS.clear();
+  fEXO_HG.clear(); 
+  fEXO_HG_CrystalNbr.clear();
+  fEXO_HG_TS.clear();
+  fEXO_TDC.clear();
+  fEXO_TDC_CrystalNbr.clear();
+  fEXO_TDC_TS.clear();
+  fEXO_Outer.clear();
+  fEXO_Outer_SubCrystalNbr.clear(); 
+  fEXO_BGO.clear();
+  fEXO_BGO_CrystalNbr.clear();
+  fEXO_CSI.clear();
+  fEXO_CSI_CrystalNbr.clear();
 }
 
 
@@ -75,38 +65,29 @@ void TExogamData::Clear()
 void TExogamData::Dump() const
 {
    cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event XXXXXXXXXXXXXXXXX" << endl;
-
-   // RealValues (for simulation purposes)
-   cout << "EXO_Mult = " << fEXO_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_Clover[i] << " CristalE: " << fEXO_Cristal[i]; 
-      cout << " Energy: " << fEXO_Energy[i];
-      cout << " Time: " <<  fEXO_Energy[i] << endl;
+   
+   cout << "Inner6MV Mult = " << fEXO_E.size() << endl;
+   for (UShort_t i = 0; i < fEXO_E.size(); i++) {
+      cout << "Energy: " << fEXO_E[i] << " Cristal Numb: " << fEXO_E_CrystalNbr[i] << " TimeStamp: " << fEXO_E_TS[i] << endl;
    }
-
-   // ECC
-   // Energy
-   cout << "EXO_ECC_MultE = " << fEXO_ECC_E_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_ECC_E_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_ECC_E_Clover[i] << " CristalE: " << fEXO_ECC_E_Cristal[i] << " Energy: " << fEXO_ECC_E_Energy[i] << endl;
+   cout << "Inner20MV Mult = " << fEXO_HG.size() << endl;
+   for (UShort_t i = 0; i < fEXO_HG.size(); i++) {
+      cout << "Energy: " << fEXO_HG[i] << " Cristal Numb: " << fEXO_HG_CrystalNbr[i] << " TimeStamp: " << fEXO_HG_TS[i] << endl;
    }
-   // Time
-   cout << "EXO_ECC_MultT = " << fEXO_ECC_T_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_ECC_T_Clover.size(); i++) {
-      cout << "CloverT: " << fEXO_ECC_T_Clover[i] << " CristalT: " << fEXO_ECC_T_Cristal[i] << " Time: " << fEXO_ECC_T_Time[i] << endl;
+   cout << "OutersV Mult = " << fEXO_Outer.size() << endl;
+   for (UShort_t i = 0; i < fEXO_Outer.size(); i++) {
+      cout << "Energy: " << fEXO_Outer[i] << " Cristal Numb: " << fEXO_Outer_SubCrystalNbr[i] << endl;
    }
-   // GOCCE
-   // Energy
-   cout << "EXO_GOCCE_MultE = " << fEXO_GOCCE_E_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_GOCCE_E_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_GOCCE_E_Clover[i] << " CristalE: " << fEXO_GOCCE_E_Cristal[i] << " SegmentE: " << fEXO_GOCCE_E_Segment[i] << " Energy: " << fEXO_GOCCE_E_Energy[i] << endl;
+   cout << "DeltaTV Mult = " << fEXO_TDC.size() << endl;
+   for (UShort_t i = 0; i < fEXO_TDC.size(); i++) {
+      cout << "Energy: " << fEXO_TDC[i] << " Cristal Numb: " << fEXO_TDC_CrystalNbr[i] << " TimeStamp: " << fEXO_TDC_TS[i] << endl;
    }
-   // Time
-   cout << "EXO_GOCCE_MultT = " << fEXO_GOCCE_T_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_GOCCE_T_Clover.size(); i++) {
-      cout << "CloverT: " << fEXO_GOCCE_T_Clover[i] << " CristalT: " << fEXO_GOCCE_T_Cristal[i] << " SegmentT: " << fEXO_GOCCE_T_Segment[i] << " Time: " << fEXO_GOCCE_T_Time[i] << endl;
+   cout << "BGOV Mult = " << fEXO_BGO.size() << endl;
+   for (UShort_t i = 0; i < fEXO_BGO.size(); i++) {
+      cout << "Energy: " << fEXO_BGO[i] << " Cristal Numb: " << fEXO_BGO_CrystalNbr[i] << endl;
    }
-
-   //GeFill
-   cout << "EXO_GeFill =" << fEXO_Fill << endl;
+   cout << "CSIV Mult = " << fEXO_CSI.size() << endl;
+   for (UShort_t i = 0; i < fEXO_CSI.size(); i++) {
+      cout << "Energy: " << fEXO_CSI[i] << " Cristal Numb: " << fEXO_CSI_CrystalNbr[i] << endl;
+   }
 }
