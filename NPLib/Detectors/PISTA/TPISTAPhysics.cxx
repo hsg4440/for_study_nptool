@@ -72,9 +72,9 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   //double Height = 61.7; // mm
   double Height = 57.7; // mm
   //double LongBase = 78.1; // mm
-  double LongBase = 72.29; // mm
-  double NumberOfStripsX = 57;
-  double NumberOfStripsY = 91;
+  double LongBase = 72.3; // mm
+  double NumberOfStripsX = m_NumberOfStripsX;
+  double NumberOfStripsY = m_NumberOfStripsY;
   double StripPitchY = Height/NumberOfStripsY; // mm
   double StripPitchX = LongBase/NumberOfStripsX; // mm
 
@@ -104,12 +104,13 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   vector<vector<double>> OneDetectorStripPositionZ;
 
   TVector3 Strip_1_1;
-  double ContractedStripPitchX = StripPitchX*norm/(norm+7);
+  double ContractedStripPitchX = StripPitchX*norm/(norm+4);
   double ContractedLongBase = NumberOfStripsX*ContractedStripPitchX;
   double deltaX = LongBase/2-ContractedLongBase/2;
 
   //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
   Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(NumberOfStripsY*StripPitchY - StripPitchY / 2.);
+  Strip_1_1 = Strip_1_1 + 2.9*u + 2.0*v;
 
   TVector3 StripPos;
   for(int i=0; i<NumberOfStripsX; i++){

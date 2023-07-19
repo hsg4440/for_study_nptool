@@ -217,22 +217,17 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
   /////////// Search for Detectors ///////////
   ////////////////////////////////////////////
   // Get the list of main token
-  std::cout<< "test detec mana 1" << std::endl;
   std::vector<std::string> token = parser.GetAllBlocksToken();
-  std::cout<< "test detec mana 2 " << token.size() << std::endl;
   // Look for detectors among them
   for(unsigned int i = 0 ; i < token.size() ; i++){
     VDetector* detector = theFactory->Construct(token[i]);
     VTreeReader* Reader = theFactory->ConstructReader(token[i]);
-    std::cout << "test detec mana 3 " << detector << std::endl;
     if(detector!=NULL && check.find(token[i])==check.end()){
       if(NPOptionManager::getInstance()->GetVerboseLevel()){
         std::cout << "/////////////////////////////////////////" << std::endl;
         std::cout << "//// Adding Detector " << token[i] << std::endl; 
       }
-    std::cout << "TEST COUCOU" << std::endl; 
       detector->ReadConfiguration(parser);
-    std::cout << "TEST COUCOU 2" << std::endl; 
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         std::cout << "/////////////////////////////////////////" << std::endl;
 
@@ -273,7 +268,7 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 
   // Start the thread if multithreading supported
 #if __cplusplus > 199711L && NPMULTITHREADING
-  std::cout << "Test init POOL ////////////////////////////////////////////////////////////" << std::endl;
+  //std::cout << "Test init POOL ////////////////////////////////////////////////////////////" << std::endl;
   InitThreadPool();
 #endif
 
@@ -339,14 +334,14 @@ void NPL::DetectorManager::InitializeRootInput(){
   if(NPOptionManager::getInstance()->GetInputPhysicalTreeOption())
     //m_DetectorReader.begin()->second->InitializeRootInputPhysics();
     for (it = m_Detector.begin(); it != m_Detector.end(); ++it){ 
-      std::cout << "Test input" << std::endl;
+      //std::cout << "Test input" << std::endl;
       (it->second->*m_InitializeRootInputPhysicsPtr)();
     }
 
   else // Default Case
     //m_DetectorReader.begin()->second->InitializeRootInputRaw();
     for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
-      std::cout << "Test input" << std::endl;
+      //std::cout << "Test input" << std::endl;
       (it->second->*m_InitializeRootInputRawPtr)();
     }
 }
@@ -357,7 +352,7 @@ void NPL::DetectorManager::InitializeRootOutput(){
 
   if(!NPOptionManager::getInstance()->GetInputPhysicalTreeOption())
     for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
-      std::cout << "Test output" << std::endl; 
+      //std::cout << "Test output" << std::endl; 
       (it->second->*m_InitializeRootOutputPtr)();
     }
 }
@@ -368,7 +363,7 @@ void NPL::DetectorManager::InitializeRootHistogramsCalib(){
 
   if(NPOptionManager::getInstance()->IsCalibration())
     for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
-      std::cout << "Test calib output" << std::endl; 
+      //std::cout << "Test calib output" << std::endl; 
       (it->second->*m_InitializeRootHistogramsCalibPtr)();
     }
   else{
@@ -394,7 +389,7 @@ void NPL::DetectorManager::WriteHistogramsCalib(){
 
   if(NPOptionManager::getInstance()->IsCalibration())
     for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
-      std::cout << "Test Write Histograms" << std::endl; 
+      //std::cout << "Test Write Histograms" << std::endl; 
       (it->second->*m_WriteHistogramsCalibPtr)();
     }
   else{
@@ -500,7 +495,7 @@ void NPL::DetectorManager::InitThreadPool(){
   m_ThreadPool.clear();
   m_Ready.clear();
   std::map<std::string,VDetector*>::iterator it;
-  std::cout << "Test Detector size : " << m_Detector.size() << std::endl;
+  //std::cout << "Test Detector size : " << m_Detector.size() << std::endl;
   m_Ready.resize(m_Detector.size(),false);
   unsigned int i = 0;
   for (it = m_Detector.begin(); it != m_Detector.end(); ++it) { 
