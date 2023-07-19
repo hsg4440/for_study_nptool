@@ -63,6 +63,7 @@ class Analysis: public NPL::VAnalysis{
     double DeltaE;
     double Eres;
     double ThetaLab;
+    double PhiLab;
     double ThetaCM;
     double OptimumEx;
     double Ex;

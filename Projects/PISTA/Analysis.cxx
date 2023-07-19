@@ -47,7 +47,6 @@ void Analysis::Init(){
   TargetThickness = m_DetectorManager->GetTargetThickness();
 
   Transfer = new NPL::Reaction("238U(12C,12C)238U@1417");
-  //Transfer = new NPL::Reaction("238U(12C,14C)236U@1428");
 
   // Energy loss table
   Be10C = EnergyLoss("EnergyLossTable/Be10_C.G4table","G4Table",100);
@@ -79,8 +78,8 @@ void Analysis::TreatEvent(){
   TVector3 BeamDirection = InitialConditions->GetBeamDirection();
   TVector3 BeamPosition(XTarget,YTarget,ZTarget);
 
-  //TVector3 PositionOnTarget(0,0,0);
-  TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
+  TVector3 PositionOnTarget(0,0,0);
+  //TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
   //TVector3 PositionOnTarget(XTarget, YTarget, 0);
   BeamEnergy = 1417.;//InitialConditions->GetIncidentInitialKineticEnergy();
   BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
@@ -98,13 +97,14 @@ void Analysis::TreatEvent(){
       int strip_DE = PISTA->DE_StripNbr[i];
       
       TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(det,strip_E,strip_DE);
-      TVector3 HitDirection = PISTA_pos;// - PositionOnTarget;
+      TVector3 HitDirection = PISTA_pos - PositionOnTarget;
       Xcalc = PISTA_pos.X();
       Ycalc = PISTA_pos.Y();
       Zcalc = PISTA_pos.Z();
       //ThetaLab = HitDirection.Angle(BeamDirection);
       
       ThetaLab = HitDirection.Angle(TVector3(0,0,1));
+      PhiLab = HitDirection.Phi();
       ThetaDetectorSurface = HitDirection.Angle(-PISTA->GetDetectorNormal(i));
       
       DeltaE = DeltaE/cos(ThetaDetectorSurface);
@@ -138,6 +138,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab,"Elab/D");
   RootOutput::getInstance()->GetTree()->Branch("OriginalElab",&OriginalElab,"OriginalElab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
+  RootOutput::getInstance()->GetTree()->Branch("PhiLab",&PhiLab,"PhiLab/D");
   RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("R",&R,"R/D");
@@ -175,6 +176,7 @@ void Analysis::ReInitValue(){
   OriginalElab = -1000;
   OriginalThetaLab = -1000;
   ThetaLab = -1000;
+  PhiLab = -1000;
   ThetaCM = -1000;
   XTarget = -1000;
   YTarget = -1000;
