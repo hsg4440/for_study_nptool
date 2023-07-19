@@ -39,22 +39,22 @@ class TZDDData : public TObject {
     // IC
     vector<UShort_t>   fZDD_IC_E;
     vector<UShort_t>   fZDD_IC_N;
-    vector<UShort_t>   fZDD_IC_TS;
+    vector<ULong64_t>   fZDD_IC_TS;
 
     // Plastic
     vector<UShort_t>   fZDD_PM_E;
     vector<UShort_t>   fZDD_PM_N;
-    vector<UShort_t>   fZDD_PM_TS;
+    vector<ULong64_t>   fZDD_PM_TS;
     
     // DC
     vector<UShort_t>   fZDD_DC_E;
     vector<UShort_t>   fZDD_DC_N;
-    vector<UShort_t>   fZDD_DC_TS;
+    vector<ULong64_t>   fZDD_DC_TS;
     
     // EXOZDD
     vector<UShort_t>   fZDD_EXO_E;
     vector<UShort_t>   fZDD_EXO_N;
-    vector<UShort_t>   fZDD_EXO_TS;
+    vector<ULong64_t>   fZDD_EXO_TS;
 
 
   //////////////////////////////////////////////////////////////
@@ -80,22 +80,22 @@ class TZDDData : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     // Energy
-    inline void SetZDDIC(const UShort_t& DetNumb,const UShort_t& Energy, const UShort_t& TimeStamp){
+    inline void SetZDDIC(const UShort_t& DetNumb,const UShort_t& Energy, const ULong64_t& TimeStamp){
       fZDD_IC_E.push_back(Energy);
       fZDD_IC_N.push_back(DetNumb);
       fZDD_IC_TS.push_back(TimeStamp);
     };//!
-    inline void SetZDDPM(const UShort_t& DetNumb,const UShort_t& Energy, const UShort_t& TimeStamp){
+    inline void SetZDDPM(const UShort_t& DetNumb,const UShort_t& Energy, const ULong64_t& TimeStamp){
       fZDD_PM_E.push_back(Energy);
       fZDD_PM_N.push_back(DetNumb);
       fZDD_PM_TS.push_back(TimeStamp);
     };//!
-    inline void SetZDDDC(const UShort_t& DetNumb,const UShort_t& Energy, const UShort_t& TimeStamp){
+    inline void SetZDDDC(const UShort_t& DetNumb,const UShort_t& Energy, const ULong64_t& TimeStamp){
       fZDD_DC_E.push_back(Energy);
       fZDD_DC_N.push_back(DetNumb);
       fZDD_DC_TS.push_back(TimeStamp);
     };//!
-    inline void SetZDDEXO(const UShort_t& DetNumb,const UShort_t& Energy, const UShort_t& TimeStamp){
+    inline void SetZDDEXO(const UShort_t& DetNumb,const UShort_t& Energy, const ULong64_t& TimeStamp){
       fZDD_EXO_E.push_back(Energy);
       fZDD_EXO_N.push_back(DetNumb);
       fZDD_EXO_TS.push_back(TimeStamp);
@@ -104,16 +104,16 @@ class TZDDData : public TObject {
     //////////////////////    GETTERS    ////////////////////////
     inline UShort_t GetZDD_ICE(UShort_t& i) { return fZDD_IC_E[i]; }
     inline UShort_t GetZDD_ICN(UShort_t& i) { return fZDD_IC_N[i]; }
-    inline UShort_t GetZDD_ICTS(UShort_t& i) { return fZDD_IC_TS[i]; }
+    inline ULong64_t GetZDD_ICTS(UShort_t& i) { return fZDD_IC_TS[i]; }
     inline UShort_t GetZDD_PME(UShort_t& i) { return fZDD_PM_E[i]; }
     inline UShort_t GetZDD_PMN(UShort_t& i) { return fZDD_PM_N[i]; }
-    inline UShort_t GetZDD_PMTS(UShort_t& i) { return fZDD_PM_TS[i]; }
+    inline ULong64_t GetZDD_PMTS(UShort_t& i) { return fZDD_PM_TS[i]; }
     inline UShort_t GetZDD_DCE(UShort_t& i) { return fZDD_DC_E[i]; }
     inline UShort_t GetZDD_DCN(UShort_t& i) { return fZDD_DC_N[i]; }
-    inline UShort_t GetZDD_DCTS(UShort_t& i) { return fZDD_DC_TS[i]; }
+    inline ULong64_t GetZDD_DCTS(UShort_t& i) { return fZDD_DC_TS[i]; }
     inline UShort_t GetZDD_EXOE(UShort_t& i) { return fZDD_EXO_E[i]; }
     inline UShort_t GetZDD_EXON(UShort_t& i) { return fZDD_EXO_N[i]; }
-    inline UShort_t GetZDD_EXOTS(UShort_t& i) { return fZDD_EXO_TS[i]; }
+    inline ULong64_t GetZDD_EXOTS(UShort_t& i) { return fZDD_EXO_TS[i]; }
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
