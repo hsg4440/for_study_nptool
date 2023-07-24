@@ -73,11 +73,11 @@ class TTACData : public TObject {
     // Energy
     inline UShort_t GetTAC_Mult() const
       {return fTAC_Channel.size();}
-    inline UShort_t GetTAC_Channel(const unsigned int &i) const 
+    inline UShort_t GetTAC_Channel(const UShort_t &i) const 
       {return fTAC_Channel[i];}//!
-    inline UShort_t GetTAC_Nbr(const unsigned int &i) const 
+    inline UShort_t GetTAC_Nbr(const UShort_t &i) const 
       {return fTAC_Nbr[i];}//!
-    inline ULong64_t GetTAC_TS(const unsigned int &i) const 
+    inline ULong64_t GetTAC_TS(const ULong64_t &i) const 
       {return fTAC_TS[i];}//!
 
 

@@ -58,49 +58,49 @@ class TExogamData : public TObject {
   void Dump() const;
 
   /////////////////////           SETTERS           ////////////////////////
-  inline void SetInner6MV(UShort_t& Energy, UShort_t& DetNumb, ULong64_t& TimeStamp) {
+  inline void SetInner6MV(const UShort_t& Energy, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
     fEXO_E.push_back(Energy);
     fEXO_E_CrystalNbr.push_back(DetNumb);
     fEXO_E_TS.push_back(TimeStamp);
   }
-  inline void SetInner20MV(UShort_t& Energy, UShort_t& DetNumb, ULong64_t& TimeStamp) {
+  inline void SetInner20MV(const UShort_t& Energy, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
     fEXO_HG.push_back(Energy);
     fEXO_HG_CrystalNbr.push_back(DetNumb);
     fEXO_HG_TS.push_back(TimeStamp);
   }
-  inline void SetDeltaTV(UShort_t& Time, UShort_t& DetNumb, ULong64_t& TimeStamp) {
+  inline void SetDeltaTV(const UShort_t& Time, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
     fEXO_TDC.push_back(Time);
     fEXO_TDC_CrystalNbr.push_back(DetNumb);
     fEXO_TDC_TS.push_back(TimeStamp);
   }
-  inline void SetOutersV(UShort_t& Energy, UShort_t& OutersNumb) {
+  inline void SetOutersV(const UShort_t& Energy, const UShort_t& OutersNumb) {
     fEXO_Outer.push_back(Energy);
     fEXO_Outer_SubCrystalNbr.push_back(OutersNumb);
   }
-  inline void SetBGOV(UShort_t& Energy, UShort_t& BGONumb) {
+  inline void SetBGOV(const UShort_t& Energy, const UShort_t& BGONumb) {
     fEXO_BGO.push_back(Energy);
     fEXO_BGO_CrystalNbr.push_back(BGONumb);
   }
-  inline void SetCSIV(UShort_t& Energy, UShort_t& CSINumb) {
+  inline void SetCSIV(const UShort_t& Energy, const UShort_t& CSINumb) {
     fEXO_CSI.push_back(Energy);
     fEXO_CSI_CrystalNbr.push_back(CSINumb);
   }
   /////////////////////           GETTERS           ////////////////////////
-  inline UShort_t GetEXO_E(UShort_t& i) { return fEXO_E[i]; }
-  inline UShort_t GetEXO_E_CrystalNbr(UShort_t& i) { return fEXO_E_CrystalNbr[i]; }
-  inline ULong64_t GetEXO_E_TS(UShort_t& i) { return fEXO_E_TS[i]; }
-  inline UShort_t GetEXO_HG(UShort_t& i) { return fEXO_HG[i]; }
-  inline UShort_t GetEXO_HG_CrystalNbr(UShort_t& i) { return fEXO_HG_CrystalNbr[i]; }
-  inline ULong64_t GetEXO_HG_TS(UShort_t& i) { return fEXO_HG_TS[i]; }
-  inline UShort_t GetEXO_TDC(UShort_t& i) { return fEXO_TDC[i]; }
-  inline UShort_t GetEXO_TDC_CrystalNbr(UShort_t& i) { return fEXO_TDC_CrystalNbr[i]; }
-  inline ULong64_t GetEXO_TDC_TS(UShort_t& i) { return fEXO_TDC_TS[i]; }
-  inline UShort_t GetEXO_Outer(UShort_t& i) { return fEXO_Outer[i]; }
-  inline UShort_t GetEXO_Outer_SubCrystalNbr(UShort_t& i) { return fEXO_Outer_SubCrystalNbr[i]; }
-  inline UShort_t GetEXO_BGO(UShort_t& i) { return fEXO_BGO[i]; }
-  inline UShort_t GetEXO_BGO_CrystalNbr(UShort_t& i) { return fEXO_BGO_CrystalNbr[i]; }
-  inline UShort_t GetEXO_CSI(UShort_t& i) { return fEXO_CSI[i]; }
-  inline UShort_t GetEXO_CSI_CrystalNbr(UShort_t& i) { return fEXO_CSI_CrystalNbr[i]; }
+  inline UShort_t GetEXO_E(const UShort_t& i)const  { return fEXO_E[i]; }
+  inline UShort_t GetEXO_E_CrystalNbr(const UShort_t& i)const  { return fEXO_E_CrystalNbr[i]; }
+  inline ULong64_t GetEXO_E_TS(const UShort_t& i)const  { return fEXO_E_TS[i]; }
+  inline UShort_t GetEXO_HG(const UShort_t& i)const  { return fEXO_HG[i]; }
+  inline UShort_t GetEXO_HG_CrystalNbr(const UShort_t& i)const  { return fEXO_HG_CrystalNbr[i]; }
+  inline ULong64_t GetEXO_HG_TS(const UShort_t& i)const  { return fEXO_HG_TS[i]; }
+  inline UShort_t GetEXO_TDC(const UShort_t& i)const  { return fEXO_TDC[i]; }
+  inline UShort_t GetEXO_TDC_CrystalNbr(const UShort_t& i)const  { return fEXO_TDC_CrystalNbr[i]; }
+  inline ULong64_t GetEXO_TDC_TS(const UShort_t& i)const  { return fEXO_TDC_TS[i]; }
+  inline UShort_t GetEXO_Outer(const UShort_t& i)const  { return fEXO_Outer[i]; }
+  inline UShort_t GetEXO_Outer_SubCrystalNbr(const UShort_t& i)const  { return fEXO_Outer_SubCrystalNbr[i]; }
+  inline UShort_t GetEXO_BGO(const UShort_t& i)const  { return fEXO_BGO[i]; }
+  inline UShort_t GetEXO_BGO_CrystalNbr(const UShort_t& i)const  { return fEXO_BGO_CrystalNbr[i]; }
+  inline UShort_t GetEXO_CSI(const UShort_t& i)const  { return fEXO_CSI[i]; }
+  inline UShort_t GetEXO_CSI_CrystalNbr(const UShort_t& i)const  { return fEXO_CSI_CrystalNbr[i]; }
 
   ClassDef(TExogamData, 1) // ExogamData structure
 };

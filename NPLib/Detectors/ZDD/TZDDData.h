@@ -102,18 +102,18 @@ class TZDDData : public TObject {
     };//!
     
     //////////////////////    GETTERS    ////////////////////////
-    inline UShort_t GetZDD_ICE(UShort_t& i) { return fZDD_IC_E[i]; }
-    inline UShort_t GetZDD_ICN(UShort_t& i) { return fZDD_IC_N[i]; }
-    inline ULong64_t GetZDD_ICTS(UShort_t& i) { return fZDD_IC_TS[i]; }
-    inline UShort_t GetZDD_PME(UShort_t& i) { return fZDD_PM_E[i]; }
-    inline UShort_t GetZDD_PMN(UShort_t& i) { return fZDD_PM_N[i]; }
-    inline ULong64_t GetZDD_PMTS(UShort_t& i) { return fZDD_PM_TS[i]; }
-    inline UShort_t GetZDD_DCE(UShort_t& i) { return fZDD_DC_E[i]; }
-    inline UShort_t GetZDD_DCN(UShort_t& i) { return fZDD_DC_N[i]; }
-    inline ULong64_t GetZDD_DCTS(UShort_t& i) { return fZDD_DC_TS[i]; }
-    inline UShort_t GetZDD_EXOE(UShort_t& i) { return fZDD_EXO_E[i]; }
-    inline UShort_t GetZDD_EXON(UShort_t& i) { return fZDD_EXO_N[i]; }
-    inline ULong64_t GetZDD_EXOTS(UShort_t& i) { return fZDD_EXO_TS[i]; }
+    inline UShort_t GetZDD_ICE(const UShort_t& i)const  { return fZDD_IC_E[i]; }
+    inline UShort_t GetZDD_ICN(const UShort_t& i)const  { return fZDD_IC_N[i]; }
+    inline ULong64_t GetZDD_ICTS(const UShort_t& i)const  { return fZDD_IC_TS[i]; }
+    inline UShort_t GetZDD_PME(const UShort_t& i)const  { return fZDD_PM_E[i]; }
+    inline UShort_t GetZDD_PMN(const UShort_t& i)const  { return fZDD_PM_N[i]; }
+    inline ULong64_t GetZDD_PMTS(const UShort_t& i)const  { return fZDD_PM_TS[i]; }
+    inline UShort_t GetZDD_DCE(const UShort_t& i)const  { return fZDD_DC_E[i]; }
+    inline UShort_t GetZDD_DCN(const UShort_t& i)const  { return fZDD_DC_N[i]; }
+    inline ULong64_t GetZDD_DCTS(const UShort_t& i)const  { return fZDD_DC_TS[i]; }
+    inline UShort_t GetZDD_EXOE(const UShort_t& i)const  { return fZDD_EXO_E[i]; }
+    inline UShort_t GetZDD_EXON(const UShort_t& i)const  { return fZDD_EXO_N[i]; }
+    inline ULong64_t GetZDD_EXOTS(const UShort_t& i)const  { return fZDD_EXO_TS[i]; }
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
