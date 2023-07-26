@@ -110,7 +110,7 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
 
   //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
   Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(NumberOfStripsY*StripPitchY - StripPitchY / 2.);
-  Strip_1_1 = Strip_1_1 + 2.9*u + 2.0*v;
+  //Strip_1_1 = Strip_1_1 + 2.9*u + 2.0*v;
 
   TVector3 StripPos;
   for(int i=0; i<NumberOfStripsX; i++){
