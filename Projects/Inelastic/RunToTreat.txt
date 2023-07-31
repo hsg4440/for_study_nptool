@@ -1,4 +1,4 @@
 TTreeName
   SimulatedTree
 RootFileName
-  ../../Outputs/Simulation/vendeta_sim_*.root 
+  ../../Outputs/Simulation/vendeta_el_*.root 
