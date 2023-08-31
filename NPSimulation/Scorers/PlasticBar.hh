@@ -126,12 +126,12 @@ namespace PlasticBar {
     std::vector<std::array<double, 7>> t_Energy_by_ChargeNumber;
     std::vector<std::array<double, 7>> t_Light_by_ChargeNumber;
     inline void AddEntry() {
-      std::array<double, 7> nil_array = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+      std::array<double, 7> nil_array = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
       t_Energy_by_ChargeNumber.push_back(nil_array);
       t_Light_by_ChargeNumber.push_back(nil_array);
     };
-    std::array<double, 7> t_TotalEnergy_by_Z;
-    std::array<double, 7> t_TotalLight_by_Z;
+    std::array<double, 7> t_TotalEnergy_by_Z = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+    std::array<double, 7> t_TotalLight_by_Z = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
    private:
     double t_Energy;
