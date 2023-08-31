@@ -28,6 +28,7 @@
 #include "NPSHitsMap.hh"
 // #include "NPSecondaries.hh"
 
+#include <array>
 #include <map>
 using namespace CLHEP;
 
