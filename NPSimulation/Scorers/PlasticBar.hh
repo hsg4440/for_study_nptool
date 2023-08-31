@@ -26,152 +26,141 @@
  *****************************************************************************/
 #include "G4VPrimitiveScorer.hh"
 #include "NPSHitsMap.hh"
-//#include "NPSecondaries.hh"
+// #include "NPSecondaries.hh"
 
 #include <map>
 using namespace CLHEP;
 
 namespace PlasticBar {
 
-
-
-
-
   // Hold One hit info
-  class PlasticBarData{
-      public:
-        PlasticBarData(const double& Energy, const double& Light, const double& Position, const double& Time,const std::vector<unsigned int>& Nesting){
-          m_Index=CalculateIndex(Nesting);
-          m_Level=Nesting;
-          m_Energy=Energy;
-          m_Light=Light;
-          m_Position=Position;
-          m_Time=Time;
-        };
-        ~PlasticBarData(){};
+  class PlasticBarData {
+   public:
+    PlasticBarData(const double& Energy, const double& Light, const double& Position, const double& Time,
+                   const std::vector<unsigned int>& Nesting) {
+      m_Index = CalculateIndex(Nesting);
+      m_Level = Nesting;
+      m_Energy = Energy;
+      m_Light = Light;
+      m_Position = Position;
+      m_Time = Time;
+    };
+    ~PlasticBarData(){};
 
-      private:
-        unsigned int m_Index;
-        std::vector<unsigned int> m_Level;
-        double m_Energy;
-        double m_Light;
-        double m_Position;
-        double m_Time;
+   private:
+    unsigned int m_Index;
+    std::vector<unsigned int> m_Level;
+    double m_Energy;
+    double m_Light;
+    double m_Position;
+    double m_Time;
 
-      public:
-        static unsigned int CalculateIndex(const std::vector<unsigned int>& Nesting);
-     
-      public:
-        inline unsigned int GetIndex() const {return m_Index;};
-        inline std::vector<unsigned int> GetLevel() const {return m_Level;}; 
-        inline double GetEnergy() const {return m_Energy;};
-        inline double GetLight() const {return m_Light;};
-        inline double GetPosition() const {return m_Position;};
-        inline double GetTime() const {return m_Time;};
+   public:
+    static unsigned int CalculateIndex(const std::vector<unsigned int>& Nesting);
 
-      public:
-        inline void SetEnergy(const double& Energy) {m_Energy = Energy;};
-        inline void SetLight(const double& Light) {m_Light = Light;};
-      };
+   public:
+    inline unsigned int GetIndex() const { return m_Index; };
+    inline std::vector<unsigned int> GetLevel() const { return m_Level; };
+    inline double GetEnergy() const { return m_Energy; };
+    inline double GetLight() const { return m_Light; };
+    inline double GetPosition() const { return m_Position; };
+    inline double GetTime() const { return m_Time; };
 
-
-
-
+   public:
+    inline void SetEnergy(const double& Energy) { m_Energy = Energy; };
+    inline void SetLight(const double& Light) { m_Light = Light; };
+  };
 
   // Manage a vector of DSSD hit
-  class PlasticBarDataVector{
-    public:
-      PlasticBarDataVector(){};
-      ~PlasticBarDataVector(){};
+  class PlasticBarDataVector {
+   public:
+    PlasticBarDataVector(){};
+    ~PlasticBarDataVector(){};
 
-    private:
-      std::vector<PlasticBarData> m_Data;
+   private:
+    std::vector<PlasticBarData> m_Data;
 
-    public:
-      std::vector<PlasticBarData>::iterator find(const unsigned int& index);
-      inline void clear(){m_Data.clear();} ;
-      inline std::vector<PlasticBarData>::iterator end() {return m_Data.end();};
-      inline std::vector<PlasticBarData>::iterator begin() {return m_Data.begin();};
-      inline unsigned int size() {return m_Data.size();};
-      PlasticBarData* operator[](const unsigned int& i){return &m_Data[i];};
+   public:
+    std::vector<PlasticBarData>::iterator find(const unsigned int& index);
+    inline void clear() { m_Data.clear(); };
+    inline std::vector<PlasticBarData>::iterator end() { return m_Data.end(); };
+    inline std::vector<PlasticBarData>::iterator begin() { return m_Data.begin(); };
+    inline unsigned int size() { return m_Data.size(); };
+    PlasticBarData* operator[](const unsigned int& i) { return &m_Data[i]; };
 
-      inline void Set(const double& Energy, const double& Light, const double& Position, const double& Time, const std::vector<unsigned int>& Nesting) {
-        m_Data.push_back(PlasticBarData(Energy, Light, Position, Time, Nesting));
-      };
+    inline void Set(const double& Energy, const double& Light, const double& Position, const double& Time,
+                    const std::vector<unsigned int>& Nesting) {
+      m_Data.push_back(PlasticBarData(Energy, Light, Position, Time, Nesting));
+    };
   };
-
-
-
-
 
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-  class PS_PlasticBar : public G4VPrimitiveScorer{
-        
-    public: // with description
-      PS_PlasticBar(G4String name, std::vector<G4int>NestingLevel, G4int depth=0);
-      ~PS_PlasticBar();
-      
-    protected: // with description
-      G4bool ProcessHits(G4Step*, G4TouchableHistory*);
-      double EnergyToLight(double Energy, int Z);
-      void Compute_Light();
+  class PS_PlasticBar : public G4VPrimitiveScorer {
 
-    public:
-      void Initialize(G4HCofThisEvent*);
-      void EndOfEvent(G4HCofThisEvent*);
-      void clear();
-      void DrawAll();
-      void PrintAll();
+   public: // with description
+    PS_PlasticBar(G4String name, std::vector<G4int> NestingLevel, G4int depth = 0);
+    ~PS_PlasticBar();
 
-    private:
-      // How much level of volume nesting should be considered
-      // Give the list of the nesting level at which the copy number should be return.
-      // 0 is the lowest level possible (the actual volume copy number in which the interaction happen)
-      std::vector<G4int> m_NestingLevel;
+   protected: // with description
+    G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+    double EnergyToLight(double Energy, int Z);
+    void Compute_Light();
 
-    private: 
-      PlasticBarDataVector m_Data;
+   public:
+    void Initialize(G4HCofThisEvent*);
+    void EndOfEvent(G4HCofThisEvent*);
+    void clear();
+    void DrawAll();
+    void PrintAll();
 
-    private:
-      std::vector< std::array<double,7> > t_Energy_by_ChargeNumber;
-      std::vector< std::array<double,7> > t_Light_by_ChargeNumber;
-      inline void AddEntry() {
-        t_Energy_by_ChargeNumber.push_back({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-        t_Light_by_ChargeNumber.push_back({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-      };
-      std::array<double,7> t_TotalEnergy_by_Z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-      std::array<double,7> t_TotalLight_by_Z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+   private:
+    // How much level of volume nesting should be considered
+    // Give the list of the nesting level at which the copy number should be return.
+    // 0 is the lowest level possible (the actual volume copy number in which the interaction happen)
+    std::vector<G4int> m_NestingLevel;
 
-    private:
-      double t_Energy;
-      double t_Light;
-      double t_Position;
-      double t_Time;
-      std::vector<unsigned int> t_Level;
+   private:
+    PlasticBarDataVector m_Data;
 
-    private:
-      bool t_DoConversion = 1;
+   private:
+    std::vector<std::array<double, 7>> t_Energy_by_ChargeNumber;
+    std::vector<std::array<double, 7>> t_Light_by_ChargeNumber;
+    inline void AddEntry() {
+      std::array<double, 7> nil_array = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+      t_Energy_by_ChargeNumber.push_back(nil_array);
+      t_Light_by_ChargeNumber.push_back(nil_array);
+    };
+    std::array<double, 7> t_TotalEnergy_by_Z;
+    std::array<double, 7> t_TotalLight_by_Z;
 
-      const double t_Convertor[7][4] = {  
-        {1.0  , 0.0  , 0.0   , 0.0 },    //electron
-        {0.90 , 7.55 , 0.099 , 0.74},    //proton
-        {0.78 , 39.3 , 0.022 , 0.91},    //alpha
-        {0.61 , 57.1 , 0.012 , 0.95},    //7Li
-        {0.44 , 45.5 , 0.010 , 0.92},    //9Be
-        {0.35 , 34.5 , 0.011 , 0.91},    //11B
-        {0.30 , 25.6 , 0.013 , 0.91},    //12C
-      };
+   private:
+    double t_Energy;
+    double t_Light;
+    double t_Position;
+    double t_Time;
+    std::vector<unsigned int> t_Level;
 
-    public:
-      inline unsigned int  GetMult() {return m_Data.size();};
-      inline double GetEnergy(const unsigned int& i) {return m_Data[i]->GetEnergy();};
-      inline double GetLight(const unsigned int& i) {return m_Data[i]->GetLight();};
-      inline double GetPosition(const unsigned int& i) {return m_Data[i]->GetPosition();};
-      inline double GetTime(const unsigned int& i) {return m_Data[i]->GetTime();};
-      inline std::vector<unsigned int> GetLevel(const unsigned int& i) {
-        return m_Data[i]->GetLevel();
-      };
+   private:
+    bool t_DoConversion = 1;
+
+    const double t_Convertor[7][4] = {
+        {1.0, 0.0, 0.0, 0.0},      // electron
+        {0.90, 7.55, 0.099, 0.74}, // proton
+        {0.78, 39.3, 0.022, 0.91}, // alpha
+        {0.61, 57.1, 0.012, 0.95}, // 7Li
+        {0.44, 45.5, 0.010, 0.92}, // 9Be
+        {0.35, 34.5, 0.011, 0.91}, // 11B
+        {0.30, 25.6, 0.013, 0.91}, // 12C
+    };
+
+   public:
+    inline unsigned int GetMult() { return m_Data.size(); };
+    inline double GetEnergy(const unsigned int& i) { return m_Data[i]->GetEnergy(); };
+    inline double GetLight(const unsigned int& i) { return m_Data[i]->GetLight(); };
+    inline double GetPosition(const unsigned int& i) { return m_Data[i]->GetPosition(); };
+    inline double GetTime(const unsigned int& i) { return m_Data[i]->GetTime(); };
+    inline std::vector<unsigned int> GetLevel(const unsigned int& i) { return m_Data[i]->GetLevel(); };
   };
-}
+} // namespace PlasticBar
 
 #endif
