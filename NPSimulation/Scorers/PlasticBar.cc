@@ -27,11 +27,10 @@ using namespace PlasticBar;
 using namespace std;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-unsigned int
-PlasticBarData::CalculateIndex(const vector<unsigned int>& level) {
+unsigned int PlasticBarData::CalculateIndex(const vector<unsigned int>& level) {
 
-  unsigned int size       = level.size();
-  unsigned int result     = 0;
+  unsigned int size = level.size();
+  unsigned int result = 0;
   unsigned int multiplier = 1;
   for (unsigned int i = 0; i < size; i++) {
     result += level[i] * multiplier;
@@ -41,57 +40,52 @@ PlasticBarData::CalculateIndex(const vector<unsigned int>& level) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double
-PS_PlasticBar::EnergyToLight(double Energy, int Z){
-  //Get Energy to Light conversion factor depending on the particle doing the ionisation
+double PS_PlasticBar::EnergyToLight(double Energy, int Z) {
+  // Get Energy to Light conversion factor depending on the particle doing the ionisation
   double a0 = t_Convertor[Z][0];
   double a1 = t_Convertor[Z][1];
   double a2 = t_Convertor[Z][2];
   double a3 = t_Convertor[Z][3];
-  double Light = a0*Energy - a1*( 1. - std::exp(-a2*std::pow(Energy,a3)) );
-  return( std::max(Light ,0.) );
+  double Light = a0 * Energy - a1 * (1. - std::exp(-a2 * std::pow(Energy, a3)));
+  return (std::max(Light, 0.));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void
-PS_PlasticBar::Compute_Light(){
-  
-  std::vector<PlasticBarData>::iterator it = m_Data.begin();
-  std::vector<std::array<double,7>>::iterator it_Energy = t_Energy_by_ChargeNumber.begin();
-  std::vector<std::array<double,7>>::iterator it_Light = t_Light_by_ChargeNumber.begin();
+void PS_PlasticBar::Compute_Light() {
 
-  for(; it_Energy < t_Energy_by_ChargeNumber.end() ; it_Energy++, it_Light++, it++){
-    //cout << "Barre ID : " << (*it).GetIndex() << endl;
+  std::vector<PlasticBarData>::iterator it = m_Data.begin();
+  std::vector<std::array<double, 7>>::iterator it_Energy = t_Energy_by_ChargeNumber.begin();
+  std::vector<std::array<double, 7>>::iterator it_Light = t_Light_by_ChargeNumber.begin();
+
+  for (; it_Energy < t_Energy_by_ChargeNumber.end(); it_Energy++, it_Light++, it++) {
+    // cout << "Barre ID : " << (*it).GetIndex() << endl;
     double Light = 0, Energy = 0;
     double ConvertedLight = 0;
-    //cout << "   Energy   Light   Z   " << endl;
-    for(int i=0 ; i<7 ; i++){
+    // cout << "   Energy   Light   Z   " << endl;
+    for (int i = 0; i < 7; i++) {
       Energy += (*it_Energy)[i];
-      if(t_DoConversion){
-        ConvertedLight = EnergyToLight( (*it_Energy)[i], i);
+      if (t_DoConversion) {
+        ConvertedLight = EnergyToLight((*it_Energy)[i], i);
         (*it_Light)[i] = ConvertedLight;
         Light += ConvertedLight;
-        t_TotalLight_by_Z[i] += ConvertedLight; 
+        t_TotalLight_by_Z[i] += ConvertedLight;
       }
-      //cout << "   " << Energy;
-      //cout << "   " << Light;
-      //cout << "   " << i << endl;
+      // cout << "   " << Energy;
+      // cout << "   " << Light;
+      // cout << "   " << i << endl;
     }
-    //cout << endl;
+    // cout << endl;
     (*it).SetEnergy(Energy);
-    if(t_DoConversion)
+    if (t_DoConversion)
       (*it).SetLight(Light);
     else
       (*it).SetLight(Energy);
-
   }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-vector<PlasticBarData>::iterator
-PlasticBarDataVector::find(const unsigned int& index) {
-  for (vector<PlasticBarData>::iterator it = m_Data.begin();
-       it != m_Data.end(); it++) {
+vector<PlasticBarData>::iterator PlasticBarDataVector::find(const unsigned int& index) {
+  for (vector<PlasticBarData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
     if ((*it).GetIndex() == index)
       return it;
   }
@@ -99,14 +93,15 @@ PlasticBarDataVector::find(const unsigned int& index) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-PS_PlasticBar::PS_PlasticBar(G4String name, vector<G4int> NestingLevel, G4int depth)
-    : G4VPrimitiveScorer(name, depth) {
+PS_PlasticBar::PS_PlasticBar(G4String name, vector<G4int> NestingLevel, G4int depth) : G4VPrimitiveScorer(name, depth) {
   m_NestingLevel = NestingLevel;
   auto tree = RootOutput::getInstance()->GetTree();
   tree->Branch("PlasticBar_Time", &t_Time);
   tree->Branch("PlasticBar_Position", &t_Position);
   tree->Branch("PlasticBar_TotalEnergy_by_Z", &t_TotalEnergy_by_Z);
   tree->Branch("PlasticBar_TotalLight_by_Z", &t_TotalLight_by_Z);
+  t_TotalEnergy_by_Z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  t_TotalLight_by_Z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -118,35 +113,36 @@ G4bool PS_PlasticBar::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   // Contain Energy, Time + as many copy number as nested volume
   unsigned int mysize = m_NestingLevel.size();
 
-  // first lets consider a step going inside the bar, the interaction point can be associated to the position of the end of the step (which helps avoiding having all the steps at the entrance of the bar)
+  // first lets consider a step going inside the bar, the interaction point can be associated to the position of the end
+  // of the step (which helps avoiding having all the steps at the entrance of the bar)
   G4String processname = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
 
-  if(processname!="Transportation"){
+  if (processname != "Transportation") {
     G4String particlename = aStep->GetTrack()->GetParticleDefinition()->GetParticleName();
     int Z = aStep->GetTrack()->GetParticleDefinition()->GetAtomicNumber();
 
-    //under the energy cut, neutrons can deposit energy via hadIon. But the conversion cant be done since we dont know the recoil particle. We chose to neglect their effect. (validated because deposited energy is less than 1MeV, which is the PM threshold)
-    if(particlename!="neutron" && Z<7){
-      t_Energy      = aStep->GetTotalEnergyDeposit();
-      t_Time        = aStep->GetPostStepPoint()->GetGlobalTime();
-      t_Position    = aStep->GetPostStepPoint()->GetPosition()[1];
+    // under the energy cut, neutrons can deposit energy via hadIon. But the conversion cant be done since we dont know
+    // the recoil particle. We chose to neglect their effect. (validated because deposited energy is less than 1MeV,
+    // which is the PM threshold)
+    if (particlename != "neutron" && Z < 7) {
+      t_Energy = aStep->GetTotalEnergyDeposit();
+      t_Time = aStep->GetPostStepPoint()->GetGlobalTime();
+      t_Position = aStep->GetPostStepPoint()->GetPosition()[1];
       t_Level.clear();
-      
+
       for (unsigned int i = 0; i < mysize; i++) {
-        t_Level.push_back(
-          aStep->GetPostStepPoint()->GetTouchableHandle()->GetCopyNumber(m_NestingLevel[i])
-        );
+        t_Level.push_back(aStep->GetPostStepPoint()->GetTouchableHandle()->GetCopyNumber(m_NestingLevel[i]));
       }
 
-      if(t_Time < 150){
+      if (t_Time < 150) {
         // Check if the bar has been hit before, if not, set the first interaction point.
         std::vector<PlasticBarData>::iterator it;
         it = m_Data.find(PlasticBarData::CalculateIndex(t_Level));
 
         if (it == m_Data.end()) {
           m_Data.Set(0.0, 0.0, t_Position, t_Time, t_Level);
-          AddEntry(); //Adds null entry to t_Energy_by_ChargeNumber
-          auto lastEnergyEntry = t_Energy_by_ChargeNumber.end() - 1; //iterator
+          AddEntry();                                                // Adds null entry to t_Energy_by_ChargeNumber
+          auto lastEnergyEntry = t_Energy_by_ChargeNumber.end() - 1; // iterator
           (*lastEnergyEntry)[Z] += t_Energy;
           t_TotalEnergy_by_Z[Z] += t_Energy;
         }
@@ -155,16 +151,18 @@ G4bool PS_PlasticBar::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
           t_TotalEnergy_by_Z[Z] += t_Energy;
         }
       }
-    }      
-      //if(it->GetLight()>160){
-      //  cout << "{!!!}  Deposited Light : " << it->GetLight() << endl; 
-      //}
-      //it->Add_Light(t_Light);
-      //it->Set_Light(EnergyToLight(it->GetEnergy(),Z));
-      //cout << particlename << " of Z = " << Z << " has left :" << endl;
-      //cout << t_Energy << " MeV" << endl;
-      //cout << EnergyToLight(it->GetEnergy(),Z)*MeV << " MeVEE" << endl;
-  //now, if the next interaction is a Transportation, and there is an energy deposition, it means that we are observing the last step. To avoid having all the positions on the exit of the bar, lets consider the PreStepPosition instead.
+    }
+    // if(it->GetLight()>160){
+    //   cout << "{!!!}  Deposited Light : " << it->GetLight() << endl;
+    // }
+    // it->Add_Light(t_Light);
+    // it->Set_Light(EnergyToLight(it->GetEnergy(),Z));
+    // cout << particlename << " of Z = " << Z << " has left :" << endl;
+    // cout << t_Energy << " MeV" << endl;
+    // cout << EnergyToLight(it->GetEnergy(),Z)*MeV << " MeVEE" << endl;
+    // now, if the next interaction is a Transportation, and there is an energy deposition, it means that we are
+    // observing the last step. To avoid having all the positions on the exit of the bar, lets consider the
+    // PreStepPosition instead.
   }
   return TRUE;
 }
@@ -173,9 +171,7 @@ G4bool PS_PlasticBar::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 void PS_PlasticBar::Initialize(G4HCofThisEvent*) { clear(); }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_PlasticBar::EndOfEvent(G4HCofThisEvent*) {
-  Compute_Light();
-}
+void PS_PlasticBar::EndOfEvent(G4HCofThisEvent*) { Compute_Light(); }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PS_PlasticBar::clear() {

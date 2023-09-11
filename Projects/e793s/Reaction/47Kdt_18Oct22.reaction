@@ -28,3 +28,4 @@ TwoBodyReaction
  ShootHeavy= 0
  HalfOpenAngleMin =   0 deg
  HalfOpenAngleMax = 180 deg
+

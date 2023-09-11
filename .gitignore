@@ -3,6 +3,7 @@
 *CMakeFiles*
 *.ninja*
 *.swp
+*.pcm
 Makefiles
 Makefile
 *.gitignore
@@ -11,6 +12,8 @@ CMakeCache.txt
 *.so
 *.gdml
 *.root
+*.root.log
+*.vscode*
 *.wrl
 *.pdf
 *.png
@@ -22,8 +25,16 @@ CMakeCache.txt
 install_manifest.txt
 .DS_store
 *Projects*
+Projects/MUSETT/Simu_Damien
+Projects/E805/E805
+Projects/E805/E843
+Projects/E805/elog
+Projects/E805/Scripts
+Projects/E805/Figures
+Projects/E805/CUT
 .last_*
 npanalysis
+npreader
 nponline
 nptool-cleaner
 nptool-installer

@@ -37,10 +37,11 @@ class TPISTAData : public TObject {
     // DE //
     vector<unsigned short> fPISTA_DE_DetectorNbr;
     vector<unsigned short> fPISTA_DE_StripNbr;
+    vector<double> fPISTA_DE_StripTime;
     vector<double> fPISTA_DE_StripEnergy;
     vector<double> fPISTA_DE_BackEnergy;
-    vector<double> fPISTA_DE_StripTime;
     vector<double> fPISTA_DE_BackTime;
+    vector<double> fPISTA_DE_BackDetector;
 
     // DE //
     vector<unsigned short> fPISTA_E_DetectorNbr;
@@ -49,6 +50,7 @@ class TPISTAData : public TObject {
     vector<double> fPISTA_E_BackEnergy;
     vector<double> fPISTA_E_StripTime;
     vector<double> fPISTA_E_BackTime;
+    vector<double> fPISTA_E_BackDetector;
 
 
   //////////////////////////////////////////////////////////////
@@ -88,6 +90,7 @@ class TPISTAData : public TObject {
     inline void SetPISTA_DE_BackEnergy(const Double_t& Energy){fPISTA_DE_BackEnergy.push_back(Energy);};//!
     inline void SetPISTA_DE_StripTime(const Double_t& Time){fPISTA_DE_StripTime.push_back(Time);};//!
     inline void SetPISTA_DE_BackTime(const Double_t& Time){fPISTA_DE_BackTime.push_back(Time);};//!
+    inline void SetPISTA_DE_BackDetector(const UShort_t& DetNbr){fPISTA_DE_BackDetector.push_back(DetNbr);};//!
 
     //////
     // E
@@ -105,12 +108,14 @@ class TPISTAData : public TObject {
     inline void SetPISTA_E_BackEnergy(const Double_t& Energy){fPISTA_E_BackEnergy.push_back(Energy);};//!
     inline void SetPISTA_E_StripTime(const Double_t& Time){fPISTA_E_StripTime.push_back(Time);};//!
     inline void SetPISTA_E_BackTime(const Double_t& Time){fPISTA_E_BackTime.push_back(Time);};//!
-
+    inline void SetPISTA_E_BackDetector(const UShort_t& DetNbr){fPISTA_E_BackDetector.push_back(DetNbr);};//!
 
     //////////////////////    GETTERS    ////////////////////////
     // DE
     inline UShort_t GetPISTADEMult() const
       {return fPISTA_DE_StripNbr.size();}
+    inline UShort_t GetPISTADEBackMult() const
+      {return fPISTA_DE_BackTime.size();}
     inline UShort_t GetPISTA_DE_DetectorNbr(const unsigned int &i) const 
       {return fPISTA_DE_DetectorNbr[i];}//!
     inline UShort_t GetPISTA_DE_StripNbr(const unsigned int &i) const 
@@ -122,12 +127,16 @@ class TPISTAData : public TObject {
     inline Double_t GetPISTA_DE_StripTime(const unsigned int &i) const 
       {return fPISTA_DE_StripTime[i];}//!      
     inline Double_t GetPISTA_DE_BackTime(const unsigned int &i) const 
-      {return fPISTA_DE_BackTime[i];}//!
+      {return fPISTA_DE_BackTime[i];}//! 
+    inline Double_t GetPISTA_DE_BackDetector(const unsigned int &i) const 
+      {return fPISTA_DE_BackDetector[i];}//!
          
     //////
     // E
     inline UShort_t GetPISTAEMult() const
       {return fPISTA_E_StripNbr.size();}
+    inline UShort_t GetPISTAEBackMult() const
+      {return fPISTA_E_BackTime.size();}
     inline UShort_t GetPISTA_E_DetectorNbr(const unsigned int &i) const 
       {return fPISTA_E_DetectorNbr[i];}//!
     inline UShort_t GetPISTA_E_StripNbr(const unsigned int &i) const 
@@ -140,6 +149,8 @@ class TPISTAData : public TObject {
       {return fPISTA_E_StripTime[i];}//!      
     inline Double_t GetPISTA_E_BackTime(const unsigned int &i) const 
       {return fPISTA_E_BackTime[i];}//!
+    inline Double_t GetPISTA_E_BackDetector(const unsigned int &i) const 
+      {return fPISTA_E_BackDetector[i];}//!
  
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

@@ -1,0 +1,18 @@
+CalibrationFilePath
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_X_MM1_E/Cal_Str_X_E_MM1.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_X_MM2_E/Cal_Str_X_E_MM2.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_X_MM3_E/Cal_Str_X_E_MM3.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_X_MM4_E/Cal_Str_X_E_MM4.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_Y_MM1_E/Cal_Str_Y_E_MM1.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_Y_MM2_E/Cal_Str_Y_E_MM2.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_Y_MM3_E/Cal_Str_Y_E_MM3.cal
+  calibration/Energy/Calibration/MUGAST_LISE23_run_19_Y_MM4_E/Cal_Str_Y_E_MM4.cal
+  calibration/Time/Coeff/Cal_Str_X_T_MM1_r0012.cal
+  calibration/Time/Coeff/Cal_Str_X_T_MM2_r0012.cal
+  calibration/Time/Coeff/Cal_Str_X_T_MM3_r0015.cal
+  calibration/Time/Coeff/Cal_Str_X_T_MM4_r0017.cal
+  calibration/Time/Coeff/Cal_Str_Y_T_MM1_r0013.cal
+  calibration/Time/Coeff/Cal_Str_Y_T_MM2_r0013.cal
+  calibration/Time/Coeff/Cal_Str_Y_T_MM3_r0016.cal
+  calibration/Time/Coeff/Cal_Str_Y_T_MM4_r0018.cal
+

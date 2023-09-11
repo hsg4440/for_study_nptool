@@ -1,24 +1,24 @@
 /*****************************************************************************
-	* Copyright (C) 2009-2022   this file is part of the NPTool Project       *
-	*                                                                           *
-	* For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
-	* For the list of contributors see $NPTOOL/Licence/Contributors             *
-	*****************************************************************************/
+ * Copyright (C) 2009-2022   this file is part of the NPTool Project       *
+ *                                                                           *
+ * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
+ * For the list of contributors see $NPTOOL/Licence/Contributors             *
+ *****************************************************************************/
 
 /*****************************************************************************
-	* Original Author: Pierre Morfouace  contact address: pierre.morfouace@cea.fr                        *
-	*                                                                           *
-	* Creation Date  : February 2022                                           *
-	* Last update    :                                                          *
-	*---------------------------------------------------------------------------*
-	* Decription:                                                               *
-	*  This class hold Vendeta Treated  data                               *
-	*                                                                           *
-	*---------------------------------------------------------------------------*
-	* Comment:                                                                  *
-	*                                                                           *   
-	*                                                                           *
-	*****************************************************************************/
+ * Original Author: Pierre Morfouace  contact address: pierre.morfouace@cea.fr                        *
+ *                                                                           *
+ * Creation Date  : February 2022                                           *
+ * Last update    :                                                          *
+ *---------------------------------------------------------------------------*
+ * Decription:                                                               *
+ *  This class hold Vendeta Treated  data                               *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ * Comment:                                                                  *
+ *                                                                           *   
+ *                                                                           *
+ *****************************************************************************/
 
 #include "TVendetaPhysics.h"
 
@@ -42,39 +42,39 @@ using namespace std;
 ClassImp(TVendetaPhysics)
 
 
-		///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 TVendetaPhysics::TVendetaPhysics()
-		: m_EventData(new TVendetaData),
-		m_PreTreatedData(new TVendetaData),
-		m_EventPhysics(this),
-		m_Spectra(0),
-		m_E_RAW_Threshold(0), // adc channels
-		m_E_Threshold(0),     // MeV
-		m_AnodeNumber(1),
-		m_NumberOfDetectors(0) {
-		}
+  : m_EventData(new TVendetaData),
+  m_PreTreatedData(new TVendetaData),
+  m_EventPhysics(this),
+  m_Spectra(0),
+  m_E_RAW_Threshold(0), // adc channels
+  m_E_Threshold(0),     // MeV
+  m_AnodeNumber(1),
+  m_NumberOfDetectors(0) {
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
 void TVendetaPhysics::AddDetector(TVector3 ){
-		// In That simple case nothing is done
-		// Typically for more complex detector one would calculate the relevant 
-		// positions (stripped silicon) or angles (gamma array)
-		m_NumberOfDetectors++;
+  // In That simple case nothing is done
+  // Typically for more complex detector one would calculate the relevant 
+  // positions (stripped silicon) or angles (gamma array)
+  m_NumberOfDetectors++;
 } 
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::AddDetector(double R, double Theta, double Phi){
-		// Compute the TVector3 corresponding
-		TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
-		// Call the cartesian method
-		AddDetector(Pos);
-		m_DetectorPosition.push_back(Pos);
+  // Compute the TVector3 corresponding
+  TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
+  // Call the cartesian method
+  AddDetector(Pos);
+  m_DetectorPosition.push_back(Pos);
 } 
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::BuildSimplePhysicalEvent() {
-		BuildPhysicalEvent();
+  BuildPhysicalEvent();
 }
 
 
@@ -82,90 +82,90 @@ void TVendetaPhysics::BuildSimplePhysicalEvent() {
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::BuildPhysicalEvent() {
 
-		// Treat Event, only if Fission Chamber has triggered
-		if(m_AnodeNumber==-1)
-				return;
+  // Treat Event, only if Fission Chamber has triggered
+  if(m_AnodeNumber==-1)
+    return;
 
-		// apply thresholds and calibration
-		//if(m_AnodeNumber==0)
-		//		return;
+  // apply thresholds and calibration
+  //if(m_AnodeNumber==0)
+  //		return;
 
-		PreTreat();
+  PreTreat();
 
-		// match energy and time together
-		unsigned int mysizeLGE = m_PreTreatedData->GetLGMultEnergy();
-		unsigned int mysizeHGE = m_PreTreatedData->GetHGMultEnergy();
+  // match energy and time together
+  unsigned int mysizeLGE = m_PreTreatedData->GetLGMultEnergy();
+  unsigned int mysizeHGE = m_PreTreatedData->GetHGMultEnergy();
 
 
-		for (UShort_t e = 0; e < mysizeLGE ; e++) {
+  for (UShort_t e = 0; e < mysizeLGE ; e++) {
 
-				LG_DetectorNumber.push_back(m_PreTreatedData->GetLGDetectorNbr(e));
-				LG_Q1.push_back(m_PreTreatedData->GetLGQ1(e));
-				LG_Q2.push_back(m_PreTreatedData->GetLGQ2(e));
-				LG_Time.push_back(m_PreTreatedData->GetLGTime(e));
-				LG_Qmax.push_back(m_PreTreatedData->GetLGQmax(e));
+    LG_DetectorNumber.push_back(m_PreTreatedData->GetLGDetectorNbr(e));
+    LG_Q1.push_back(m_PreTreatedData->GetLGQ1(e));
+    LG_Q2.push_back(m_PreTreatedData->GetLGQ2(e));
+    LG_Time.push_back(m_PreTreatedData->GetLGTime(e));
+    LG_Qmax.push_back(m_PreTreatedData->GetLGQmax(e));
 
-		}
+  }
 
-		for (UShort_t e = 0; e < mysizeHGE ; e++) {
-				HG_DetectorNumber.push_back(m_PreTreatedData->GetHGDetectorNbr(e));
-				HG_Q1.push_back(m_PreTreatedData->GetHGQ1(e));
-				HG_Q2.push_back(m_PreTreatedData->GetHGQ2(e));
-				HG_Time.push_back(m_PreTreatedData->GetHGTime(e));
-				HG_Qmax.push_back(m_PreTreatedData->GetHGQmax(e));
-		}
- 
-		m_AnodeNumber=-1; 
+  for (UShort_t e = 0; e < mysizeHGE ; e++) {
+    HG_DetectorNumber.push_back(m_PreTreatedData->GetHGDetectorNbr(e));
+    HG_Q1.push_back(m_PreTreatedData->GetHGQ1(e));
+    HG_Q2.push_back(m_PreTreatedData->GetHGQ2(e));
+    HG_Time.push_back(m_PreTreatedData->GetHGTime(e));
+    HG_Qmax.push_back(m_PreTreatedData->GetHGQmax(e));
+  }
+
+  m_AnodeNumber=-1; 
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::PreTreat() {
-		// This method typically applies thresholds and calibrations
-		// Might test for disabled channels for more complex detector
+  // This method typically applies thresholds and calibrations
+  // Might test for disabled channels for more complex detector
 
-		// clear pre-treated object
-		ClearPreTreatedData();
-		// instantiate CalibrationManager
-		static CalibrationManager* Cal = CalibrationManager::getInstance();
-		unsigned int mysizeLG = m_EventData->GetLGMultEnergy();
-		unsigned int mysizeHG = m_EventData->GetHGMultEnergy();
+  // clear pre-treated object
+  ClearPreTreatedData();
+  // instantiate CalibrationManager
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
+  unsigned int mysizeLG = m_EventData->GetLGMultEnergy();
+  unsigned int mysizeHG = m_EventData->GetHGMultEnergy();
 
-		// LG pretreat
-		for (UShort_t i = 0; i < mysizeLG ; ++i){
-				int det = m_EventData->GetLGDetectorNbr(i);
-				double Qmax = m_EventData->GetLGQmax(i);
-				double TimeOffset=0;
-				TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-        if(m_AnodeNumber==0){
-          // Apply calibration from Anode 6 in case of Pulser
-          TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(6)+"_TIMEOFFSET",0);
-        }
-        double Time = m_EventData->GetLGTime(i) + TimeOffset;
-        m_PreTreatedData->SetLGDetectorNbr(det);
-        m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
-        m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
-        m_PreTreatedData->SetLGTime(Time);
-        m_PreTreatedData->SetLGQmax(Qmax);
+  // LG pretreat
+  for (UShort_t i = 0; i < mysizeLG ; ++i){
+    int det = m_EventData->GetLGDetectorNbr(i);
+    double Qmax = m_EventData->GetLGQmax(i);
+    double TimeOffset=0;
+    TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+    if(m_AnodeNumber==0){
+      // Apply calibration from Anode 6 in case of Pulser
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(6)+"_TIMEOFFSET",0);
+    }
+    double Time = m_EventData->GetLGTime(i) + TimeOffset;
+    m_PreTreatedData->SetLGDetectorNbr(det);
+    m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
+    m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
+    m_PreTreatedData->SetLGTime(Time);
+    m_PreTreatedData->SetLGQmax(Qmax);
+  }
+
+  // HG pretreat
+  for (UShort_t i = 0; i < mysizeHG ; ++i){
+    int det = m_EventData->GetHGDetectorNbr(i);
+    double Qmax = m_EventData->GetHGQmax(i);
+    double TimeOffset=0;
+    TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+    if(m_AnodeNumber==0){
+      // Apply calibration from Anode 6 in case of Pulser
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(6)+"_TIMEOFFSET",0);
     }
 
-    // HG pretreat
-    for (UShort_t i = 0; i < mysizeHG ; ++i){
-      int det = m_EventData->GetHGDetectorNbr(i);
-      double Qmax = m_EventData->GetHGQmax(i);
-      double TimeOffset=0;
-      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-      if(m_AnodeNumber==0){
-        // Apply calibration from Anode 6 in case of Pulser
-        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(6)+"_TIMEOFFSET",0);
-      }
-
-      double Time = m_EventData->GetHGTime(i) + TimeOffset;
-      m_PreTreatedData->SetHGDetectorNbr(det);
-      m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
-      m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
-      m_PreTreatedData->SetHGTime(Time);
-      m_PreTreatedData->SetHGQmax(Qmax);
-    }
+    double Time = m_EventData->GetHGTime(i) + TimeOffset;
+    m_PreTreatedData->SetHGDetectorNbr(det);
+    m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
+    m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
+    m_PreTreatedData->SetHGTime(Time);
+    m_PreTreatedData->SetHGQmax(Qmax);
+  }
 
 }
 

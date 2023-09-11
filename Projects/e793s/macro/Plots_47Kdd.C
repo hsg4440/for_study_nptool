@@ -1,3 +1,4 @@
+string reactionName; /* defined by choice of dp or dt */
 #include "DefineColours.h"
 #include "GausFit.h"
 #include "KnownPeakFitter.h"

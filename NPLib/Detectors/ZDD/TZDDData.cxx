@@ -44,29 +44,17 @@ TZDDData::~TZDDData() {
 
 //////////////////////////////////////////////////////////////////////
 void TZDDData::Clear() {
-  // Drift_Chambers
-  fZDD_Drift_DetectorNbr.clear();
-  fZDD_DriftTime.clear();
-  // Energy
-  fZDD_E_DetectorNbr.clear();
-  fZDD_Energy.clear();
-  // Time
-  fZDD_T_DetectorNbr.clear();
-  fZDD_Time.clear();
-
-  // IC Energy
-  fZDD_E_IC_Nbr.clear();
-  fZDD_IC_Energy.clear();
-  // IC Time
-  fZDD_T_IC_Nbr.clear();
-  fZDD_IC_Time.clear();
-  
-  // Plastic Energy
-  fZDD_E_Plastic_Nbr.clear();
-  fZDD_Plastic_Energy.clear();
-  // Plastic Time
-  fZDD_T_Plastic_Nbr.clear();
-  fZDD_Plastic_Time.clear();
+    fZDD_IC_E.clear();
+    fZDD_IC_N.clear();
+    fZDD_IC_TS.clear();
+    fZDD_PM_E.clear();
+    fZDD_PM_N.clear();
+    fZDD_PM_TS.clear();
+    fZDD_DC_N.clear();
+    fZDD_DC_TS.clear();
+    fZDD_EXO_E.clear();
+    fZDD_EXO_N.clear();
+    fZDD_EXO_TS.clear();
 }
 
 
@@ -76,21 +64,20 @@ void TZDDData::Dump() const {
   // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TZDDData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  // Energy
-  size_t mysize = fZDD_E_DetectorNbr.size();
-  cout << "ZDD_E_Mult: " << mysize << endl;
- 
-  for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fZDD_E_DetectorNbr[i]
-         << " Energy: " << fZDD_Energy[i];
+  cout << "ZDD_ICE Mult: " << fZDD_IC_E.size() << endl;
+  for (size_t i = 0 ; i < fZDD_IC_E.size(); i++){
+    cout << "DetNbr: " << fZDD_IC_N[i] << " Energy: " << fZDD_IC_E[i] << " TimeStamp: " << fZDD_IC_TS[i] << endl;
   }
-  
-  // Time
-  mysize = fZDD_T_DetectorNbr.size();
-  cout << "ZDD_T_Mult: " << mysize << endl;
- 
-  for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fZDD_T_DetectorNbr[i]
-         << " Time: " << fZDD_Time[i];
+  cout << "ZDD_PME Mult: " << fZDD_PM_E.size() << endl;
+  for (size_t i = 0 ; i < fZDD_PM_E.size(); i++){
+    cout << "DetNbr: " << fZDD_PM_N[i] << " Energy: " << fZDD_PM_E[i] << " TimeStamp: " << fZDD_PM_TS[i] << endl;
   }
+  cout << "ZDD_DCE Mult: " << fZDD_DC_E.size() << endl;
+  for (size_t i = 0 ; i < fZDD_DC_E.size(); i++){
+    cout << "DetNbr: " << fZDD_DC_N[i] << " Energy: " << fZDD_DC_E[i] << " TimeStamp: " << fZDD_DC_TS[i] << endl;
+  }
+  cout << "ZDD_EXOE Mult: " << fZDD_EXO_E.size() << endl;
+  for (size_t i = 0 ; i < fZDD_EXO_E.size(); i++){
+    cout << "DetNbr: " << fZDD_EXO_N[i] << " Energy: " << fZDD_EXO_E[i] << " TimeStamp: " << fZDD_EXO_TS[i] << endl;
+  }  
 }

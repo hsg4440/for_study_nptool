@@ -24,10 +24,12 @@
 
 
 #include"NPVDetector.h"
+#include"NPVTreeReader.h"
 #include<map>
 #include<string>
 
 typedef NPL::VDetector* (*ClassDetectorFactoryFn)();
+typedef NPL::VTreeReader* (*ClassDetectorReaderFactoryFn)();
 
 namespace NPL{
 class DetectorFactory{
@@ -38,14 +40,17 @@ class DetectorFactory{
   public:
       static DetectorFactory* getInstance();
       NPL::VDetector* Construct(std::string Token);
+      NPL::VTreeReader* ConstructReader(std::string Token);
       void ReadClassList(std::string FileList);
       void AddToken(std::string Token, std::string LibName);
       void AddDetector(std::string Token, ClassDetectorFactoryFn fn);
+      void AddDetectorReader(std::string Token, ClassDetectorReaderFactoryFn fn);
       void CreateClassList(std::string FileName);
   private:
       static DetectorFactory* m_Instance;
       // Map that Match the Token with Constructor, once the lib is loaded
       std::map<std::string,ClassDetectorFactoryFn> m_Construct;
+      std::map<std::string,ClassDetectorReaderFactoryFn> m_ConstructReader;
       // Map that Match the Token with the Lib to be loaded
       std::map<std::string,std::string> m_TokenLib;
       std::string m_SharedLibExtension;

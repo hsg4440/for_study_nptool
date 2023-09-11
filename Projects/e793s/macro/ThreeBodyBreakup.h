@@ -9,7 +9,8 @@ Double_t f_semi(Double_t *x, Double_t *par){
 }
 
 void ThreeBodyBreakup(){
-  TFile *fweight = new TFile("../../../Outputs/Simulation/EventWeight_25Feb.root");
+  //TFile *fweight = new TFile("../../../Outputs/Simulation/EventWeight_25Feb.root");
+  TFile *fweight = new TFile("./EventWeight_25Feb.root");
   TCanvas *cweight = (TCanvas*)fweight->Get("c1");
   TH1F  *hweight = (TH1F*)cweight->GetPrimitive("hEventWeight");
 //  hweight->Draw();

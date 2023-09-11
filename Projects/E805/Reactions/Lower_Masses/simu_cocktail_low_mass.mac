@@ -1,0 +1,7 @@
+/run/beamOn 10000
+/gen/open Reactions/Lower_Masses/34Si_p3He_test_ideal.reaction
+/run/beamOn 10000 
+/gen/open Reactions/Lower_Masses/35P_p3He_test_ideal.reaction
+/run/beamOn 10000 
+/gen/open Reactions/Lower_Masses/36S_p3He_test_ideal.reaction
+/run/beamOn 10000 

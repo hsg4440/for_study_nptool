@@ -1,0 +1,87 @@
+\documentclass[a4paper,6pt]{article}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\topmargin = 0pt
+\headsep = 0pt
+\begin{document}
+\title{MUST2 DSSD Energy Calibration Report}
+\date{}
+\maketitle
+\section{Calibration Summary}
+\begin{itemize}
+	 \item[{\bf Experiment:}] MUGAST@LISE23
+	 \item[{\bf Operator:}] Valerian and Hugo
+	 \item[{\bf App. Date:}] 16/02/23
+	 \item[{\bf Source:}] 3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm
+	 \item[{\bf Dead Layer:}] Al 0.3$\mu$m + Si 0$\mu$m
+	 \item[{\bf Comment:}] MUST2
+	 \item[] 
+	 \item[{\bf Calibration Method:}]  ZeroExtrapolation 
+	 \item[{\bf Telescope Treated:}]  1
+	 \item[{\bf Strip Treated:}]  1 to 128 
+	 \item[{\bf DSSD Side:}]  Y
+\end{itemize}
+\begin{itemize}
+	 \item[] 
+	 \item[] 
+\end{itemize}
+{\bf Source Description:} 
+\begin{center}
+\begin{tabular}{ | c | c | c | } 
+\hline 
+Isotope & Original Energy (MeV) & Branching Ratio \\ \hline 
+$^{239}$Pu & 5.15659 & 70.77 \\ \hline
+$^{239}$Pu & 5.14438 & 17.11 \\ \hline
+$^{239}$Pu & 5.1055 & 11.94 \\ \hline
+$^{241}$Am & 5.48556 & 84.8 \\ \hline
+$^{241}$Am & 5.4428 & 13.1 \\ \hline
+$^{241}$Am & 5.388 & 1.66 \\ \hline
+$^{244}$Cm & 5.80477 & 76.4 \\ \hline
+$^{244}$Cm & 5.76264 & 23.6 \\ \hline
+\end{tabular} 
+\end{center}
+\pagebreak
+\section{Telescope 1 }
+ Bad Strip:
+\begin{center}
+\begin{tabular}{ | c | c | } 
+\hline 
+ Strip Number & Problem \\ \hline 
+17 &  zero extrapolation too high:-384.512channels;  \\ \hline 
+20 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+21 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+22 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+23 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+24 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+25 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+26 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+27 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+28 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+29 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+30 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+31 &  zero extrapolation too high:-383.784channels;  \\ \hline 
+38 &  1 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+39 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+40 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+41 &  2 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+42 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+43 &  zero extrapolation too high:-754.708channels;  \\ \hline 
+48 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+85 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+100 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+128 &  0 peak(s) found; zero extrapolation too high:8181.16channels;  \\ \hline 
+\end{tabular} 
+\end{center}
+\begin{figure}[htcb!]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{./Calibration/MUGAST@LISE23_run_7_pedestals_Y_MM1_E/latex/pictures/Telescope1Summary.pdf}
+\end{center}
+\end{figure}
+\pagebreak
+Sigma fit centroid: 2.72913
+
+Sigma fit sigma: 0.141622
+
+\end{document}

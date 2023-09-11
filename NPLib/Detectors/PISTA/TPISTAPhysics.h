@@ -66,16 +66,26 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
   // output ROOT file
   public:
     Int_t EventMultiplicity;
+    Int_t m_E_NoMatching;
+    Int_t m_DE_NoMatching;
+    Int_t m_DE_E_NoMatching;
     vector<int>     DetectorNumber;
     vector<double>  E;
     vector<double>  DE;
-    vector<int>     DE_Strip;
-    vector<int>     E_Strip;
-    vector<double>  Time;
+    vector<double>  back_DE;
+    vector<double>  back_E;
+    vector<int>     DE_StripNbr;
+    vector<int>     E_StripNbr;
+    vector<double>  DE_Time;
+    vector<double>  back_DE_Time;
+    vector<double>  E_Time;
+    vector<double>  back_E_Time;
 
     vector<double> PosX;
     vector<double> PosY;
     vector<double> PosZ;
+    vector<int> mult_DE;
+    vector<int> mult_E;
 
   
   //////////////////////////////////////////////////////////////
@@ -149,7 +159,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
 
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
+  
+    void InitializeStandardParameter();
 
+    bool IsValidChannel(const int& DetectorType, const int& telescope, const int& channel);
     // give and external TPISTAData object to TPISTAPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TPISTAData* rawDataPointer) {m_EventData = rawDataPointer;}
@@ -168,7 +181,7 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     };
 
 
-    TVector3 GetPositionOfInteraction(const int i);
+    TVector3 GetPositionOfInteraction(int DetectorNumber, int StripE, int StripDE);
     TVector3 GetDetectorNormal(const int i);
     
   // objects are not written in the TTree
@@ -184,7 +197,13 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
 
   // parameters used in the analysis
   private:
+    // Map to activate/deactivate strips
+    map<int, vector<bool>> m_DEChannelStatus; //!
+    map<int, vector<bool>> m_EChannelStatus; //!
+
     int m_NumberOfDetectors; //!
+    int m_NumberOfStripsX; //!
+    int m_NumberOfStripsY; //!
     vector<TVector3> m_A; //!
     vector<TVector3> m_B; //!
     vector<TVector3> m_C; //!

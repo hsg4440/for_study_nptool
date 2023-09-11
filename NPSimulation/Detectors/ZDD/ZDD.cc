@@ -631,8 +631,9 @@ void ZDD::ReadSensitive(const G4Event* ){
       if (Energy > ZDD_NS::EnergyThreshold_IC) {
           G4double Time = RandGauss::shoot(Scorer_IC->GetTime(i), ZDD_NS::ResoTime_IC);
           int      DetectorNbr = level[0];
-          m_Event->Set_IC_Energy(DetectorNbr, Energy);
-          m_Event->Set_IC_Time(DetectorNbr, Time);
+          //FIXME
+          //m_Event->Set_IC_Energy(DetectorNbr, Energy);
+          //m_Event->Set_IC_Time(DetectorNbr, Time);
       }
   }
   
@@ -647,8 +648,9 @@ void ZDD::ReadSensitive(const G4Event* ){
       if (Energy > ZDD_NS::EnergyThreshold_Plastic) {
           G4double Time = RandGauss::shoot(Scorer_Plastic->GetTime(i), ZDD_NS::ResoTime_Plastic);
           int      DetectorNbr = level[0];
-          m_Event->Set_Plastic_Energy(DetectorNbr, Energy);
-          m_Event->Set_Plastic_Time(DetectorNbr, Time);
+          //FIXME
+          //m_Event->Set_Plastic_Energy(DetectorNbr, Energy);
+          //m_Event->Set_Plastic_Time(DetectorNbr, Time);
       }
   }
 
@@ -675,7 +677,8 @@ void ZDD::ReadSensitive(const G4Event* ){
       G4double               DriftTime 
           = RandGauss::shoot(Scorer_DC_1->GetDriftTime(i)/Scorer_DC_1->GetCounter(i), ZDD_NS::ResoDriftTime);
       int DetectorNbr = level[0];
-      m_Event->Set_DC_Time(DetectorNbr, DriftTime);
+      //FIXME
+      //m_Event->Set_DC_Time(DetectorNbr, DriftTime);
   }
   
   DriftChamberScorers::PS_DriftChamber* Scorer_DC_2
@@ -686,7 +689,8 @@ void ZDD::ReadSensitive(const G4Event* ){
       G4double               DriftTime 
           = RandGauss::shoot(Scorer_DC_2->GetDriftTime(i)/Scorer_DC_2->GetCounter(i), ZDD_NS::ResoDriftTime);
       int DetectorNbr = level[0];
-      m_Event->Set_DC_Time(DetectorNbr, DriftTime);
+      //FIXME
+      //m_Event->Set_DC_Time(DetectorNbr, DriftTime);
   }
 }
 

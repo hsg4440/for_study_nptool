@@ -26,3 +26,4 @@ TwoBodyReaction
  CrossSectionPath= flat.txt CSR
  ShootLight= 1
  ShootHeavy= 0
+

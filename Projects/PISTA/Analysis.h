@@ -63,6 +63,7 @@ class Analysis: public NPL::VAnalysis{
     double DeltaE;
     double Eres;
     double ThetaLab;
+    double PhiLab;
     double ThetaCM;
     double OptimumEx;
     double Ex;
@@ -76,6 +77,7 @@ class Analysis: public NPL::VAnalysis{
     double TargetThickness;
 
     NPL::EnergyLoss Be10C;
+    NPL::EnergyLoss C12C;
     NPL::EnergyLoss U238C;
 
   private:

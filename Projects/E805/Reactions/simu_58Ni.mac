@@ -1,0 +1,5 @@
+/run/beamOn 100000
+/gen/open Reactions/58Ni_pd_f72.reaction
+/run/beamOn 33000
+/gen/open Reactions/58Ni_pd_f52.reaction
+/run/beamOn 7000

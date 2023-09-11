@@ -618,10 +618,11 @@ void Exogam::ReadSensitive(const G4Event*) {
       double Time = Scorer->GetTime(i);
       int CristalNbr = Scorer->GetLevel(i)[0];
       int CloverNbr = Scorer->GetLevel(i)[1];
-      m_Event->SetCristal(CristalNbr);
-      m_Event->SetClover(CloverNbr);
-      m_Event->SetEnergy(Energy);
-      m_Event->SetTime(Time);
+      //FIXME
+      //m_Event->SetCristal(CristalNbr);
+      //m_Event->SetClover(CloverNbr);
+      //m_Event->SetEnergy(Energy);
+      //m_Event->SetTime(Time);
     }
   }
 }

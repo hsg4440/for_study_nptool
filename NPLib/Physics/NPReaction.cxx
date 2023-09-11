@@ -173,8 +173,10 @@ Reaction::~Reaction() {}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 bool Reaction::CheckKinematic() {
   double theta = fThetaCM;
-  if (m1 > m2)
+  /*if (m1 > m2){
     theta = M_PI - fThetaCM;
+    fThetaCM = M_PI - fThetaCM;
+  }*/
   fEnergyImpulsionCM_3 = TLorentzVector(pCM_3 * sin(theta), 0, pCM_3 * cos(theta), ECM_3);
   fEnergyImpulsionCM_4 = fTotalEnergyImpulsionCM - fEnergyImpulsionCM_3;
 
@@ -259,8 +261,10 @@ void Reaction::KineRelativistic(double& ThetaLab3, double& KineticEnergyLab3, do
   // case of inverse kinematics
 
   double theta = fThetaCM;
-  if (m1 > m2)
+  /*if (m1 > m2){
     theta = M_PI - fThetaCM;
+    //fThetaCM = M_PI - fThetaCM;
+  }*/
   fEnergyImpulsionCM_3 = TLorentzVector(pCM_3 * sin(theta), 0, pCM_3 * cos(theta), ECM_3);
   fEnergyImpulsionCM_4 = fTotalEnergyImpulsionCM - fEnergyImpulsionCM_3;
 
@@ -646,7 +650,7 @@ TGraph* Reaction::GetKinematicLine3(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle3.SetKineticEnergy(E3);
@@ -668,7 +672,7 @@ TGraph* Reaction::GetKinematicLine4(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle4.SetKineticEnergy(E4);
@@ -689,7 +693,7 @@ TGraph* Reaction::GetTheta3VsTheta4(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
@@ -708,7 +712,7 @@ TGraph* Reaction::GetBrhoLine3(double AngleStep_CM) {
   double theta3, E3, theta4, E4;
   double Brho;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle3.SetKineticEnergy(E3);
@@ -728,7 +732,7 @@ TGraph* Reaction::GetThetaLabVersusThetaCM(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
@@ -740,13 +744,53 @@ TGraph* Reaction::GetThetaLabVersusThetaCM(double AngleStep_CM) {
   return (fAngleLine);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
+TGraph* Reaction::GetJacobian(double AngleStep_CM){
+  vector<double> vx;
+  vector<double> vy;
+  double theta3, E3, theta4, E4;
+
+  double E3_CM = GetE_CM_3();
+  double P3_CM = GetP_CM_3();
+  double B = P3_CM/E3_CM;
+  double Mass1 = fParticle1.Mass();
+  double Mass2 = fParticle2.Mass();
+  double BeamEnergy = GetBeamEnergy();
+  double beta = sqrt(BeamEnergy*BeamEnergy+2*Mass1*BeamEnergy)/(BeamEnergy+Mass1+Mass2);
+  double r = beta/B;
+  double gamma = 1./sqrt(1-beta*beta);
+
+  double Jacobian_num;
+  double Jacobian_denum;
+  double Jacobian;
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+    SetThetaCM(angle * deg);
+    KineRelativistic(theta3, E3, theta4, E4);
+
+    Jacobian_num = abs(gamma*(1.+r*cos(fThetaCM)));
+
+    Jacobian_denum = pow(gamma,2)*pow(r+cos(fThetaCM),2) + pow(sin(fThetaCM),2);
+    Jacobian_denum = pow(Jacobian_denum,3./2.);
+
+    Jacobian = Jacobian_num / Jacobian_denum;
+
+    vx.push_back(fThetaCM / deg);
+    vy.push_back(Jacobian);
+  }
+
+  TGraph* gJaco = new TGraph(vx.size(), &vx[0], &vy[0]);
+
+  return gJaco;
+ 
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
 TGraph* Reaction::GetELabVersusThetaCM(double AngleStep_CM) {
 
   vector<double> vx;
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 360; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 

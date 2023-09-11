@@ -250,7 +250,7 @@ void TCATSSpectra::FillPreTreatedSpectra(TCATSData* PreTreatedData){
 
 ////////////////////////////////////////////////////////////////////////////////
 void TCATSSpectra::FillPhysicsSpectra(TCATSPhysics* Physics){
-  string name,family;
+  /*string name,family;
   // CATS_STRX_Q_CAL
   for (unsigned int i = 0; i < Physics->DetNumberX.size() ; ++i) {   // loop on vector
     family="CATS/PHY/QSUM";
@@ -328,5 +328,6 @@ void TCATSSpectra::FillPhysicsSpectra(TCATSPhysics* Physics){
 
     }
   }
+  */
 }
 

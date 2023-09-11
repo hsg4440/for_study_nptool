@@ -64,13 +64,13 @@ namespace PISTA_NS{
   const double E_ResoEnergy  = 0.018*MeV ;
 
   // Trapezoid dimension
-  const double TrapezoidBaseLarge = 78.1*mm;
-  const double TrapezoidBaseSmall = 43.3*mm;
-  const double TrapezoidHeight = 61.7*mm;
+  const double TrapezoidBaseLarge = 72.3*mm;
+  const double TrapezoidBaseSmall = 41.0*mm;
+  const double TrapezoidHeight = 57.7*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
-  const double DistanceBetweenSi = 7*mm;
+  const double DistanceBetweenSi = 4*mm;
   const double FirstStageNbrOfStrips = 91;
   const double SecondStageNbrOfStrips = 57;
 }
@@ -325,8 +325,9 @@ void PISTA::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
-      int StripFront = FirstStageScorer->GetStripWidth(i);
+      int StripFront = 92-FirstStageScorer->GetStripWidth(i);
       m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
+      m_Event->SetPISTA_DE_BackDetector(DetNbr);
     }
   }
   FirstStageScorer->clear();
@@ -343,6 +344,7 @@ void PISTA::ReadSensitive(const G4Event* ){
       int DetNbr  = SecondStageScorer->GetDetectorLength(i);
       int StripFront = SecondStageScorer->GetStripLength(i);
       m_Event->SetPISTA_E(DetNbr, StripFront, Energy, Energy, Time, Time);
+      m_Event->SetPISTA_E_BackDetector(DetNbr);
     }
   }
   SecondStageScorer->clear();

@@ -23,6 +23,7 @@
  *****************************************************************************/
 
 #include"NPDetectorManager.h"
+#include"TTreeReader.h"
 namespace NPL{
   class VAnalysis{
     public:
@@ -31,10 +32,15 @@ namespace NPL{
 
     public: 
       virtual void TreatEvent(){};
+      virtual bool UnallocateBeforeBuild(){return true;};
+      virtual bool UnallocateBeforeTreat(){return true;};
+      virtual bool FillOutputCondition(){return true;};
       virtual void Init(){};
+      virtual void InitTreeReader(TTreeReader* TreeReader){};
       virtual void End(){};
-      void SetDetectorManager(NPL::DetectorManager* det ) {m_DetectorManager=det;}
-    
+      void SetDetectorManager(NPL::DetectorManager* det ) {m_DetectorManager=det;};
+      //virtual TObject RawDataData(){}; 
+
     protected:
       NPL::DetectorManager* m_DetectorManager;
   };

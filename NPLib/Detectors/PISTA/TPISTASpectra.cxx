@@ -150,7 +150,7 @@ void TPISTASpectra::FillPhysicsSpectra(TPISTAPhysics* Physics) {
   unsigned int sizeE = Physics->E.size();
   for(unsigned int i = 0 ; i < sizeE ; i++){
     name = "PISTA_ENERGY_TIME";
-    FillSpectra(family,name,Physics->E[i],Physics->Time[i]);
+    FillSpectra(family,name,Physics->E[i],Physics->back_E_Time[i]);
   }
 }
 
