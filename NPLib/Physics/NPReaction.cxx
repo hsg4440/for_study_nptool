@@ -650,7 +650,7 @@ TGraph* Reaction::GetKinematicLine3(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle3.SetKineticEnergy(E3);
@@ -672,7 +672,7 @@ TGraph* Reaction::GetKinematicLine4(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle4.SetKineticEnergy(E4);
@@ -693,7 +693,7 @@ TGraph* Reaction::GetTheta3VsTheta4(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
@@ -712,7 +712,7 @@ TGraph* Reaction::GetBrhoLine3(double AngleStep_CM) {
   double theta3, E3, theta4, E4;
   double Brho;
 
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
     fParticle3.SetKineticEnergy(E3);
@@ -732,7 +732,7 @@ TGraph* Reaction::GetThetaLabVersusThetaCM(double AngleStep_CM) {
   vector<double> vy;
   double theta3, E3, theta4, E4;
 
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
@@ -762,7 +762,7 @@ TGraph* Reaction::GetJacobian(double AngleStep_CM){
   double Jacobian_num;
   double Jacobian_denum;
   double Jacobian;
-  for (double angle = 0; angle < 180; angle += AngleStep_CM) {
+  for (double angle = 0; angle < 181; angle += AngleStep_CM) {
     SetThetaCM(angle * deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
