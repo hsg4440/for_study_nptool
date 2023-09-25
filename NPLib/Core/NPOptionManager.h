@@ -73,6 +73,7 @@ class NPOptionManager{
       void CheckArguments();
       void CheckEventGenerator();
       void CheckDetectorConfiguration();
+      void CheckDoCalibrationConfiguration();
       void CheckG4Macro();
       void CreateRunToTreatFile(std::string file, std::string tree );
    public:
@@ -94,6 +95,7 @@ class NPOptionManager{
       std::string GetDetectorFile()             {return fDetectorFileName;}
       std::string GetRunToReadFile()            {return fRunToReadFileName;}
       std::string GetCalibrationFile()          {return fCalibrationFileName;}
+      std::string GetDoCalibrationFile()        {return fDoCalibrationFileName;}
       std::string GetOutputFile()               {return fOutputFileName;}
       std::string GetOutputTreeName()           {return fOutputTreeName;}
       std::string GetG4MacroPath()              {return fG4MacroPath;}     
@@ -126,6 +128,7 @@ class NPOptionManager{
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
+      void SetDoCalibrationFile(const std::string& name)  {fDoCalibrationFileName = name;CheckDoCalibrationConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
       void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
@@ -142,6 +145,7 @@ class NPOptionManager{
       std::string fDefaultDetectorFileName;
       std::string fDefaultRunToReadFileName;
       std::string fDefaultCalibrationFileName;
+      std::string fDefaultDoCalibrationFileName;
       std::string fDefaultOutputFileName;
       std::string fDefaultOutputTreeName;
       std::string fDefaultG4MacroPath;
@@ -151,6 +155,7 @@ class NPOptionManager{
       std::string fDetectorFileName;
       std::string fRunToReadFileName;
       std::string fCalibrationFileName;
+      std::string fDoCalibrationFileName;
       std::string fOutputFileName;
       std::string fOutputTreeName;
       bool   fIsSplit; // One tree per detector

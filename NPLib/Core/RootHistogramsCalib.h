@@ -30,6 +30,7 @@
 #include "TAsciiFile.h"
 
 // ROOT headers
+#include "TGraphErrors.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
@@ -73,6 +74,7 @@ public:
   TFile*      GetFile(std::string name="global") ; 
   std::map<TString,std::map<TString,TH1F*>>*  GetTH1Map(){return TH1Map;}; 
   std::map<TString,std::map<TString,TH2F*>>*  GetTH2Map(){return TH2Map;}; 
+  std::map<TString,std::map<TString,TGraphErrors*>>*  GetTGraphMap(){return TGraphMap;}; 
   void        Fill();
   
 private:
@@ -82,6 +84,7 @@ private:
   TFile* pRootFile = nullptr;
   std::map<TString,std::map<TString,TH1F*>>* TH1Map = new std::map<TString,std::map<TString,TH1F*>>;
   std::map<TString,std::map<TString,TH2F*>>* TH2Map = new std::map<TString,std::map<TString,TH2F*>>;
+  std::map<TString,std::map<TString,TGraphErrors*>>* TGraphMap = new std::map<TString,std::map<TString,TGraphErrors*>>;
 };
 
 #endif // ROOTHISTOCALIB_HH

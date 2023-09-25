@@ -123,7 +123,7 @@ NPL::VTreeReader* NPL::DetectorFactory::ConstructReader(std::string Token) {
     if (m_ConstructReader.find(Token) != m_ConstructReader.end())
       return m_ConstructReader[Token]();
     else {
-      std::cout << "Warning: Detector with Token " << Token << " has no Constructor or no Library" << std::endl;
+      std::cout << "Warning: Detector with Token (constructReader) " << Token << " has no Constructor or no Library" << std::endl;
       if (LibError) {
         std::cout << "Library loading failes with error: " << std::endl;
         std::cout << LibError << std::endl << std::endl;

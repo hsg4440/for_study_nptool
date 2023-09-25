@@ -54,12 +54,14 @@ namespace NPL{
 
     public:
       void        ReadConfigurationFile(std::string Path);
+      void        ReadDoCalibrationFile(std::string Path);
       void        BuildPhysicalEvent();
       void        InitializeRootInput();
       void        InitializeRootOutput();
       void        InitializeRootHistogramsCalib();
       void        FillHistogramsCalib();
       void        WriteHistogramsCalib();
+      void        DoCalibration();
       void        SetTreeReader(TTreeReader* TreeReader);
       void        AddDetector(std::string,VDetector*);
       void        AddDetectorReader(std::string,VTreeReader*);
@@ -104,6 +106,7 @@ namespace NPL{
       VDetector_FuncPtr m_InitializeRootHistogramsCalibPtr;
       VDetector_FuncPtr m_FillHistogramsCalibPtr;
       VDetector_FuncPtr m_WriteHistogramsCalibPtr;
+      VDetector_FuncPtr m_DoCalibrationPtr;
       VDetector_SetReader m_SetTreeReaderPtr;
       VDetector_FuncPtr m_FillSpectra;
       VDetector_FuncPtr m_CheckSpectra;

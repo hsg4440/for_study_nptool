@@ -25,6 +25,7 @@
 // STL
 #include <map>
 #include <vector>
+#include <stdlib.h>
 // NPL
 #include "NPCalibrationManager.h"
 #include "NPInputParser.h"
@@ -35,6 +36,7 @@
 #include "TMust2PhysicsReader.h"
 #include "NPDetectorFactory.h"
 // ROOT
+#include "TGraphErrors.h"
 #include "TH1.h"
 #include "TObject.h"
 #include "TVector2.h"
@@ -104,6 +106,8 @@ public: //   Innherited from VDetector Class
   //   Read stream at ConfigFile to pick-up parameters of detector
   //   (Position,...) using Token
   void ReadConfiguration(NPL::InputParser parser); 
+  
+  void ReadDoCalibration(NPL::InputParser parser); 
 
   //   Add Parameter to the CalibrationManger
   void AddParameterToCalibrationManager();
@@ -123,6 +127,60 @@ public: //   Innherited from VDetector Class
   //   Create associated branches and associated private member DetectorPhysics
   //   address
   void InitializeRootOutput();
+
+  void DoCalibrationCSIPreTreat();
+
+  void InitializeRootHistogramsCalib();//!
+  
+  void InitializeRootHistogramsEnergyF(Int_t DetectorNumber);//!
+  
+  void InitializeRootHistogramsTimeF(Int_t DetectorNumber){};//!
+  
+  void InitializeRootHistogramsCSIF(Int_t DetectorNumber);//!
+
+  void FillHistogramsCalib();//!
+  
+  void FillHistogramsCalibEnergyF();//!
+  
+  void FillHistogramsCalibTimeF(){};//!
+  
+  void FillHistogramsCalibCSIF();//!
+
+  void DoCalibration();//!
+  
+  void DoCalibrationEnergyF(Int_t DetectorNumber);//!
+ 
+  void DoCalibrationTimeF(Int_t DetectorNumber);//!
+  
+  void DoCalibrationCsIF(Int_t DetectorNumber);//!
+
+  void MakeCalibFolders();//!
+
+  void CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream *calib_file, ofstream *dispersion_file);//!
+  
+  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file);//!
+  
+  void CloseCalibrationCSIFiles(ofstream *calib_file){};//!
+  
+  void CloseCalibrationEnergyFiles(ofstream *calib_file, ofstream *dispersion_file);//!
+
+  bool FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber);//!
+
+  void FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb,unsigned int DetectorNumber, double* a, double* b);//!
+  
+  void WriteHistogramsCalib();//!
+  
+  void WriteHistogramsEnergyF();//!
+  
+  void WriteHistogramsCSIF();//!
+  
+  void WriteHistogramsTimeF(){};//!
+
+  static Double_t source_Pu(Double_t *x, Double_t *par);//!
+  static Double_t source_Am(Double_t *x, Double_t *par);//!
+  static Double_t source_Cm(Double_t *x, Double_t *par);//!
+
+  void DefineCalibrationSource();//!
 
   //   This method is called at each event read from the Input Tree. Aime is to
   //   build treat Raw dat in order to extract physical parameter.
@@ -315,6 +373,35 @@ public:
 private:
   map<int, bool> m_CsIPresent; //!
   map<int, bool> m_SiLiPresent; //!
+
+private:
+  map<int,bool> DoCalibrationEnergy;//!
+  map<int,bool> DoCalibrationTime;//!
+  map<int,bool> DoCalibrationCsI;//!
+  bool IsCalibCSI = false;//!
+  bool IsCalibEnergy = false;//!
+  std::map<TString,std::map<unsigned int,unsigned int>> BadStrip;//!
+  std::vector<double> AlphaSigma;//!
+  std::vector<double> AlphaMean;//!
+  std::vector<TString> Source_isotope;//!
+  std::vector<double> Source_E;//!
+  std::vector<double> Source_Sig;//!
+  std::vector<double> Source_branching_ratio;//!
+  // ofstream peaks_file, calib_file, dispersion_file , calib_online_file, latex_file;//! 
+
+
+  ///////// Calib parameters for Si detectors 
+  map<int,double> EnergyXThreshold;//!
+  map<int,double> EnergyYThreshold;//!
+  map<int,std::string> AlphaFitType;//!
+
+  ///////// Calib parameters for CsI detectors
+  map<int,double> CSIEnergyXThreshold;//!
+  map<int,double> CSIEnergyYThreshold;//!
+  map<int,double> CSIEThreshold;//!
+  TTreeReaderValue<unsigned short>* GATCONFMASTER_;//!
+  // map<int,std::string> CalibFile;//!
+
 
 private: // Spectra Class
   TMust2Spectra* m_Spectra; //!

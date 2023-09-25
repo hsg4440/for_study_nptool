@@ -67,8 +67,12 @@ RootHistogramsCalib::RootHistogramsCalib(std::string fileNameBase){
     pBaseName = NPOptionManager::getInstance()->GetCalibrationOutputPath();
   else
     pBaseName="./";
+  
+  if(fileNameBase.at(0)!='/' && pBaseName.at(pBaseName.length() - 1)!='/')
+    pBaseName += "/"+fileNameBase;
+  else
+    pBaseName+=fileNameBase;
 
-  pBaseName += "/"+fileNameBase;
 
   if (fileNameBase.find("root")==std::string::npos) 
     pBaseName += ".root";
