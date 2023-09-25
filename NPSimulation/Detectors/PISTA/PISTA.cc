@@ -69,7 +69,7 @@ namespace PISTA_NS{
   const double TrapezoidHeight = 57.7*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
-  const double SecondStageThickness = 1*mm;
+  const double SecondStageThickness = 1.0*mm;
   const double DistanceBetweenSi = 4*mm;
   const double FirstStageNbrOfStrips = 91;
   const double SecondStageNbrOfStrips = 57;
@@ -319,34 +319,89 @@ void PISTA::ReadSensitive(const G4Event* ){
   // DE
   DSSDScorers::PS_Rectangle* FirstStageScorer= (DSSDScorers::PS_Rectangle*) m_FirstStageScorer->GetPrimitive(0);
 
-  unsigned int sizeDE = FirstStageScorer->GetLengthMult(); 
-  for(unsigned int i = 0 ; i < sizeDE ; i++){
-    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), DE_ResoEnergy);   
-    if(Energy>EnergyThreshold){
-      double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
-      int DetNbr  = FirstStageScorer->GetDetectorLength(i);
+  unsigned int sizeDEFront = FirstStageScorer->GetWidthMult();
+  for(unsigned int i = 0 ; i < sizeDEFront ; i++){
+    double EnergyFront = RandGauss::shoot(FirstStageScorer->GetEnergyWidth(i), DE_ResoEnergy);   
+    if(EnergyFront>EnergyThreshold){
+      double Time = RandGauss::shoot(FirstStageScorer->GetTimeWidth(i), ResoTime);
+      int DetNbr  = FirstStageScorer->GetDetectorWidth(i);
       int StripFront = 92-FirstStageScorer->GetStripWidth(i);
-      m_Event->SetPISTA_DE(DetNbr, StripFront, Energy, Energy, Time, Time);
-      m_Event->SetPISTA_DE_BackDetector(DetNbr);
+      m_Event->SetPISTA_DE_DetectorNbr(DetNbr);
+      m_Event->SetPISTA_DE_StripNbr(StripFront);
+      m_Event->SetPISTA_DE_StripEnergy(EnergyFront);
+      m_Event->SetPISTA_DE_StripTime(Time);
     }
   }
+  
+  unsigned int sizeDEBack = FirstStageScorer->GetLengthMult();
+   for(unsigned int i = 0 ; i < sizeDEBack ; i++){
+    double EnergyBack = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), DE_ResoEnergy);   
+    if(EnergyBack>EnergyThreshold){
+      double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
+      int DetNbr  = FirstStageScorer->GetDetectorLength(i);
+      m_Event->SetPISTA_DE_BackDetector(DetNbr);
+      m_Event->SetPISTA_DE_BackEnergy(EnergyBack);
+      m_Event->SetPISTA_DE_BackTime(Time);
+
+    }
+  }
+  
+  /*for(unsigned int i = 0 ; i < sizeDEFront ; i++){
+    double EnergyFront = RandGauss::shoot(FirstStageScorer->GetEnergyWidth(i), DE_ResoEnergy);   
+    double EnergyBack  = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), DE_ResoEnergy);   
+    if(EnergyFront>EnergyThreshold){
+      double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
+      int DetNbr  = FirstStageScorer->GetDetectorWidth(i);
+      int StripFront = 92-FirstStageScorer->GetStripWidth(i);
+      m_Event->SetPISTA_DE(DetNbr, StripFront, EnergyFront, EnergyBack, Time, Time);
+      m_Event->SetPISTA_DE_BackDetector(DetNbr);
+    }
+  }*/
   FirstStageScorer->clear();
 
   ///////////
   // E
   DSSDScorers::PS_Rectangle* SecondStageScorer= (DSSDScorers::PS_Rectangle*) m_SecondStageScorer->GetPrimitive(0);
 
-  unsigned int sizeE = SecondStageScorer->GetLengthMult(); 
-  for(unsigned int i = 0 ; i < sizeE ; i++){
-    double Energy = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), E_ResoEnergy);   
-    if(Energy>EnergyThreshold){
+  unsigned int sizeEFront = SecondStageScorer->GetLengthMult();
+  for(unsigned int i = 0 ; i < sizeEFront ; i++){
+    double EnergyFront = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), E_ResoEnergy);   
+    if(EnergyFront>EnergyThreshold){
       double Time = RandGauss::shoot(SecondStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = SecondStageScorer->GetDetectorLength(i);
       int StripFront = SecondStageScorer->GetStripLength(i);
-      m_Event->SetPISTA_E(DetNbr, StripFront, Energy, Energy, Time, Time);
-      m_Event->SetPISTA_E_BackDetector(DetNbr);
+      m_Event->SetPISTA_E_DetectorNbr(DetNbr);
+      m_Event->SetPISTA_E_StripNbr(StripFront);
+      m_Event->SetPISTA_E_StripEnergy(EnergyFront);
+      m_Event->SetPISTA_E_StripTime(Time);
     }
   }
+  
+  unsigned int sizeEBack = SecondStageScorer->GetWidthMult();
+  for(unsigned int i = 0 ; i < sizeEBack ; i++){
+    double EnergyBack = RandGauss::shoot(SecondStageScorer->GetEnergyWidth(i), E_ResoEnergy);   
+    if(EnergyBack>EnergyThreshold){
+      double Time = RandGauss::shoot(SecondStageScorer->GetTimeWidth(i), ResoTime);
+      int DetNbr  = SecondStageScorer->GetDetectorWidth(i);
+      m_Event->SetPISTA_E_BackDetector(DetNbr);
+      m_Event->SetPISTA_E_BackEnergy(EnergyBack);
+      m_Event->SetPISTA_E_BackTime(Time);
+    }
+  }
+  
+
+
+  /*for(unsigned int i = 0 ; i < sizeEFront ; i++){
+    double EnergyFront = RandGauss::shoot(SecondStageScorer->GetEnergyLength(i), E_ResoEnergy);   
+    double EnergyBack  = RandGauss::shoot(SecondStageScorer->GetEnergyWidth(i), E_ResoEnergy);   
+    if(EnergyFront>EnergyThreshold){
+      double Time = RandGauss::shoot(SecondStageScorer->GetTimeLength(i), ResoTime);
+      int DetNbr  = SecondStageScorer->GetDetectorLength(i);
+      int StripFront = SecondStageScorer->GetStripLength(i);
+      m_Event->SetPISTA_E(DetNbr, StripFront, EnergyFront, EnergyBack, Time, Time);
+      m_Event->SetPISTA_E_BackDetector(DetNbr);
+    }
+  }*/
   SecondStageScorer->clear();
 
 

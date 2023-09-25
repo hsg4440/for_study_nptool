@@ -78,7 +78,8 @@ void Analysis::TreatEvent(){
   TVector3 BeamDirection = InitialConditions->GetBeamDirection();
   TVector3 BeamPosition(XTarget,YTarget,ZTarget);
 
-  TVector3 PositionOnTarget(0,0,0);
+  //TVector3 PositionOnTarget(0,0,0);
+  TVector3 PositionOnTarget(-1,0.5,0);
   //TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
   //TVector3 PositionOnTarget(XTarget, YTarget, 0);
   BeamEnergy = 1417.;//InitialConditions->GetIncidentInitialKineticEnergy();
@@ -113,7 +114,8 @@ void Analysis::TreatEvent(){
 
       ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
       //Elab = Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
-      Elab = C12C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
+      Elab = Energy;
+      //Elab = C12C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
       OptimumEx = Transfer->ReconstructRelativistic(OriginalElab, OriginalThetaLab*deg);
       Ex = Transfer->ReconstructRelativistic(Elab, ThetaLab);
       ThetaCM = Transfer->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
