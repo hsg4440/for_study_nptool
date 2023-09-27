@@ -98,6 +98,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         else if(particleName[j]=="mu+") { it->m_particleName.push_back("mu+") ;}
         else if(particleName[j]=="mu-") { it->m_particleName.push_back("mu-") ;}
         else if(particleName[j]=="neutron") {it->m_particleName.push_back("neutron") ;}
+        else if(particleName[j]=="electron" || particleName[j]=="e-") {it->m_particleName.push_back("e-");}
         else it->m_particleName.push_back(particleName[j]);
       }
 
@@ -143,7 +144,7 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
         par.m_particle=NULL;
         if(par.m_particle==NULL){
 
-          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" ||  par.m_particleName[p]=="mu-"){
+          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" ||  par.m_particleName[p]=="mu-" || par.m_particleName[p]=="e-"){
             par.m_particle =  G4ParticleTable::GetParticleTable()->FindParticle(par.m_particleName[p].c_str());
           }
           else{

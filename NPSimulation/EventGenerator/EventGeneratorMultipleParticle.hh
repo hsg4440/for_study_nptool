@@ -55,6 +55,8 @@ private:    // Source parameter from input file
     G4double                m_z0               ;  // Vertex Position Z
     G4double                m_SigmaX           ;
     G4double                m_SigmaY           ;
+    G4double                 m_HalfOpenAngleMin ;  // Min Half open angle of the source
+    G4double                 m_HalfOpenAngleMax ;  // Max Half open angle of the source
     unsigned int            m_Events;
     string                  m_FileName;
     string                  m_File;
