@@ -1,0 +1,23 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% An Isotropic Source to be used as EventGenerator %%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Energy are given in MeV , Position in mm      % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 5 mm FWHM
+% Position for 0.09 um (20 ug/cm2) thick carbon foil
+% Implantation at around 6nm
+
+Isotropic
+ EnergyLow= 100 keV
+ EnergyHigh= 100 keV
+ HalfOpenAngleMin= 0 deg
+ HalfOpenAngleMax= 180 deg
+ x0= 0 mm
+ y0= 0 mm
+ z0= 6 nm
+ SigmaX= 2.12 mm
+ SigmaY= 2.12 mm
+ Particle= electron
+ 
+
+% Supported particle type: proton, neutron, deuton, triton, He3 , alpha , electron

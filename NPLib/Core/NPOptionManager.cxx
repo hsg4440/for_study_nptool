@@ -103,6 +103,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fDefaultOutputTreeName      = "NPTool_Tree";
   fDefaultRunToReadFileName   = "defaultRunToTreat.txt";
   fDefaultCalibrationFileName = "defaultCalibration.txt";
+  fDefaultDoCalibrationFileName = "defaultDoCalibration.txt";
   fDefaultG4MacroPath         = "defaultG4MacroPath.txt";
   // Assigned values
   fReactionFileName           = fDefaultReactionFileName;
@@ -222,6 +223,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "--definition" && argc >= i + 1)         {std::string def= argv[++i];fDefinition.insert(def);}
 
+    else if (argument == "-DC" && argc >= i + 1)                  fDoCalibrationFileName    = argv[++i] ;
+    
     else{
     SendErrorAndExit(argument.c_str()); 
     }
@@ -325,6 +328,35 @@ void NPOptionManager::CheckEventGenerator(){
   ConfigFile.close();
 }
 
+void NPOptionManager::CheckDoCalibrationConfiguration(){
+  bool checkFile = true;
+
+  // NPTool path
+  std::string GlobalPath = getenv("NPTOOL");
+  std::string StandardPath = GlobalPath + "/Inputs/DoCalibrationConfiguration/" + fDoCalibrationFileName;
+
+  // ifstream to configfile
+  std::ifstream ConfigFile;
+
+  // test if config file is in local path
+  ConfigFile.open(fDoCalibrationFileName.c_str());
+  if (!ConfigFile.is_open()) {
+    ConfigFile.open(StandardPath.c_str());
+    if (!ConfigFile.is_open()) {  // if not, assign standard path
+      checkFile = false;
+    }
+    else {
+      fDoCalibrationFileName = StandardPath;
+    }
+  }
+  if (!checkFile && fDoCalibrationFileName != fDefaultDoCalibrationFileName) {   // if file does not exist
+    SendErrorAndExit("DoCalibrationConfiguration");
+  }
+
+  // close ConfigFile
+  ConfigFile.close();
+
+}
 ////////////////////////////////////////////////////////////////////////////////
 void NPOptionManager::CheckDetectorConfiguration(){
   bool checkFile = true;
@@ -386,6 +418,9 @@ bool NPOptionManager::IsDefault(const char* type) const{
   }
   else if (stype == "Calibration") {
     if (fCalibrationFileName == fDefaultCalibrationFileName) result = true;
+  }
+  else if (stype == "DoCalibration") {
+    if (fDoCalibrationFileName == fDefaultDoCalibrationFileName) result = true;
   }
   else if (stype == "RunToTreat") {
     if (fRunToReadFileName == fDefaultRunToReadFileName) result = true;

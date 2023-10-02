@@ -1,0 +1,10 @@
+/gen/open sources/Elements/224Ra.source
+/run/beamOn 87000
+/gen/open sources/Elements/226Th.source
+/run/beamOn 278000
+/gen/open sources/Elements/225Th.source
+/run/beamOn 896000
+/gen/open sources/Elements/226Pa.source
+/run/beamOn 140000
+/gen/open sources/Elements/225Pa.source
+/run/beamOn 1167000
