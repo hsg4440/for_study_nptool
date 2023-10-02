@@ -57,6 +57,7 @@ class Analysis: public NPL::VAnalysis{
     double YTarget;
     double ZTarget;
     double Elab;
+    int Telescope;
     double DeltaE;
     double DeltaEcorr;
     double Eres;
