@@ -99,6 +99,8 @@ class Analysis: public NPL::VAnalysis{
   std::vector<double> M2_Z;
   std::vector<double> M2_dE;
   std::vector<double> M2_ECsI_from_deltaE ;
+  std::vector<double> Beta_from_deltaE;
+  std::vector<double> Beth_from_deltaE;
 
   double OriginalBeamEnergy ; // AMEV
   double FinalBeamEnergy; 
@@ -244,6 +246,7 @@ class Analysis: public NPL::VAnalysis{
   double ThetaGDSurface ;
   
   double Beta;
+  double Beta_light;
   double Gamma;
   double Velocity;
   

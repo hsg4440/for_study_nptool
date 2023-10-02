@@ -64,6 +64,7 @@ NPL::DetectorManager::DetectorManager(){
   m_InitializeRootHistogramsCalibPtr = &NPL::VDetector::InitializeRootHistogramsCalib;
   m_FillHistogramsCalibPtr = &NPL::VDetector::FillHistogramsCalib;
   m_WriteHistogramsCalibPtr = &NPL::VDetector::WriteHistogramsCalib;
+  m_DoCalibrationPtr = &NPL::VDetector::DoCalibration;
   m_FillSpectra = NULL; 
   m_CheckSpectra = NULL;   
   m_SpectraServer = NULL;
@@ -112,6 +113,25 @@ NPL::DetectorManager::~DetectorManager(){
     m_SpectraServer->Destroy();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void NPL::DetectorManager::ReadDoCalibrationFile(std::string Path)   {
+  NPL::InputParser parser(Path);
+  std::set<std::string> check;
+  std::vector<std::string> token = parser.GetAllBlocksToken();
+  
+  std::map<std::string, VDetector*>::iterator it;
+
+  for (it = m_Detector.begin(); it != m_Detector.end(); it++)
+  {
+      if(NPOptionManager::getInstance()->GetVerboseLevel()){
+        std::cout << "/////////////////////////////////////////" << std::endl;
+        std::cout << "//// Adding Detector for DoCalibration " << it->first << std::endl; 
+      }
+      it->second->ReadDoCalibration(parser);
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        std::cout << "/////////////////////////////////////////" << std::endl;
+  }
+}
 ///////////////////////////////////////////////////////////////////////////////
 //   Read stream at ConfigFile and pick-up Token declaration of Detector
 void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
@@ -394,6 +414,18 @@ void NPL::DetectorManager::WriteHistogramsCalib(){
     }
   else{
     std::cout << "Warning : IsCalibration not recognized, Write not working" << std::endl;
+  }
+}
+
+void NPL::DetectorManager::DoCalibration(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      (it->second->*m_DoCalibrationPtr)();
+    }
+  else{
+    std::cout << "Warning : IsCalibration not recognized, DoCalibration not working" << std::endl;
   }
 }
 

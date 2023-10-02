@@ -51,6 +51,8 @@ EventGeneratorMultipleParticle::EventGeneratorMultipleParticle(){
     m_SigmaX        = 0;
     m_SigmaY        = 0;
     m_Events        = 0;
+    m_HalfOpenAngleMax = 0;
+    m_HalfOpenAngleMin = 0;
     m_File          = "";
     m_particleName.clear();
     m_ParticleStack = ParticleStack::getInstance();
@@ -75,11 +77,12 @@ void EventGeneratorMultipleParticle::ReadConfiguration(NPL::InputParser parser){
     if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "\033[1;35m//// MultipleParticle token found " << endl;
     
-    vector<string> token = {"x0", "y0", "z0", "SigmaX", "SigmaY","Events","EventFile"};
+    vector<string> token = {"x0", "y0", "z0", "SigmaX", "SigmaY","Events","EventFile","HalfOpenAngleMin","HalfOpenAngleMax"};
+    vector<string> Isotropic = {"x0", "y0", "z0", "SigmaX", "SigmaY","Events","EventFile","HalfOpenAngleMin","HalfOpenAngleMax"};
     
     for(unsigned int i = 0 ; i < blocks.size() ; i++){
         blocks[i]->Dump();
-        if(blocks[i]->HasTokenList(token)){
+        if(blocks[i]->HasTokenList(Isotropic)){
             m_x0        = blocks[i]->GetDouble("x0","mm");
             m_y0        = blocks[i]->GetDouble("y0","mm");
             m_z0        = blocks[i]->GetDouble("z0","mm");
@@ -88,8 +91,19 @@ void EventGeneratorMultipleParticle::ReadConfiguration(NPL::InputParser parser){
             m_Events    = blocks[i]->GetInt("Events");
             m_FileName  = blocks[i]->GetString("EventFile");
             m_File += m_FileName;
+            m_HalfOpenAngleMin  = blocks[i]->GetDouble("HalfOpenAngleMin","deg");
+            m_HalfOpenAngleMax  = blocks[i]->GetDouble("HalfOpenAngleMax","deg");
         }
-        
+        else if(blocks[i]->HasTokenList(token)){
+            m_x0        = blocks[i]->GetDouble("x0","mm");
+            m_y0        = blocks[i]->GetDouble("y0","mm");
+            m_z0        = blocks[i]->GetDouble("z0","mm");
+            m_SigmaX    = blocks[i]->GetDouble("SigmaX","mm");
+            m_SigmaY    = blocks[i]->GetDouble("SigmaY","mm");
+            m_Events    = blocks[i]->GetInt("Events");
+            m_FileName  = blocks[i]->GetString("EventFile");
+            m_File += m_FileName;
+        }        
         else{
             cout << "ERROR: check your input file formatting \033[0m" << endl;
             exit(1);
@@ -120,6 +134,7 @@ void EventGeneratorMultipleParticle::ReadConfiguration(NPL::InputParser parser){
                     else if(sParticle=="gamma") { vParticle.push_back("gamma") ;}
                     else if(sParticle=="mu+") { vParticle.push_back("mu+") ;}
                     else if(sParticle=="neutron") {vParticle.push_back("neutron") ;}
+                    else if(sParticle=="electron"||sParticle=="e-") {vParticle.push_back("e-") ;}
                     else vParticle.push_back(sParticle);
                     
                     vEnergy.push_back(dEnergy);
@@ -155,7 +170,7 @@ void EventGeneratorMultipleParticle::GenerateEvent(G4Event* evt){
     for(int i=0; i<m_Multiplicity[evtID]; i++){
         m_particle=NULL;
         if(m_particle==NULL){
-            if(m_particleName[evtID][i]=="gamma" || m_particleName[evtID][i]=="neutron" ||  m_particleName[evtID][i]=="opticalphoton" ||  m_particleName[evtID][i]=="mu+"){
+            if(m_particleName[evtID][i]=="gamma" || m_particleName[evtID][i]=="neutron" ||  m_particleName[evtID][i]=="opticalphoton" ||  m_particleName[evtID][i]=="mu+" ||  m_particleName[evtID][i]=="e-"){
                 m_particle =  G4ParticleTable::GetParticleTable()->FindParticle(m_particleName[evtID][i].c_str());
             }
             else{
@@ -165,11 +180,21 @@ void EventGeneratorMultipleParticle::GenerateEvent(G4Event* evt){
             }
         }
         
-        G4double theta              = m_Theta[evtID][i];
+        G4double theta = 0;
+        if(m_HalfOpenAngleMin==0 && m_HalfOpenAngleMax==0){
+           theta  = m_Theta[evtID][i];
+           theta  = theta*deg;
+         }
+        else{
+          G4double cos_theta_min   = cos(m_HalfOpenAngleMin);
+          G4double cos_theta_max   = cos(m_HalfOpenAngleMax);
+          G4double cos_theta       = cos_theta_min + (cos_theta_max - cos_theta_min) * RandFlat::shoot();
+          theta                    = acos(cos_theta);
+        }
         G4double particle_energy    = m_Energy[evtID][i];
         G4double phi                = RandFlat::shoot() * 2 * pi;
         
-        theta           = theta*deg;
+        
         particle_energy = particle_energy / MeV;
         
         // Direction of particle, energy and laboratory angle

@@ -37,16 +37,14 @@ int main(int argc , char** argv){
     }  
   }
 
-  if (myOptionManager->IsDefault("EventGenerator")) {
-    std::string name = RootInput::getInstance(inputfilename)->DumpAsciiFile("EventGenerator");
-    if(name!="fail"){
-    myOptionManager->SetReactionFile(name);
-    std::cout << "\033[1;33mInfo: No Event file given, using Input tree one \033[0m" << std::endl;;
-    }
+  if (myOptionManager->IsDefault("DoCalibration")) {
+    std::cout << "Please use a valid DoCalibration File" << std::endl;
+    return 0;
   }
 
   // get input files from NPOptionManager
   std::string detectorfileName    = myOptionManager->GetDetectorFile();
+  std::string docalibrationfileName    = myOptionManager->GetDoCalibrationFile();
   std::string OutputfileName      = myOptionManager->GetOutputFile();
 
   // Instantiate RootOutput
@@ -127,17 +125,20 @@ int main(int argc , char** argv){
   unsigned long new_nentries = 0 ;
   int current_tree = 0 ;
   int total_tree = Chain->GetNtrees();
+  int entry_max = NPOptionManager::getInstance()->GetNumberOfEntryToAnalyse();
 
   bool IsCalibration = myOptionManager->IsCalibration();
   std::cout << IsCalibration << "\n";
 
   if(IsCalibration){
+    myDetector->ReadDoCalibrationFile(docalibrationfileName);
     myDetector->InitializeRootHistogramsCalib(); 
-    while(inputTreeReader->Next()){
+    while(inputTreeReader->Next() && treated < entry_max){
       myDetector->FillHistogramsCalib();
       current_tree = Chain->GetTreeNumber()+1;
       ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
     }
+    myDetector->DoCalibration();
     myDetector->WriteHistogramsCalib();
   }
   else{

@@ -1,0 +1,4 @@
+/random/setSeeds  26855 18910
+/run/initialize
+/run/beamOn 1000000
+exit

@@ -35,6 +35,7 @@ Projects/E805/CUT
 .last_*
 npanalysis
 npreader
+npcalibration
 nponline
 nptool-cleaner
 nptool-installer

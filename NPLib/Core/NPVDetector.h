@@ -50,6 +50,9 @@ namespace NPL {
 
     //  Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
     virtual void ReadConfiguration(NPL::InputParser){};
+    
+    //  Read stream at DoCalibration to pick-up which parameters to calibrate (Position,...) using Token
+    virtual void ReadDoCalibration(NPL::InputParser){};
 
     //  Add Parameter to the CalibrationManger
     virtual void AddParameterToCalibrationManager(){};
@@ -73,6 +76,9 @@ namespace NPL {
     
     //  Write histograms for calibration
     virtual void WriteHistogramsCalib(){};
+    
+    
+    virtual void DoCalibration(){};
 
     //  This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract
     //  physical parameter.
