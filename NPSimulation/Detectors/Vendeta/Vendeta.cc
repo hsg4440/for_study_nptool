@@ -61,9 +61,10 @@ using namespace CLHEP;
 namespace Vendeta_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 0.8/2.35*ns ;
+  const double ResoTime = 0.4/2.35*ns ;
   const double ResoEnergy = 0.1*MeV ;
-  const double Thickness = 51.*mm ;
+  //const double Thickness = 51.*mm ;
+  const double Thickness = 30.*mm ;
   const double Radius = 127./2*mm ;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
