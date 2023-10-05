@@ -1,0 +1,3 @@
+Multiplicity 2
+electron 0.05 0
+alpha 8 0

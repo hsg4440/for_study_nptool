@@ -20,9 +20,9 @@ void GenerateGeometry()
   double Theta = 20;
   double Phi[6] = {0, 20, 40, 140, 160, 180};
   for(int p=0; p<6; p++){
-    if(p%2==0) Theta = 20;
-    else Theta = 15;
-    cout << p << " " << Theta << endl;
+    //if(p%2==0) Theta = 20;
+    //else Theta = 17.5;
+    Theta = 20;
     for(int i = 0; i <15; i++){
       ofile << "\%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
       ofile << "Vendeta" << endl;

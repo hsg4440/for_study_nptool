@@ -409,7 +409,7 @@ void TPISTAPhysics::PreTreat() {
   unsigned int sizeDE = m_EventData->GetPISTADEMult();
   unsigned int sizeDE_back = m_EventData->GetPISTADEBackMult();
   for (UShort_t i = 0; i < sizeDE ; ++i) {
-    if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i)) && m_EventData->GetPISTA_DE_StripEnergy(i)<4094) {
+    if (IsValidChannel(0,m_EventData->GetPISTA_DE_DetectorNbr(i),m_EventData->GetPISTA_DE_StripNbr(i)) && m_EventData->GetPISTA_DE_StripEnergy(i)<4095) {
       int DetNbr = m_EventData->GetPISTA_DE_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_DE_StripNbr(i);
       double StripE = m_EventData->GetPISTA_DE_StripEnergy(i);
@@ -442,7 +442,7 @@ void TPISTAPhysics::PreTreat() {
   unsigned int sizeE = m_EventData->GetPISTAEMult();
   unsigned int sizeE_back = m_EventData->GetPISTAEBackMult();
   for (UShort_t i = 0; i < sizeE ; ++i) {
-    if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i)) && m_EventData->GetPISTA_E_StripEnergy(i)<4094) {
+    if (IsValidChannel(1,m_EventData->GetPISTA_E_DetectorNbr(i),m_EventData->GetPISTA_E_StripNbr(i)) && m_EventData->GetPISTA_E_StripEnergy(i)<4095) {
       int DetNbr = m_EventData->GetPISTA_E_DetectorNbr(i);
       int StripNbr = m_EventData->GetPISTA_E_StripNbr(i);
       double StripE = m_EventData->GetPISTA_E_StripEnergy(i);

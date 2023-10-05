@@ -135,7 +135,6 @@ void Analysis::TreatEvent(){
   double Energy = 0;
   int strip_DE = 0;
   int strip_E = 0;
-  int DetectorNumber = 0;
   if(PISTA->EventMultiplicity==1){
     DeltaE = PISTA->DE[0];
     Eres = PISTA->back_E[0];
@@ -143,14 +142,14 @@ void Analysis::TreatEvent(){
 
     strip_DE = PISTA->DE_StripNbr[0];
     strip_E = PISTA->E_StripNbr[0];
-    DetectorNumber = PISTA->DetectorNumber[0];
+    Telescope = PISTA->DetectorNumber[0];
   }
   else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
     DeltaE = PISTA->DE[0] + PISTA->DE[1];
     Eres = PISTA->back_E[0];
     Energy = DeltaE + Eres;
 
-    DetectorNumber = PISTA->DetectorNumber[0];
+    Telescope = PISTA->DetectorNumber[0];
     if(PISTA->DE[0]>PISTA->DE[1])
       strip_DE = PISTA->DE_StripNbr[0];
     else
@@ -159,7 +158,7 @@ void Analysis::TreatEvent(){
     strip_E = PISTA->E_StripNbr[0];
   }
   if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
-    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(DetectorNumber, strip_E, strip_DE);
+    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, strip_E, strip_DE);
     TVector3 HitDirection = PISTA_pos - PositionOnTarget;
     PhiLab = PISTA_pos.Phi();
     Xcalc  = PISTA_pos.X();
@@ -197,6 +196,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("DeltaE",&DeltaE,"DeltaE/D");
   RootOutput::getInstance()->GetTree()->Branch("DeltaEcorr",&DeltaEcorr,"DeltaEcorr/D");
   RootOutput::getInstance()->GetTree()->Branch("Eres",&Eres,"Eres/D");
+  RootOutput::getInstance()->GetTree()->Branch("Telescope",&Telescope,"Telescope/I");
   RootOutput::getInstance()->GetTree()->Branch("PID",&PID,"PID/D");
   RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab,"Elab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
@@ -356,7 +356,7 @@ void Analysis::ReInitValue(){
   Ycalc = -1000;
   Zcalc = -1000;
   PID = -1000;
-
+  Telescope = -1;
   Chio_DE = -1000;
   Chio_E = -1000;
 

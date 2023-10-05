@@ -1,0 +1,6 @@
+/gen/open sources/Elements/239Pu.source
+/run/beamOn 600000
+/gen/open sources/Elements/241Am.source
+/run/beamOn 600000
+/gen/open sources/Elements/244Cm.source
+/run/beamOn 600000

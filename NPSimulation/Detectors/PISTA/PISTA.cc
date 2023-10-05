@@ -69,7 +69,7 @@ namespace PISTA_NS{
   const double TrapezoidHeight = 57.7*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
-  const double SecondStageThickness = 1.0*mm;
+  const double SecondStageThickness = 1.5*mm;
   const double DistanceBetweenSi = 4*mm;
   const double FirstStageNbrOfStrips = 91;
   const double SecondStageNbrOfStrips = 57;
