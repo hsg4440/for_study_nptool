@@ -1901,20 +1901,16 @@ void TMust2Physics::WriteHistogramsCSIF(){
   if(!File->GetDirectory("MUST2"))
     File->mkdir("MUST2");
   File->cd("MUST2");
-  std::cout << "////////////////// TEST1\n";
   map<int, bool>::iterator it;
   for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
   {
-  std::cout << "////////////////// TEST2\n";
-  std::cout << it->second <<"\n";
+  std::cout << "Writing Calibs for MUST2 : " << it->first << "\n";
     if(it->second)
     {
       if(!gDirectory->GetDirectory(Form("M2_Telescope%d",it->first)))
     {
-        std::cout << "////////////////// TEST3\n";
         gDirectory->mkdir(Form("M2_Telescope%d",it->first));
     }
-        std::cout << "////////////////// TEST4\n";
       gDirectory->cd(Form("M2_Telescope%d",it->first));
       gDirectory->mkdir("CSI");
       //gDirectory->mkdir("Time");
@@ -2358,8 +2354,9 @@ void TMust2Physics::DoCalibrationTimeF(Int_t DetectorNumber){
 
 void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
   TF1 *Gaus = new TF1("Gaus","gaus",0,200);
-	TF1 *f1 = new TF1("f1","[0]+[1]*x+[2]*x^2",0,200);
-  auto File = new TFile("./FitSlices");
+	TF1 *f1 = new TF1("f1","[0]+[1]*x+[2]*x^2",8192,16384);
+  f1->SetParLimits(2,0,1e5);
+  auto File = new TFile("./FitSlices.root","RECREATE");
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
@@ -2367,14 +2364,19 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
   for(unsigned int i = 1; i <= NbCSI; i++){ 
     for(unsigned int j = 0; j < ParticleType.size(); j++){
       TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
-      TString htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+      TString htitleCSIE    = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
       
       if((*TH2Map)["MUST2"][CutName] != 0){
-        (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus,0,200,0,"QG5",0);
+        std::cout << "test1" << std::endl;
+        (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus,0,2000,0,"QG5",0);
+        std::cout << "test2" << std::endl;
 	      (*TH1Map)["MUST2"][CutName+"_0"]= (TH1F*)File->Get(htitleCSIE+"_0");
+	      File->Write();
+        (*TH1Map)["MUST2"][CutName+"_0"]->Draw();
 	      (*TH1Map)["MUST2"][CutName+"_1"]= (TH1F*)File->Get(htitleCSIE+"_1");
 	      (*TH1Map)["MUST2"][CutName+"_2"]= (TH1F*)File->Get(htitleCSIE+"_2");
-	      (*TH1Map)["MUST2"][CutName+"_1"]->Fit(f1,"","",0,200);
+        std::cout << "test3" << std::endl;
+	      (*TH1Map)["MUST2"][CutName+"_1"]->Fit(f1,"","",8192,16384);
       } 
       
     }  
