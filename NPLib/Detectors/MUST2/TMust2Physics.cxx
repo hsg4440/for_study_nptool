@@ -1600,7 +1600,7 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
       std::cout << CutName << "  " << cFileName << " " << CutsPath+cFileName <<  "\n";
       
       htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
-      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 4096, 8192, 16384, 2000, 0, 60); 
+      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200); 
       
       if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
       {
@@ -1808,7 +1808,7 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
                 if((*TCutGMap)["MUST2"][CutName] != 0 && (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE,StripXEnergy)){
                     // test3++;
                     // std::cout << "test3 " << test3 << std::endl;
-                  (*TH2Map)["MUST2"][CutName]->Fill(CSIE,ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV,0.001 * MeV, 10000));
+                  (*TH2Map)["MUST2"][CutName]->Fill(CSIE,(ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV,0.001 * MeV, 10000)) - StripXEnergy);
                 }
                 }
               }
@@ -1894,6 +1894,7 @@ void TMust2Physics::WriteHistogramsCalib(){
 void TMust2Physics::WriteHistogramsCSIF(){
   auto File = RootHistogramsCalib::getInstance()->GetFile();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbCSI = 16;
   
@@ -1925,6 +1926,9 @@ void TMust2Physics::WriteHistogramsCSIF(){
           for(unsigned int i = 0; i < ParticleType.size(); i++){
             TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), it->first, j);
             (*TH2Map)["MUST2"][CutName]->Write(); 
+	          (*TH1Map)["MUST2"][CutName+"_0"]->Write();
+	          (*TH1Map)["MUST2"][CutName+"_1"]->Write();
+	          (*TH1Map)["MUST2"][CutName+"_2"]->Write();
           }
         }
         //(*TGraphMap)["MUST2"][hnameFITXE]->Write();    
@@ -2353,6 +2357,29 @@ void TMust2Physics::DoCalibrationTimeF(Int_t DetectorNumber){
 }
 
 void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
+  TF1 *Gaus = new TF1("Gaus","gaus",0,200);
+	TF1 *f1 = new TF1("f1","[0]+[1]*x+[2]*x^2",0,200);
+  auto File = new TFile("./FitSlices");
+  auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
+  auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
+  unsigned int NbCSI = 16;
+  for(unsigned int i = 1; i <= NbCSI; i++){ 
+    for(unsigned int j = 0; j < ParticleType.size(); j++){
+      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+      TString htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+      
+      if((*TH2Map)["MUST2"][CutName] != 0){
+        (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus,0,200,0,"QG5",0);
+	      (*TH1Map)["MUST2"][CutName+"_0"]= (TH1F*)File->Get(htitleCSIE+"_0");
+	      (*TH1Map)["MUST2"][CutName+"_1"]= (TH1F*)File->Get(htitleCSIE+"_1");
+	      (*TH1Map)["MUST2"][CutName+"_2"]= (TH1F*)File->Get(htitleCSIE+"_2");
+	      (*TH1Map)["MUST2"][CutName+"_1"]->Fit(f1,"","",0,200);
+      } 
+      
+    }  
+
+    }
 }
 /*
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
