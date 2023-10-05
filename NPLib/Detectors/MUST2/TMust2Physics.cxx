@@ -1563,9 +1563,20 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
     TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
     GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
   }
+  string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+  string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+  DoCSIFit = true;
+
+  if(DoCSIFit){
+   for(unsigned int i = 0; i < ParticleType.size(); i++){
+      ParticleSi[ParticleType[i].c_str()] = new NPL::EnergyLoss(EnergyLossPath+ ParticleType[i].c_str()+"_Si.G4table", "G4Table", 100);
+    }
+  }
   unsigned int NbCSI = 16;
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
+  auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
+  auto TFileMap = RootHistogramsCalib::getInstance()->GetTFileMap();
   
   for (Int_t j = 0; j < NbCSI; j++) {
     TString hnameCSIE     = Form("hMM%d_CSI_E%d", DetectorNumber, j+1);
@@ -1577,6 +1588,31 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
     (*TGraphMap)["MUST2"][hnameFITCSIE] = new TGraphErrors(3);
     (*TGraphMap)["MUST2"][hnameFITCSIE]->SetTitle(htitleFITCSIE);
     (*TGraphMap)["MUST2"][hnameFITCSIE]->SetName(hnameFITCSIE);  
+  
+  if(DoCSIFit){
+    string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+    string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+
+    for(unsigned int i = 0; i < ParticleType.size(); i++){
+       std::cout << ParticleType[i] << "\n";
+      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
+      TString cFileName = CutName+".root";
+      std::cout << CutName << "  " << cFileName << " " << CutsPath+cFileName <<  "\n";
+      
+      htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
+      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 4096, 8192, 16384, 2000, 0, 60); 
+      
+      if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+      {
+        (*TCutGMap)["MUST2"][CutName]= (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
+      }
+        
+
+    }
+
+
+
+    }
   }
 }
 
@@ -1648,10 +1684,15 @@ void TMust2Physics::FillHistogramsCalib(){
     if(NPOptionManager::getInstance()->IsReader())
       m_EventData = &(**r_ReaderEventData);
     FillHistogramsCalibEnergyF();
-    std::cout << "Test pas bien" << std::endl;
   }
 
+  //if(**GATCONFMASTER_ > 0)  
+  //{
+  //test0++;
+  //std::cout << "test0 " << test0 << std::endl;
+  //}
   if(IsCalibCSI){
+    // if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader())
     if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader() && **(GATCONFMASTER_) > 0)
   {
       m_EventData = &(**r_ReaderEventData);
@@ -1705,6 +1746,7 @@ void TMust2Physics::FillHistogramsCalibEnergyF(){
 void TMust2Physics::FillHistogramsCalibCSIF(){
   DoCalibrationCSIPreTreat();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
   
   double matchSigma = m_StripEnergyMatchingSigma;
   double NmatchSigma = m_StripEnergyMatchingNumberOfSigma;
@@ -1712,6 +1754,8 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
   unsigned int StripXMult =m_PreTreatedData->GetMMStripXEMult();  
   unsigned int StripYMult =m_PreTreatedData->GetMMStripYEMult();
   
+  // test1++;
+  // std::cout << "test1 " << test1 << std::endl;
   // for(unsigned int ix = 0; ix < StripXMult; ix++){
     // for(unsigned int iy = 0; iy < StripYMult; iy++){
   if(StripXMult == 1 && StripYMult == 1){
@@ -1739,6 +1783,8 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
           unsigned int CSIDetNbr =m_PreTreatedData->GetMMCsIEDetectorNbr(icsi);  
 
           if(StripXDetNbr == CSIDetNbr){
+            // test2++;
+            // std::cout << "test2 " << test2 << std::endl;
               
             unsigned int Cristal =m_PreTreatedData->GetMMCsIECristalNbr(icsi);
               
@@ -1746,6 +1792,26 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
               unsigned int CSIE =m_PreTreatedData->GetMMCsIEEnergy(icsi);  
               TString hnameCSIE     = Form("hMM%d_CSI_E%d", CSIDetNbr, Cristal);
               (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE,StripXEnergy);
+              if(DoCSIFit){
+                Si_X.clear();
+                Si_Y.clear();
+                TelescopeNumber.clear();
+                Si_X.push_back(StripXNbr);
+                Si_Y.push_back(StripYNbr);
+                TelescopeNumber.push_back(DetNbr);
+                TVector3 BeamImpact = TVector3(0,0,0);
+                TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact ;
+                double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0) );
+                for(unsigned int i = 0; i < ParticleType.size(); i++){ 
+                
+                TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), CSIDetNbr, Cristal);
+                if((*TCutGMap)["MUST2"][CutName] != 0 && (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE,StripXEnergy)){
+                    // test3++;
+                    // std::cout << "test3 " << test3 << std::endl;
+                  (*TH2Map)["MUST2"][CutName]->Fill(CSIE,ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV,0.001 * MeV, 10000));
+                }
+                }
+              }
             }  
           }
         }
@@ -1854,7 +1920,13 @@ void TMust2Physics::WriteHistogramsCSIF(){
       gDirectory->cd("CSI");   
       for (Int_t j = 1; j <= NbCSI; j++) {
         TString hnameCSIE     = Form("hMM%d_CSI_E%d", it->first, j);
-        (*TH2Map)["MUST2"][hnameCSIE]->Write();    
+        (*TH2Map)["MUST2"][hnameCSIE]->Write();
+        if(DoCSIFit){
+          for(unsigned int i = 0; i < ParticleType.size(); i++){
+            TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), it->first, j);
+            (*TH2Map)["MUST2"][CutName]->Write(); 
+          }
+        }
         //(*TGraphMap)["MUST2"][hnameFITXE]->Write();    
         //(*TGraphMap)["MUST2"][hnameFITYE]->Write();    
       }

@@ -71,6 +71,9 @@ void NPOptionManager::ReadProjectConfigFile(){
       
       if(blocks[i]->HasToken("EnergyLoss"))
         m_EnergyLossPath = blocks[i]->GetString("EnergyLoss"); 
+      
+      if(blocks[i]->HasToken("Cuts"))
+        m_CutsPath = blocks[i]->GetString("Cuts"); 
     }
  } 
 

@@ -125,6 +125,7 @@ class NPOptionManager{
       std::string GetSimulationOutputPath(){return m_SimulationOutputPath;};
       std::string GetCalibrationOutputPath(){return m_CalibrationOutputPath;};
       std::string GetEnergyLossPath(){return m_EnergyLossPath;};
+      std::string GetCutsPath(){return m_CutsPath;};
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
@@ -187,6 +188,7 @@ class NPOptionManager{
       std::string m_SimulationOutputPath;// output path of simulated tree
       std::string m_CalibrationOutputPath;// output path of calibration histograms
       std::string m_EnergyLossPath;// input/output path of energy loss table
+      std::string m_CutsPath;// CutsPath
 
 };
 

@@ -28,6 +28,7 @@
 #include <stdlib.h>
 // NPL
 #include "NPCalibrationManager.h"
+#include "NPEnergyLoss.h"
 #include "NPInputParser.h"
 #include "NPVDetector.h"
 #include "NPVTreeReader.h"
@@ -79,7 +80,9 @@ public:
   vector<double> Si_E;
   vector<double> Si_T;
   vector<int>    Si_X;
+  vector<int>    Si_StripNumberX;
   vector<int>    Si_Y;
+  vector<int>    Si_StripNumberY;
 
   // Use for checking purpose
   vector<double> Si_EX;
@@ -400,8 +403,17 @@ private:
   map<int,double> CSIEnergyYThreshold;//!
   map<int,double> CSIEThreshold;//!
   TTreeReaderValue<unsigned short>* GATCONFMASTER_;//!
+  bool DoCSIFit;
+  std::map<TString,NPL::EnergyLoss*> ParticleSi;
+  // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
+  std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
   // map<int,std::string> CalibFile;//!
 
+
+  int test0 = 0;
+  int test1 = 0;
+  int test2 = 0;
+  int test3 = 0;
 
 private: // Spectra Class
   TMust2Spectra* m_Spectra; //!

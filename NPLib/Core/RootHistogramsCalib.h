@@ -33,6 +33,7 @@
 #include "TGraphErrors.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TCutG.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TList.h"
@@ -75,6 +76,8 @@ public:
   std::map<TString,std::map<TString,TH1F*>>*  GetTH1Map(){return TH1Map;}; 
   std::map<TString,std::map<TString,TH2F*>>*  GetTH2Map(){return TH2Map;}; 
   std::map<TString,std::map<TString,TGraphErrors*>>*  GetTGraphMap(){return TGraphMap;}; 
+  std::map<TString,std::map<TString,TCutG*>>*  GetTCutGMap(){return TCutGMap;}; 
+  std::map<TString,std::map<TString,TFile*>>*  GetTFileMap(){return TFileMap;}; 
   void        Fill();
   
 private:
@@ -85,6 +88,8 @@ private:
   std::map<TString,std::map<TString,TH1F*>>* TH1Map = new std::map<TString,std::map<TString,TH1F*>>;
   std::map<TString,std::map<TString,TH2F*>>* TH2Map = new std::map<TString,std::map<TString,TH2F*>>;
   std::map<TString,std::map<TString,TGraphErrors*>>* TGraphMap = new std::map<TString,std::map<TString,TGraphErrors*>>;
+  std::map<TString,std::map<TString,TCutG*>>* TCutGMap = new std::map<TString,std::map<TString,TCutG*>>;
+  std::map<TString,std::map<TString,TFile*>>* TFileMap = new std::map<TString,std::map<TString,TFile*>>;
 };
 
 #endif // ROOTHISTOCALIB_HH
