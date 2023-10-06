@@ -157,13 +157,15 @@ public: //   Innherited from VDetector Class
   
   void DoCalibrationCsIF(Int_t DetectorNumber);//!
 
-  void MakeCalibFolders();//!
+  void MakeEnergyCalibFolders();//!
+  
+  void MakeCSICalibFolders();//!
 
   void CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream *calib_file, ofstream *dispersion_file);//!
   
-  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file);//!
+  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file, TString ParticleType);//!
   
-  void CloseCalibrationCSIFiles(ofstream *calib_file){};//!
+  void CloseCalibrationCSIFiles(ofstream *calib_file);//!
   
   void CloseCalibrationEnergyFiles(ofstream *calib_file, ofstream *dispersion_file);//!
 
