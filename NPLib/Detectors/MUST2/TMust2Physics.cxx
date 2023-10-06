@@ -1600,7 +1600,7 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
       std::cout << CutName << "  " << cFileName << " " << CutsPath+cFileName <<  "\n";
       
       htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
-      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 2048, 8192, 16384, 2000, 0, 200); 
+      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200); 
       
       if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
       {
