@@ -63,7 +63,7 @@ public:
   bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
   bool             Match_Si_SiLi(int X, int Y, int PadNbr);
   bool             ResolvePseudoEvent();
-  bool m_reader = true;
+  bool m_reader = true;//!
 
 public:
   //   Provide Physical Multiplicity
@@ -405,17 +405,13 @@ private:
   map<int,double> CSIEnergyYThreshold;//!
   map<int,double> CSIEThreshold;//!
   TTreeReaderValue<unsigned short>* GATCONFMASTER_;//!
-  bool DoCSIFit;
-  std::map<TString,NPL::EnergyLoss*> ParticleSi;
+  bool DoCSIFit;//!
+  std::map<TString,NPL::EnergyLoss*> ParticleSi;//!
   // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
-  std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
+  std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};//!
   // map<int,std::string> CalibFile;//!
 
 
-  int test0 = 0;
-  int test1 = 0;
-  int test2 = 0;
-  int test3 = 0;
 
 private: // Spectra Class
   TMust2Spectra* m_Spectra; //!
