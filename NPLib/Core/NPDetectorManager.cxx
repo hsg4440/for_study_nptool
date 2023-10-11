@@ -634,7 +634,6 @@ void NPL::DetectorManager::CheckSpectraServer(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void  NPL::DetectorManager::FillOutputTree(){
-  //std::cout << "Root Output " << m_RootOutput << std::endl;
   m_RootOutput->Fill();
 }
 

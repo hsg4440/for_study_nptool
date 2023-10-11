@@ -28,6 +28,7 @@
 #include <stdlib.h>
 // NPL
 #include "NPCalibrationManager.h"
+#include "NPEnergyLoss.h"
 #include "NPInputParser.h"
 #include "NPVDetector.h"
 #include "NPVTreeReader.h"
@@ -62,7 +63,7 @@ public:
   bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
   bool             Match_Si_SiLi(int X, int Y, int PadNbr);
   bool             ResolvePseudoEvent();
-  bool m_reader = true;
+  bool m_reader = true;//!
 
 public:
   //   Provide Physical Multiplicity
@@ -79,7 +80,9 @@ public:
   vector<double> Si_E;
   vector<double> Si_T;
   vector<int>    Si_X;
+  vector<int>    Si_StripNumberX;
   vector<int>    Si_Y;
+  vector<int>    Si_StripNumberY;
 
   // Use for checking purpose
   vector<double> Si_EX;
@@ -154,13 +157,15 @@ public: //   Innherited from VDetector Class
   
   void DoCalibrationCsIF(Int_t DetectorNumber);//!
 
-  void MakeCalibFolders();//!
+  void MakeEnergyCalibFolders();//!
+  
+  void MakeCSICalibFolders();//!
 
   void CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream *calib_file, ofstream *dispersion_file);//!
   
-  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file);//!
+  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file, TString ParticleType);//!
   
-  void CloseCalibrationCSIFiles(ofstream *calib_file){};//!
+  void CloseCalibrationCSIFiles(ofstream *calib_file);//!
   
   void CloseCalibrationEnergyFiles(ofstream *calib_file, ofstream *dispersion_file);//!
 
@@ -400,7 +405,12 @@ private:
   map<int,double> CSIEnergyYThreshold;//!
   map<int,double> CSIEThreshold;//!
   TTreeReaderValue<unsigned short>* GATCONFMASTER_;//!
+  bool DoCSIFit;//!
+  std::map<TString,NPL::EnergyLoss*> ParticleSi;//!
+  // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
+  std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};//!
   // map<int,std::string> CalibFile;//!
+
 
 
 private: // Spectra Class

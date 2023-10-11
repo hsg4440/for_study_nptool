@@ -1,4 +1,5 @@
 TTreeName 
-	RD
+	SimulatedTree
 RootFileName 
-	./RootR/r0316_000r.root
+	./data/NPRoot/Simulation/test.root
+

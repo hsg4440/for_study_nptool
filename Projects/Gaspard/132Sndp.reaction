@@ -6,11 +6,11 @@ Beam
   Particle= 132Sn
   Energy= 1320
   SigmaEnergy= 0 MeV
-  SigmaThetaX= 0.42 MeV
+  SigmaThetaX= 0.42 deg
   SigmaPhiY= 0.42 deg
+  MeanThetaX= 0.3 deg
   SigmaX= 1.7 mm
   SigmaY= 1.7 mm
-  MeanThetaX= 0.3 deg
   MeanPhiY= 0 deg 
   MeanX= 0.0 mm
   MeanY= 0.0 mm

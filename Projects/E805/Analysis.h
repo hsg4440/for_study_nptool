@@ -50,7 +50,7 @@ class Analysis: public NPL::VAnalysis{
     void Init();
     bool UnallocateBeforeBuild();
     bool FillOutputCondition();
-    bool UnallocateBeforeTreat(){return true;};
+    bool UnallocateBeforeTreat();
     void TreatEvent();
     void End();
     void ReInit();
@@ -87,7 +87,10 @@ class Analysis: public NPL::VAnalysis{
   
   // MUST2 info 
   unsigned short M2_TelescopeM;
-  std::vector<double> M2_Ex;
+  std::vector<double> M2_Ex_p;
+  std::vector<double> M2_Ex_d;
+  std::vector<double> M2_Ex_t;
+  std::vector<double> M2_Ex_a;
   std::vector<double> M2_ExNoBeam;
   std::vector<double> M2_ExNoProton;
   std::vector<double> M2_EDC;
@@ -162,7 +165,7 @@ class Analysis: public NPL::VAnalysis{
   float EnergyAddBackDoppler; 
   float EnergyAddBack;
   int ExogamDetNb[3];
-  int CristalNb[3];
+  // int CristalNb[3];
   int SegmentNb[3];
   
   std::vector<int> event1;
@@ -241,7 +244,8 @@ class Analysis: public NPL::VAnalysis{
   double ThetaMGSurface ;
   double Si_E_M2 ;
   double CsI_E_M2  ;
-  double Energy ;
+  std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
+  std::map<TString, double> Energy ;
   double BeamEnergy;
   double ThetaGDSurface ;
   
@@ -285,7 +289,7 @@ class Analysis: public NPL::VAnalysis{
   double ZDD_R = 1027*mm;
 
   private:
-  TMust2Data* M2_Raw;
+  // TMust2Data* M2_Raw;
   TMust2Physics* M2;
   TCATSPhysics* CATS;
   TZDDPhysics* ZDD;
@@ -354,6 +358,7 @@ class Analysis: public NPL::VAnalysis{
   
   default_random_engine generator;
   normal_distribution<double> distribution = normal_distribution<double>(0.0,1.0);
+  CalibrationManager* Cal;
 
 };
 #endif

@@ -417,6 +417,7 @@ void TMust2Physics::BuildPhysicalEvent() {
             CsI_N.push_back(m_PreTreatedData->GetMMCsIECristalNbr(j));
             CsI_E.push_back(m_PreTreatedData->GetMMCsIEEnergy(j));
             CsI_T.push_back(-1000);
+            // std::cout << "BuildPhysical CSI " <<  CsI_N.at(CsI_N.size()-1) << " " << CsI_E.at(CsI_E.size()-1) << " " << CsI_E.size() << " "   << "\n";
             // Look for associate Time
             for (unsigned int k = 0; k < m_CsITMult; ++k) {
               // Same Cristal, Same Detector
@@ -469,6 +470,8 @@ void TMust2Physics::BuildPhysicalEvent() {
     }
   } // loop on event multiplicity
   EventMultiplicity = TelescopeNumber.size();
+  //std::cout << "BuildPhysical SI " <<  Si_X.at(Si_X.size()-1) << " " << Si_E.at(Si_E.size()-1) << " "   << "\n";
+  // std::cout << couple_size << std::endl;
 
   return;
 }
@@ -528,9 +531,13 @@ void TMust2Physics::PreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > m_CsI_E_RAW_Threshold &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
-      double ECsI = fCsI_E(m_EventData, i);
-      if (ECsI > m_CsI_E_Threshold)
+      // double ECsI = fCsI_E(m_EventData, i);
+      double ECsI = m_EventData->GetMMCsIEEnergy(i);
+      if (ECsI > 8192)
+      {
         m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
+        // std::cout << "Pretreat " <<  m_PreTreatedData->GetMMCsIEDetectorNbr(i) << " " << m_PreTreatedData->GetMMCsIECristalNbr(i) << " " << ECsI << "\n";
+      }
     }
   }
 
@@ -1563,9 +1570,20 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
     TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
     GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
   }
+  string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+  string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+  DoCSIFit = true;
+
+  if(DoCSIFit){
+   for(unsigned int i = 0; i < ParticleType.size(); i++){
+      ParticleSi[ParticleType[i].c_str()] = new NPL::EnergyLoss(EnergyLossPath+ ParticleType[i].c_str()+"_Si.G4table", "G4Table", 100);
+    }
+  }
   unsigned int NbCSI = 16;
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
+  auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
+  auto TFileMap = RootHistogramsCalib::getInstance()->GetTFileMap();
   
   for (Int_t j = 0; j < NbCSI; j++) {
     TString hnameCSIE     = Form("hMM%d_CSI_E%d", DetectorNumber, j+1);
@@ -1577,6 +1595,31 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
     (*TGraphMap)["MUST2"][hnameFITCSIE] = new TGraphErrors(3);
     (*TGraphMap)["MUST2"][hnameFITCSIE]->SetTitle(htitleFITCSIE);
     (*TGraphMap)["MUST2"][hnameFITCSIE]->SetName(hnameFITCSIE);  
+  
+  if(DoCSIFit){
+    string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+    string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+
+    for(unsigned int i = 0; i < ParticleType.size(); i++){
+       std::cout << ParticleType[i] << "\n";
+      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
+      TString cFileName = CutName+".root";
+      std::cout << CutName << "  " << cFileName << " " << CutsPath+cFileName <<  "\n";
+      
+      htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
+      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200); 
+      
+      if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+      {
+        (*TCutGMap)["MUST2"][CutName]= (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
+      }
+        
+
+    }
+
+
+
+    }
   }
 }
 
@@ -1648,10 +1691,15 @@ void TMust2Physics::FillHistogramsCalib(){
     if(NPOptionManager::getInstance()->IsReader())
       m_EventData = &(**r_ReaderEventData);
     FillHistogramsCalibEnergyF();
-    std::cout << "Test pas bien" << std::endl;
   }
 
+  //if(**GATCONFMASTER_ > 0)  
+  //{
+  //test0++;
+  //std::cout << "test0 " << test0 << std::endl;
+  //}
   if(IsCalibCSI){
+    // if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader())
     if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader() && **(GATCONFMASTER_) > 0)
   {
       m_EventData = &(**r_ReaderEventData);
@@ -1705,6 +1753,7 @@ void TMust2Physics::FillHistogramsCalibEnergyF(){
 void TMust2Physics::FillHistogramsCalibCSIF(){
   DoCalibrationCSIPreTreat();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
   
   double matchSigma = m_StripEnergyMatchingSigma;
   double NmatchSigma = m_StripEnergyMatchingNumberOfSigma;
@@ -1712,6 +1761,8 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
   unsigned int StripXMult =m_PreTreatedData->GetMMStripXEMult();  
   unsigned int StripYMult =m_PreTreatedData->GetMMStripYEMult();
   
+  // test1++;
+  // std::cout << "test1 " << test1 << std::endl;
   // for(unsigned int ix = 0; ix < StripXMult; ix++){
     // for(unsigned int iy = 0; iy < StripYMult; iy++){
   if(StripXMult == 1 && StripYMult == 1){
@@ -1739,6 +1790,8 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
           unsigned int CSIDetNbr =m_PreTreatedData->GetMMCsIEDetectorNbr(icsi);  
 
           if(StripXDetNbr == CSIDetNbr){
+            // test2++;
+            // std::cout << "test2 " << test2 << std::endl;
               
             unsigned int Cristal =m_PreTreatedData->GetMMCsIECristalNbr(icsi);
               
@@ -1746,6 +1799,26 @@ void TMust2Physics::FillHistogramsCalibCSIF(){
               unsigned int CSIE =m_PreTreatedData->GetMMCsIEEnergy(icsi);  
               TString hnameCSIE     = Form("hMM%d_CSI_E%d", CSIDetNbr, Cristal);
               (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE,StripXEnergy);
+              if(DoCSIFit){
+                Si_X.clear();
+                Si_Y.clear();
+                TelescopeNumber.clear();
+                Si_X.push_back(StripXNbr);
+                Si_Y.push_back(StripYNbr);
+                TelescopeNumber.push_back(DetNbr);
+                TVector3 BeamImpact = TVector3(0,0,0);
+                TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact ;
+                double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0) );
+                for(unsigned int i = 0; i < ParticleType.size(); i++){ 
+                
+                TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), CSIDetNbr, Cristal);
+                if((*TCutGMap)["MUST2"][CutName] != 0 && (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE,StripXEnergy)){
+                    // test3++;
+                    // std::cout << "test3 " << test3 << std::endl;
+                  (*TH2Map)["MUST2"][CutName]->Fill(CSIE,(ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV,0.001 * MeV, 10000)) - StripXEnergy);
+                }
+                }
+              }
             }  
           }
         }
@@ -1828,33 +1901,39 @@ void TMust2Physics::WriteHistogramsCalib(){
 void TMust2Physics::WriteHistogramsCSIF(){
   auto File = RootHistogramsCalib::getInstance()->GetFile();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbCSI = 16;
   
   if(!File->GetDirectory("MUST2"))
     File->mkdir("MUST2");
   File->cd("MUST2");
-  std::cout << "////////////////// TEST1\n";
   map<int, bool>::iterator it;
   for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
   {
-  std::cout << "////////////////// TEST2\n";
-  std::cout << it->second <<"\n";
+  std::cout << "Writing Calibs for MUST2 : " << it->first << "\n";
     if(it->second)
     {
       if(!gDirectory->GetDirectory(Form("M2_Telescope%d",it->first)))
     {
-        std::cout << "////////////////// TEST3\n";
         gDirectory->mkdir(Form("M2_Telescope%d",it->first));
     }
-        std::cout << "////////////////// TEST4\n";
       gDirectory->cd(Form("M2_Telescope%d",it->first));
       gDirectory->mkdir("CSI");
       //gDirectory->mkdir("Time");
       gDirectory->cd("CSI");   
       for (Int_t j = 1; j <= NbCSI; j++) {
         TString hnameCSIE     = Form("hMM%d_CSI_E%d", it->first, j);
-        (*TH2Map)["MUST2"][hnameCSIE]->Write();    
+        (*TH2Map)["MUST2"][hnameCSIE]->Write();
+        if(DoCSIFit){
+          for(unsigned int i = 0; i < ParticleType.size(); i++){
+            TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), it->first, j);
+            (*TH2Map)["MUST2"][CutName]->Write(); 
+	          (*TH1Map)["MUST2"][CutName+"_0"]->Write();
+	          (*TH1Map)["MUST2"][CutName+"_1"]->Write();
+	          (*TH1Map)["MUST2"][CutName+"_2"]->Write();
+          }
+        }
         //(*TGraphMap)["MUST2"][hnameFITXE]->Write();    
         //(*TGraphMap)["MUST2"][hnameFITYE]->Write();    
       }
@@ -1917,7 +1996,7 @@ void TMust2Physics::DoCalibration(){
   {
     if(it->second)
     {
-      MakeCalibFolders();
+      MakeEnergyCalibFolders();
       DoCalibrationEnergyF(it->first);
     }
   }
@@ -1931,7 +2010,8 @@ void TMust2Physics::DoCalibration(){
   for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
   {
     if(it->second)
-    {
+    { 
+      MakeCSICalibFolders();
       DoCalibrationCsIF(it->first);
     }
   }
@@ -2224,7 +2304,7 @@ Double_t TMust2Physics::source_Cm(Double_t *x, Double_t *par)
   return fitval;
 }  
 
-void TMust2Physics::MakeCalibFolders(){
+void TMust2Physics::MakeEnergyCalibFolders(){
   std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
   std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
   if(OutputName.size() > 5){
@@ -2241,6 +2321,21 @@ void TMust2Physics::MakeCalibFolders(){
     system(make_folder+"/latex");
     system(make_folder+"/latex/pictures");
 }
+
+void TMust2Physics::MakeCSICalibFolders(){
+  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
+  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
+  if(OutputName.size() > 5){
+    if(OutputName.substr(OutputName.size()-5,OutputName.size()) == ".root"){
+      OutputName = OutputName.substr(0,OutputName.size()-5);
+    }
+  }
+  TString test_folder = "test -f "+Path+OutputName;
+  TString make_folder = "mkdir "+Path+OutputName;
+  
+    system(make_folder);
+}
+
 void TMust2Physics::CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream *calib_file, ofstream *dispersion_file){
   std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
   std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
@@ -2256,7 +2351,7 @@ void TMust2Physics::CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TS
   (*dispersion_file).open( ( (string)(Path+OutputName+"/dispersion/"+Filename+".dispersion") ).c_str() );
 }
 
-void TMust2Physics::CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file){
+void TMust2Physics::CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file, TString ParticleType){
   std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
   std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
   if(OutputName.size() > 5){
@@ -2264,8 +2359,14 @@ void TMust2Physics::CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstr
       OutputName = OutputName.substr(0,OutputName.size()-5);
     }
   }
-  TString Filename = "CsI_MM"+std::to_string(DetectorNumber);
+  TString Filename = "CsI_MM"+std::to_string(DetectorNumber)+"_"+ParticleType;
+  std::cout << Filename << std::endl;
   (*calib_file).open( ( (string)(Path+OutputName+"/"+Filename+".txt") ).c_str() );
+  std::cout << (string)(Path+OutputName+"/"+Filename+".txt") << std::endl;
+}
+
+void TMust2Physics::CloseCalibrationCSIFiles(ofstream *calib_file){
+  calib_file->close();
 }
   
 void TMust2Physics::CloseCalibrationEnergyFiles(ofstream *calib_file, ofstream *dispersion_file){
@@ -2281,12 +2382,49 @@ void TMust2Physics::DoCalibrationTimeF(Int_t DetectorNumber){
 }
 
 void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
+  TF1 *Gaus = new TF1("Gaus","gaus",0,200);
+	TF1 *f1 = new TF1("f1","pol1",8192,16384);
+  f1->SetParLimits(2,0,1e5);
+  f1->SetParameter(2,0.01);
+  auto File = new TFile("./FitSlices.root","RECREATE");
+  auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
+  auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
+  auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
+  unsigned int NbCSI = 16;
+  
+  ofstream *calib_file = new ofstream;
+  
+  for(unsigned int j = 0; j < ParticleType.size(); j++){
+    CreateCalibrationCSIFiles(DetectorNumber, calib_file, ParticleType[j]);
+    for(unsigned int i = 1; i <= NbCSI; i++){ 
+      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+      TString htitleCSIE    = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+      double a = 0;
+      double b = 0;
+      if((*TH2Map)["MUST2"][CutName] != 0){
+        std::cout << "test1" << std::endl;
+       (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus,0,2000,0,"QNG5",0);
+        std::cout << "test2" << std::endl;
+	      (*TH1Map)["MUST2"][CutName+"_0"]= (TH1F*)File->Get(htitleCSIE+"_0");
+	      File->Write();
+        (*TH1Map)["MUST2"][CutName+"_0"]->Draw();
+	      (*TH1Map)["MUST2"][CutName+"_1"]= (TH1F*)File->Get(htitleCSIE+"_1");
+	      (*TH1Map)["MUST2"][CutName+"_2"]= (TH1F*)File->Get(htitleCSIE+"_2");
+        std::cout << "test3" << std::endl;
+	      (*TH1Map)["MUST2"][CutName+"_1"]->Fit(f1,"","",8192,16384);
+        a = f1->GetParameter(0);
+        b = f1->GetParameter(1);
+      } 
+    *calib_file << "MUST2_T" << DetectorNumber << "_CsI" << i << "_E " << a << " " << b  << endl ;
+      
+    }
+    CloseCalibrationCSIFiles(calib_file); 
+  }
 }
 /*
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbCsI = 16;
-  ofstream *calib_file = new ofstream;
 
 
   // ExtractCutsAndFillTree();
