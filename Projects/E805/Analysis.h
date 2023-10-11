@@ -91,6 +91,10 @@ class Analysis: public NPL::VAnalysis{
   std::vector<double> M2_Ex_d;
   std::vector<double> M2_Ex_t;
   std::vector<double> M2_Ex_a;
+  std::vector<double> M2_CsI_E_p;
+  std::vector<double> M2_CsI_E_d;
+  std::vector<double> M2_CsI_E_t;
+  std::vector<double> M2_CsI_E_a;
   std::vector<double> M2_ExNoBeam;
   std::vector<double> M2_ExNoProton;
   std::vector<double> M2_EDC;
@@ -185,7 +189,9 @@ class Analysis: public NPL::VAnalysis{
   unsigned long long DCRawTS[4];
   
   unsigned short PlasticRaw[10];
+  TTreeReaderArray<UShort_t>* PlasticRaw_;
   unsigned long long PlasticRawTS[10];
+  TTreeReaderArray<ULong64_t>* PlasticRaw_TS_;
   float PlasticCal[10];
   
   float PlasticEner[5];
@@ -197,43 +203,71 @@ class Analysis: public NPL::VAnalysis{
   float PlasticEner_tmp;
   
   unsigned short IC_ZDDRaw[6];
+  TTreeReaderArray<UShort_t>* IC_ZDDRaw_;
   unsigned long long IC_ZDDRawTS[6];
+  TTreeReaderArray<ULong64_t>* IC_ZDDRaw_TS_;
   float ICCal[4];
   
   unsigned short TAC_CATS_PL;
+  TTreeReaderValue<UShort_t>* TAC_CATS_PL_;
   unsigned long long TAC_CATS_PLTS;
+  TTreeReaderValue<ULong64_t>* TAC_CATS_PL_TS_;
   
   unsigned short TAC_CATS_HF;
+  TTreeReaderValue<UShort_t>* TAC_CATS_HF_;
   unsigned long long TAC_CATS_HFTS;
+  TTreeReaderValue<ULong64_t>* TAC_CATS_HF_TS_;
   
   unsigned short TAC_CATS_EXOGAM;
+  TTreeReaderValue<UShort_t>* TAC_CATS_EXOGAM_;
   unsigned long long TAC_CATS_EXOGAMTS;
+  TTreeReaderValue<ULong64_t>* TAC_CATS_EXOGAM_TS_;
   
   unsigned short TAC_MMG_CATS2;
+  TTreeReaderValue<UShort_t>* TAC_MMG_CATS2_;
   unsigned long long TAC_MMG_CATS2TS;
+  TTreeReaderValue<ULong64_t>* TAC_MMG_CATS2_TS_;
   
   unsigned short TAC_MMG_CATS1;
+  TTreeReaderValue<UShort_t>* TAC_MMG_CATS1_;
   unsigned long long TAC_MMG_CATS1TS;
+  TTreeReaderValue<ULong64_t>* TAC_MMG_CATS1_TS_;
   
   unsigned short TAC_MMG_EXOGAM;
+  TTreeReaderValue<UShort_t>* TAC_MMG_EXOGAM_;
   unsigned long long TAC_MMG_EXOGAMTS;
+  TTreeReaderValue<ULong64_t>* TAC_MMG_EXOGAM_TS_;
   
   unsigned short TAC_CATS1_CATS2;
+  TTreeReaderValue<UShort_t>* TAC_CATS1_CATS2_;
   unsigned long long TAC_CATS1_CATS2TS;
+  TTreeReaderValue<ULong64_t>* TAC_CATS1_CATS2_TS_;
   
   unsigned short TAC_D4_CATS1;
+  TTreeReaderValue<UShort_t>* TAC_D4_CATS1_;
   unsigned long long TAC_D4_CATS1TS;
+  TTreeReaderValue<ULong64_t>* TAC_D4_CATS1_TS_;
   
   unsigned short TAC_PL_1;
+  TTreeReaderValue<UShort_t>* TAC_PL_1_;
   unsigned long long TAC_PL_1TS;
+  TTreeReaderValue<ULong64_t>* TAC_PL_1_TS_;
   unsigned short TAC_PL_2;
+  TTreeReaderValue<UShort_t>* TAC_PL_2_;
   unsigned long long TAC_PL_2TS;
+  TTreeReaderValue<ULong64_t>* TAC_PL_2_TS_;
   unsigned short TAC_PL_3;
+  TTreeReaderValue<UShort_t>* TAC_PL_3_;
   unsigned long long TAC_PL_3TS;
+  TTreeReaderValue<ULong64_t>* TAC_PL_3_TS_;
   unsigned short TAC_PL_4;
+  TTreeReaderValue<UShort_t>* TAC_PL_4_;
   unsigned long long TAC_PL_4TS;
+  TTreeReaderValue<ULong64_t>* TAC_PL_4_TS_;
   unsigned short TAC_PL_5;
+  TTreeReaderValue<UShort_t>* TAC_PL_5_;
   unsigned long long TAC_PL_5TS;
+  TTreeReaderValue<ULong64_t>* TAC_PL_5_TS_;
   
   double xtarget;
   double ytarget;
@@ -246,6 +280,7 @@ class Analysis: public NPL::VAnalysis{
   double CsI_E_M2  ;
   std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
   std::map<TString, double> Energy ;
+  std::map<TString, double> CsI_Energy ;
   double BeamEnergy;
   double ThetaGDSurface ;
   
