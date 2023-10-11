@@ -50,7 +50,7 @@ void TGladMagnetPhysics::Clear(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TGladMagnetPhysics::ReadConfiguration(NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SAMURAIMagnet");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("GLADMagnet");
   // nothing to do
 }
 
