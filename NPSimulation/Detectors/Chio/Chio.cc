@@ -142,6 +142,9 @@ G4LogicalVolume* Chio::BuildDetector() {
     G4Material* Mylar = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
 
     G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+
+    G4MaterialPropertiesTable* MPT2 = new G4MaterialPropertiesTable();
+#if NPS_GEANT4_VERSION_MAJOR > 10
     MPT->AddConstProperty("DE_PAIRENERGY", 30 * eV, true);
     //  MPT->AddConstProperty("DE_AMPLIFICATION",1e4,true);
     MPT->AddConstProperty("DE_ABSLENGTH", 1 * pc, true);
@@ -149,14 +152,22 @@ G4LogicalVolume* Chio::BuildDetector() {
     MPT->AddConstProperty("DE_TRANSVERSALSPREAD", 6e-5 * mm2 / ns, true);
     MPT->AddConstProperty("DE_LONGITUDINALSPREAD", 4e-5 * mm2 / ns, true);
 
-    CF4->SetMaterialPropertiesTable(MPT);
-
-    G4MaterialPropertiesTable* MPT2 = new G4MaterialPropertiesTable();
     MPT2->AddConstProperty("DE_YIELD", 1, true);
     MPT2->AddConstProperty("DE_AMPLIFICATION", 2, true);
     MPT2->AddConstProperty("DE_ABSLENGTH", 1 * pc, true);
-
+#else    
+    MPT->AddConstProperty("DE_PAIRENERGY", 30 * eV);
+    //  MPT->AddConstProperty("DE_AMPLIFICATION",1e4,true);
+    MPT->AddConstProperty("DE_ABSLENGTH", 1 * pc);
+    MPT->AddConstProperty("DE_DRIFTSPEED", 11 * cm / microsecond);
+    MPT->AddConstProperty("DE_TRANSVERSALSPREAD", 6e-5 * mm2 / ns);
+    MPT->AddConstProperty("DE_LONGITUDINALSPREAD", 4e-5 * mm2 / ns);
+    MPT2->AddConstProperty("DE_YIELD", 1);
+    MPT2->AddConstProperty("DE_AMPLIFICATION", 2);
+    MPT2->AddConstProperty("DE_ABSLENGTH", 1 * pc);
+#endif
     Al->SetMaterialPropertiesTable(MPT2);
+    CF4->SetMaterialPropertiesTable(MPT);
 
     m_SquareDetector = new G4LogicalVolume(sChamber, Fe, "logic_Chio_Box", 0, 0, 0);
     G4LogicalVolume* logicGas = new G4LogicalVolume(sGas, CF4, "logic_Gas", 0, 0, 0);
