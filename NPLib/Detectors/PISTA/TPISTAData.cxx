@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Pierre Morfouace  contact address: pierre.morfouace2@cea.fr                        *
+ * Original Author: P. Morfouace contact address: pierre.morfouace@cea.fr    *
  *                                                                           *
- * Creation Date  : May 2020                                           *
+ * Creation Date  : May 2020                                                 *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold PISTA Raw data                                    *
+ *  This class hold PISTA Raw data                                           *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *

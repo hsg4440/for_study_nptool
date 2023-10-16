@@ -141,6 +141,7 @@ Double_t Calibration(TH1F* hist, Double_t* mean, Double_t* sigma, Double_t &a , 
     cout << p << " " << mean[p] << " " << pedestal << " " << Source_E[p] << endl;
     errors[p] = 0.0001;
     gr->SetPoint(p, mean[p]-pedestal, Source_E[p]);
+    //gr->SetPoint(p, mean[p], Source_E[p]);
     gr->SetPointError(p, error_par[p], errors[p]);
     gr->SetPointError(p, sigma[p], errors[p]);
 
@@ -162,7 +163,9 @@ Double_t Calibration(TH1F* hist, Double_t* mean, Double_t* sigma, Double_t &a , 
   err_a = gr->GetFunction("pol1")->GetParError(1);
   err_b = gr->GetFunction("pol1")->GetParError(0);
 
-  cout << "Energy valu at channel=4095 -> " << b + a*4095 << " MeV" << endl;
+  cout << "p0= " << b << endl;
+  cout << "p1= " << a << endl;
+  cout << "Energy value at channel=4095 -> " << b + a*4095 << " MeV" << endl;
 
   /*TF1 *f1 = new TF1("f2","[0]+[1]*x",0,16384);
     f1->SetParameter(0,gr->GetFunction("pol1")->GetParameter(0));
@@ -202,13 +205,16 @@ void DefineSource()
   Source_E = new Double_t[Source_Number_Peak] ;
   Source_Sig = new Double_t[Source_Number_Peak] ;
 
-  //Source_isotope[0]="ThSource"; Source_E[0]   = 5.15 ; Source_Sig[0] = 0.00014 ;
-  //Source_isotope[1]="ThSource"; Source_E[1]   = 5.48 ; Source_Sig[1] = 0.00014 ;
-  //Source_isotope[2]="ThSource"; Source_E[2]   = 5.80  ; Source_Sig[2] = 0.00014 ;
-
+  // Subtracting eloss from 0.5 um of Al
   Source_isotope[0]="ThSource"; Source_E[0]   = 5.15-0.0819 ; Source_Sig[0] = 0.00014 ;
   Source_isotope[1]="ThSource"; Source_E[1]   = 5.48-0.0784 ; Source_Sig[1] = 0.00014 ;
   Source_isotope[2]="ThSource"; Source_E[2]   = 5.80-0.0749  ; Source_Sig[2] = 0.00014 ;
+
+  // Subtracting eloss from 3.5 um of Al
+  //Source_isotope[0]="ThSource"; Source_E[0]   = 5.15-0.586 ; Source_Sig[0] = 0.00014 ;
+  //Source_isotope[1]="ThSource"; Source_E[1]   = 5.48-0.565 ; Source_Sig[1] = 0.00014 ;
+  //Source_isotope[2]="ThSource"; Source_E[2]   = 5.80-0.542  ; Source_Sig[2] = 0.00014 ;
+
 
   cout << "/**** Source characteristics ****/" << endl;
   for(int i=0; i<m_NumberOfPeak; i++){

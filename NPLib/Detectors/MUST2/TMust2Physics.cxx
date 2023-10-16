@@ -417,7 +417,6 @@ void TMust2Physics::BuildPhysicalEvent() {
             CsI_N.push_back(m_PreTreatedData->GetMMCsIECristalNbr(j));
             CsI_E.push_back(m_PreTreatedData->GetMMCsIEEnergy(j));
             CsI_T.push_back(-1000);
-            // std::cout << "BuildPhysical CSI " <<  CsI_N.at(CsI_N.size()-1) << " " << CsI_E.at(CsI_E.size()-1) << " " << CsI_E.size() << " "   << "\n";
             // Look for associate Time
             for (unsigned int k = 0; k < m_CsITMult; ++k) {
               // Same Cristal, Same Detector
@@ -470,8 +469,6 @@ void TMust2Physics::BuildPhysicalEvent() {
     }
   } // loop on event multiplicity
   EventMultiplicity = TelescopeNumber.size();
-  //std::cout << "BuildPhysical SI " <<  Si_X.at(Si_X.size()-1) << " " << Si_E.at(Si_E.size()-1) << " "   << "\n";
-  // std::cout << couple_size << std::endl;
 
   return;
 }
@@ -531,12 +528,11 @@ void TMust2Physics::PreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > m_CsI_E_RAW_Threshold &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
-      // double ECsI = fCsI_E(m_EventData, i);
+      //double ECsI = fCsI_E(m_EventData, i);
       double ECsI = m_EventData->GetMMCsIEEnergy(i);
       if (ECsI > 8192)
       {
         m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
-        // std::cout << "Pretreat " <<  m_PreTreatedData->GetMMCsIEDetectorNbr(i) << " " << m_PreTreatedData->GetMMCsIECristalNbr(i) << " " << ECsI << "\n";
       }
     }
   }
@@ -1259,6 +1255,27 @@ void TMust2Physics::AddParameterToCalibrationManager() {
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      
+      Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+                        "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+                        "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      
+     Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+                        "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+                        "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      
+      Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+                        "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+                        "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      
+      Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+                        "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+                        "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+    
     }
   }
 

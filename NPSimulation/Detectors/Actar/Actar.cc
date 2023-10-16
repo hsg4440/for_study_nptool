@@ -263,6 +263,7 @@ G4LogicalVolume* Actar::BuildDetector() {
       cout << GasComponent[i] << endl;
     }
 
+#if NPS_GEANT4_VERSION_MAJOR > 10
     G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
     MPT->AddConstProperty("DE_PAIRENERGY", 20 * eV, true);
     MPT->AddConstProperty("DE_YIELD", 3e-1, true);
@@ -271,15 +272,27 @@ G4LogicalVolume* Actar::BuildDetector() {
     MPT->AddConstProperty("DE_DRIFTSPEED", 0.8 * cm / microsecond, true);
     MPT->AddConstProperty("DE_TRANSVERSALSPREAD", 2e-5 * mm2 / ns, true);
     MPT->AddConstProperty("DE_LONGITUDINALSPREAD", 4e-6 * mm2 / ns, true);
-
     DriftGasMaterial->SetMaterialPropertiesTable(MPT);
-
     G4MaterialPropertiesTable* MPT2 = new G4MaterialPropertiesTable();
     MPT2->AddConstProperty("DE_AMPLIFICATION", 1000, true);
     MPT2->AddConstProperty("DE_ABSLENGTH", 1 * pc, true);
-
+    Al->SetMaterialPropertiesTable(MPT2);
+#else
+    G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+    MPT->AddConstProperty("DE_PAIRENERGY", 20 * eV);
+    MPT->AddConstProperty("DE_YIELD", 3e-1);
+    // MPT->AddConstProperty("DE_AMPLIFICATION",2,true);
+    MPT->AddConstProperty("DE_ABSLENGTH", 1 * pc);
+    MPT->AddConstProperty("DE_DRIFTSPEED", 0.8 * cm / microsecond);
+    MPT->AddConstProperty("DE_TRANSVERSALSPREAD", 2e-5 * mm2 / ns);
+    MPT->AddConstProperty("DE_LONGITUDINALSPREAD", 4e-6 * mm2 / ns);
+    DriftGasMaterial->SetMaterialPropertiesTable(MPT);
+    G4MaterialPropertiesTable* MPT2 = new G4MaterialPropertiesTable();
+    MPT2->AddConstProperty("DE_AMPLIFICATION", 1000);
+    MPT2->AddConstProperty("DE_ABSLENGTH", 1 * pc);
     Al->SetMaterialPropertiesTable(MPT2);
 
+#endif
     m_SquareDetector = new G4LogicalVolume(sChamber, GasMaterial, "logic_Actar_Box", 0, 0, 0);
     m_logicGas = new G4LogicalVolume(sCage, DriftGasMaterial, "logic_Gas", 0, 0, 0);
     G4LogicalVolume* logicPad = new G4LogicalVolume(sPad, Cu, "logic_Pad", 0, 0, 0);
