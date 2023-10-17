@@ -49,11 +49,25 @@ void Analysis::Init(){
   string heavy_ejectile=  NPL::ChangeNameToG4Standard(reaction->GetNucleus4()->GetName());
   string light=NPL::ChangeNameToG4Standard(reaction->GetNucleus3()->GetName());
 
-
+  string Reaction_pd_s = "48Cr(p,d)47Cr@1620";
+  string Reaction_pt_s = "48Cr(p,t)46Cr@1620";
+  string Reaction_p3He_s = "48Cr(p,3He)46V@1620";
+  Reaction_pd = new Reaction(Reaction_pd_s);
+  Reaction_pt = new Reaction(Reaction_pt_s);
+  Reaction_p3He = new Reaction(Reaction_p3He_s);
 
 //
   ProtonSi = NPL::EnergyLoss(Path+ "proton_Si.G4table", "G4Table", 100);
+  
+  for(unsigned int i = 0; i < ParticleType.size(); i++){
+    LightAl[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_Al.G4table","G4Table",100);
+    LightTarget[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_CH2.G4table","G4Table",100);
+  }
+  BeamTarget["48Cr"] = NPL::EnergyLoss(Path+"Cr48_CH2.G4table","G4Table",100);
 
+  Reaction_pd->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pd->GetBeamEnergy(),TargetThickness*0.5,0));
+  Reaction_pt->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pt->GetBeamEnergy(),TargetThickness*0.5,0));
+  Reaction_p3He->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_p3He->GetBeamEnergy(),TargetThickness*0.5,0));
   Cal = CalibrationManager::getInstance();  
 }
   ///////////////////////////// Initialize some important parameters //////////////////////////////////
@@ -140,10 +154,12 @@ void Analysis::TreatEvent(){
       ThetaNormalTarget = 0;
       
       BeamImpact = TVector3(CATS->PositionOnTargetX,CATS->PositionOnTargetY,0); 
-      // BeamImpact = TVector3(0,0,0); 
+      // std::cout << "Position On target : " << CATS->PositionOnTargetX << " " << CATS->PositionOnTargetY << std::endl;
+
+      //BeamImpact = TVector3(0,0,0); 
       
       BeamDirection = TVector3(CATS->PositionX[1] - CATS->PositionX[0],CATS->PositionY[1] - CATS->PositionY[0],CATS->PositionZ[1] - CATS->PositionZ[0]);
-      // std::cout << CATS->PositionX[0] - CATS->PositionX[1] << " " << CATS->PositionY[0] - CATS->PositionY[1] << " " << CATS->PositionZ[0] - CATS->PositionZ[1] << std::endl;
+      // std::cout << "Position XY " <<  CATS->PositionX[1] - CATS->PositionX[0] << " " << CATS->PositionY[1] - CATS->PositionY[0] << " " << CATS->PositionZ[1] - CATS->PositionZ[0] << std::endl;
       // BeamDirection = TVector3(0,0,1);
       
       TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact ;
@@ -172,6 +188,7 @@ void Analysis::TreatEvent(){
         // The energy in CsI is calculate form dE/dx Table because
         CsI_Energy[ParticleType[i]] =  Cal->ApplyCalibration("MUST2/"+ParticleType[i]+"_T"+NPL::itoa(TelescopeNumber)+"_CsI"+NPL::itoa(CristalNb)+"_E",CsI_E_M2);
         Energy[ParticleType[i]] = CsI_Energy[ParticleType[i]];
+        // Energy[ParticleType[i]] = LightAl[ParticleType[i]].EvaluateInitialEnergy(Energy[ParticleType[i]], 0.4 * micrometer, ThetaM2Surface);
         //std::cout << ParticleType[i]+"MUST2/T"+NPL::itoa(TelescopeNumber)+"_CsI"+NPL::itoa(CristalNb)+"_E" << " " <<  Energy[ParticleType[i]] << "\n";
         //Energy = LightAl.EvaluateInitialEnergy( Energy ,0.4*micrometer , ThetaM2Surface);
         //Energy+=Si_E_M2;
@@ -179,6 +196,11 @@ void Analysis::TreatEvent(){
 
 //      else
       Energy[ParticleType[i]] += Si_E_M2;
+      if(Energy[ParticleType[i]] > 0)
+        Energy[ParticleType[i]] = LightTarget[ParticleType[i]].EvaluateInitialEnergy(Energy[ParticleType[i]] ,TargetThickness*0.5, ThetaNormalTarget);
+      else
+        Energy[ParticleType[i]] = -1000;
+      // std::cout << "DILO tata " << Energy[ParticleType[i]] << std::endl;
 
 
       }
@@ -191,9 +213,9 @@ void Analysis::TreatEvent(){
 
       // Part 3 : Excitation Energy Calculation
       M2_Ex_p.push_back(reaction->ReconstructRelativistic( Energy["proton"] , M2_ThetaLab[countMust2] ));
-      M2_Ex_d.push_back(reaction->ReconstructRelativistic( Energy["deuteron"] , M2_ThetaLab[countMust2] ));
-      M2_Ex_t.push_back(reaction->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
-      M2_Ex_a.push_back(reaction->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
+      M2_Ex_d.push_back(Reaction_pd->ReconstructRelativistic( Energy["deuteron"] , M2_ThetaLab[countMust2] ));
+      M2_Ex_t.push_back(Reaction_pt->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
+      M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
       
       M2_CsI_E_p.push_back(CsI_Energy["proton"]);
       M2_CsI_E_d.push_back(CsI_Energy["deuteron"]);

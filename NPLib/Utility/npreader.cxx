@@ -77,21 +77,14 @@ int main(int argc , char** argv){
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
-  std::cout << "test npa1" << std::endl;
   myDetector->ReadConfigurationFile(detectorfileName);
-  std::cout << "test npa2" << std::endl;
   myDetector->InitializeRootInput();
-  std::cout << "test npa3" << std::endl;
   myDetector->InitializeRootOutput();
-  std::cout << "test npa4" << std::endl;
   // Attempt to load an analysis
   NPL::VAnalysis* UserAnalysis = NULL;
   std::string libName = "./libNPAnalysis" + myOptionManager->GetSharedLibExtension();
-  std::cout << "test npa5" << std::endl;
   dlopen(libName.c_str(),RTLD_NOW | RTLD_GLOBAL);
-  std::cout << "test npa5.1" << std::endl;
   char* error = dlerror();
-  std::cout << "test npa5.2" << std::endl;
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
   std::cout << "Checking TreeReader adress: " << inputTreeReader << std::endl;
   myDetector->SetTreeReader(inputTreeReader);
@@ -112,7 +105,6 @@ int main(int argc , char** argv){
     }
   }
 
-  std::cout << "test npa6" << std::endl;
   if(myOptionManager->GetOnline()){
     // Request Detector manager to give the Spectra to the server
     myDetector->SetSpectraServer(); 
@@ -121,7 +113,6 @@ int main(int argc , char** argv){
   std::cout << std::endl << "///////// Starting Analysis ///////// "<< std::endl;
   TChain* Chain = RootInput:: getInstance()->GetChain();
   myOptionManager->GetNumberOfEntryToAnalyse();
-  std::cout << "test npa7" << std::endl;
 
 	unsigned long first_entry = myOptionManager->GetFirstEntryToAnalyse(); // defaults to zero
   unsigned long nentries = Chain->GetEntries();
@@ -144,14 +135,11 @@ int main(int argc , char** argv){
   unsigned long new_nentries = 0 ;
   int current_tree = 0 ;
   int total_tree = Chain->GetNtrees();
-  std::cout << "test npa8" << std::endl;
 
   bool IsPhysics = myOptionManager->GetInputPhysicalTreeOption();
-  std::cout << "test npa9" << std::endl;
 
   if(UserAnalysis==NULL){ 
     if(!IsPhysics){
-      std::cout << "test npa branch 1" << std::endl;
       while(inputTreeReader->Next()){
       //for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
       //  // Get the raw Data
@@ -196,15 +184,14 @@ int main(int argc , char** argv){
 
   else{
     if(!IsPhysics){ 
-      std::cout << "test npa branch 2" << std::endl;
       while(inputTreeReader->Next()){
         
         // Build the current event
         if(UserAnalysis->UnallocateBeforeBuild()){
           myDetector->BuildPhysicalEvent();
-          // User Analysis
+          // User Analysis;
           if(UserAnalysis->UnallocateBeforeTreat()){
-            UserAnalysis->TreatEvent();
+          UserAnalysis->TreatEvent();
             //Fill the tree     
             if(UserAnalysis->FillOutputCondition()) 
               myDetector->FillOutputTree();

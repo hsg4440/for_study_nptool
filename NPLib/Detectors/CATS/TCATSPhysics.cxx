@@ -115,7 +115,6 @@ void TCATSPhysics::BuildSimplePhysicalEvent(){
 //////////////////////////////////////////////////////////////////////////////		
 void TCATSPhysics::BuildPhysicalEvent(){
 
-
   // std::cout << "test 1" << std::endl;
   if (NPOptionManager::getInstance()->IsReader() == true) {
     m_EventData = &(**r_ReaderEventData);
@@ -143,7 +142,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
       DetectorHit.insert(m_PreTreatedData->GetCATSDetY(i));
   }
   // The number of CATS hit, i.e. the number of CATS that we are going to analyse
-  sizeDet = DetectorHit.size();
 
 
     
@@ -185,7 +183,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
   // std::cout << "test 7" << std::endl;
      double PosY =  ReconstructionFunctionY[DetN](MaxQY[DetN],MapY[DetN], QSumY[DetN]);
     //std::cout << "test " << std::reduce(QsumSample[DetN].begin(),QsumSample[DetN].end()) /(QsumSample[DetN]).size() << std::endl;
-    //std::cout << "test Pos " << PosX << " " << PosY << std::endl;
     StripNumberX.push_back(PosX);
     StripNumberY.push_back(PosY);
     DetNumber.push_back(DetN);   
@@ -216,11 +213,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
       PositionX.push_back(px0+(px1-px0)*(PosX-sx0));  
       PositionY.push_back(py0+(py1-py0)*(PosY-sy0));
       PositionZ.push_back(StripPositionZ[DetN]); 
-    }
-    else{
-      PositionX.push_back(-1000);  
-      PositionY.push_back(-1000);
-      PositionZ.push_back(-1000); 
     }
   }
 
@@ -262,7 +254,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
   BeamDirection = GetBeamDirection();
 
   // Does not meet the conditions for target position and beam direction 
-  
   return;
 }
 
@@ -461,7 +452,7 @@ void TCATSPhysics::Clear(){
   MapY.clear();
   MaxQX.clear();
   MaxQY.clear();
-  
+
   DetectorHit.clear();
   DetectorHitX.clear();
 }

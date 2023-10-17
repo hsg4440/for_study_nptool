@@ -280,6 +280,9 @@ class Analysis: public NPL::VAnalysis{
   double CsI_E_M2  ;
   std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
   std::map<TString, double> Energy ;
+  std::map<TString, NPL::EnergyLoss> LightAl ;
+  std::map<TString, NPL::EnergyLoss> LightTarget ;
+  std::map<TString, NPL::EnergyLoss> BeamTarget ;
   std::map<TString, double> CsI_Energy ;
   double BeamEnergy;
   double ThetaGDSurface ;
@@ -300,19 +303,22 @@ class Analysis: public NPL::VAnalysis{
 
 
   
+  NPL::Reaction* Reaction_pd;
+  NPL::Reaction* Reaction_pt;
+  NPL::Reaction* Reaction_p3He;
   NPL::Reaction* reaction = new Reaction;
   NPL::Particle* Co_57 = new Particle;
   NPL::Particle* Ni_57 = new Particle;
   NPL::EnergyLoss Beam_Target;
   NPL::EnergyLoss Heavy_Target;
-  NPL::EnergyLoss LightTarget;
+  // NPL::EnergyLoss LightTarget;
   NPL::EnergyLoss ProtonSi;
   std::vector<NPL::EnergyLoss> Heavy_IC_Gas;
   std::vector<NPL::EnergyLoss> Heavy_IC_Windows;
   std::vector<NPL::EnergyLoss> Heavy_IC_Mylar;
   std::vector<NPL::EnergyLoss> Heavy_DC_Gas;
-  NPL::EnergyLoss LightAl;
-  NPL::EnergyLoss LightSi;
+  // NPL::EnergyLoss LightAl;
+  // NPL::EnergyLoss LightSi;
 
   string BeamName = "48Cr";
   

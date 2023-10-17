@@ -88,7 +88,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
     std::map<UShort_t,vector< vector<double> > >   StripPositionX;//!
     std::map<UShort_t,vector< vector<double> > >   StripPositionY;//!
     std::map<UShort_t,double>             StripPositionZ;//!
-    int m_NumberOfCATS;
+    int m_NumberOfCATS; //!
     double m_TargetAngle; //!
     double m_TargetThickness; //!
 
@@ -104,7 +104,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
   
   public:
     // Set the reconstruction Method used for the CATS plane
-    void SetReconstructionMethod(unsigned int CATSNumber, string XorY, string MethodName);
+    void SetReconstructionMethod(unsigned int CATSNumber, string XorY, string MethodName); //!
 
   private : 
     //   Map of activated channel
@@ -116,8 +116,8 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
 
   public:   // Output data of interest
     //   for a CATS
-    void SetTargetAngle(double m_TargetAngle) {m_TargetAngle = m_TargetAngle;}
-    void SetTargetThickness(double m_TargetThickness) {m_TargetThickness = m_TargetThickness;}
+    void SetTargetAngle(double m_TargetAngle) {m_TargetAngle = m_TargetAngle;} //!
+    void SetTargetThickness(double m_TargetThickness) {m_TargetThickness = m_TargetThickness;} //!
 
 
     //   Remove bad channel, calibrate the data and apply threshold
@@ -214,6 +214,12 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
   std::set<int> DetectorHit;//! 
   std::map<UShort_t, std::vector<double>>	 QsumSample;//!
 
+  //Debugging
+  unsigned long counter;//!
+  unsigned long long time_elapsed1;//!
+  unsigned long long time_elapsed2;//!
+  unsigned long long time_elapsed3;//!
+  
   private: // Spectra Class   
     TCATSSpectra*      m_Spectra;//! 
 

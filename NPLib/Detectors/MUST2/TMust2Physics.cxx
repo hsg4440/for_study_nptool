@@ -326,7 +326,6 @@ void TMust2Physics::BuildSimplePhysicalEvent() { BuildPhysicalEvent(); }
 ///////////////////////////////////////////////////////////////////////////
 
 void TMust2Physics::BuildPhysicalEvent() {
-
   if (NPOptionManager::getInstance()->IsReader() == true) {
     m_EventData = &(**r_ReaderEventData);
   }
