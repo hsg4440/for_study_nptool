@@ -94,8 +94,6 @@ M2Telescope
  CSI=    0
  VIS=    all
 
-%%%%%%%%%%%%%%%%%%%%%     
-SSSDArray
 %%%%%%%%%% Det 1 %%%%%%%%     
 SSSD
  A= 17.61 9.85  104.11 mm

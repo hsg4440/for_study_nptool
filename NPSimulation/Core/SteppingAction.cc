@@ -28,18 +28,18 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 SteppingAction::SteppingAction() {
-  m_record_track = false;
-  m_tree         = RootOutput::getInstance()->GetTree();
+  m_record_track = NPOptionManager::getInstance()->GetRecordTrack();
+  m_tree = RootOutput::getInstance()->GetTree();
 
-  m_First       = true;
-  ParticleName  = "";
+  m_First = true;
+  ParticleName = "";
   KineticEnergy = -1000;
-  Theta         = -1000;
-  Phi           = -1000;
-  Mass          = -1000;
-  Charge        = -1000;
-  Z             = -1000;
-  A             = -1000;
+  Theta = -1000;
+  Phi = -1000;
+  Mass = -1000;
+  Charge = -1000;
+  Z = -1000;
+  A = -1000;
   Momentum.setX(-1000);
   Momentum.setY(-1000);
   Momentum.setZ(-1000);
@@ -47,15 +47,14 @@ SteppingAction::SteppingAction() {
   Position.setY(-1000);
   Position.setZ(-1000);
   LastStepNumber = -1000;
-  VolumeName     = "";
-  nClear         = 0;
-  TrackID        = -1000;
+  VolumeName = "";
+  nClear = 0;
+  TrackID = -1000;
 
   m_TrackInfo = new TTrackInfo();
   AttachTrackInfo();
   if (!RootOutput::getInstance()->GetTree()->FindBranch("TrackInfo"))
-    RootOutput::getInstance()->GetTree()->Branch("TrackInfo", "TTrackInfo",
-                                                 &m_TrackInfo);
+    RootOutput::getInstance()->GetTree()->Branch("TrackInfo", "TTrackInfo", &m_TrackInfo);
 
   // Attach track info class to m_tree
 }
@@ -64,8 +63,7 @@ SteppingAction::SteppingAction() {
 void SteppingAction::AttachTrackInfo() {
   // Reasssigned the branch address
   if (RootOutput::getInstance()->GetTree()->FindBranch("TrackInfo"))
-    RootOutput::getInstance()->GetTree()->SetBranchAddress("TrackInfo",
-                                                           &m_TrackInfo);
+    RootOutput::getInstance()->GetTree()->SetBranchAddress("TrackInfo", &m_TrackInfo);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -82,33 +80,31 @@ void SteppingAction::TrackRecording(const G4Step* step) {
     m_TrackInfo->Clear();
   m_First = false;
 
-  G4Track* track      = step->GetTrack();
-  int      StepNumber = track->GetCurrentStepNumber();
+  G4Track* track = step->GetTrack();
+  int StepNumber = track->GetCurrentStepNumber();
 
-  if (eventID
-      < G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID()) {
+  if (eventID < G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID()) {
     m_TrackInfo->Clear();
     nClear++;
   }
 
   if (StepNumber == 1) {
-    ParticleName  = track->GetParticleDefinition()->GetParticleName();
+    ParticleName = track->GetParticleDefinition()->GetParticleName();
     KineticEnergy = track->GetDynamicParticle()->GetKineticEnergy();
-    Mass          = track->GetDynamicParticle()->GetMass();
-    Charge        = track->GetDynamicParticle()->GetCharge();
-    Z             = track->GetParticleDefinition()->GetAtomicNumber();
-    A             = track->GetParticleDefinition()->GetAtomicMass();
-    Momentum      = track->GetDynamicParticle()->GetMomentum();
-    Theta         = Momentum.theta() * 180. / M_PI;
-    Phi           = Momentum.phi() * 180. / M_PI;
-    Position      = track->GetPosition();
+    Mass = track->GetDynamicParticle()->GetMass();
+    Charge = track->GetDynamicParticle()->GetCharge();
+    Z = track->GetParticleDefinition()->GetAtomicNumber();
+    A = track->GetParticleDefinition()->GetAtomicMass();
+    Momentum = track->GetDynamicParticle()->GetMomentum();
+    Theta = Momentum.theta() * 180. / M_PI;
+    Phi = Momentum.phi() * 180. / M_PI;
+    Position = track->GetPosition();
     G4VPhysicalVolume* volume = track->GetVolume();
-    VolumeName                = volume->GetName();
-    TrackID                   = track->GetTrackID();
+    VolumeName = volume->GetName();
+    TrackID = track->GetTrackID();
 
     double c_light = 299.792458; // To go from T.m to MeV/e
-    double Brho = sqrt(KineticEnergy * KineticEnergy + 2 * KineticEnergy * Mass)
-                  / (c_light * Charge);
+    double Brho = sqrt(KineticEnergy * KineticEnergy + 2 * KineticEnergy * Mass) / (c_light * Charge);
 
     m_TrackInfo->SetKineticEnergy(KineticEnergy);
     m_TrackInfo->SetTheta(Theta);

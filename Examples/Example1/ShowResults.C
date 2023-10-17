@@ -6,6 +6,7 @@ TChain* chain=NULL ;
 
 ////////////////////////////////////////////////////////////////////////////////
 void LoadCuts(){
+    std::cout << "Loading Cuts" << std::endl;
     TFile* File_ETOF = new TFile("cuts/ETOF.root","READ");
     ETOF = (TCutG*) File_ETOF->FindObjectAny("ETOF");
     
@@ -15,6 +16,8 @@ void LoadCuts(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void LoadChain(){
+
+    std::cout << "Loading Chain" << std::endl;
     chain = new TChain("PhysicsTree");
     chain->Add("root/analysis/Example1.root");
 }
