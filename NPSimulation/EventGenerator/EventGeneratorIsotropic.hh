@@ -39,6 +39,7 @@ using namespace CLHEP;
 // ROOT headers
 #include "TString.h"
 #include "TF1.h"
+#include "TH1F.h"
 
 class EventGeneratorIsotropic : public NPS::VEventGenerator{
 public:     // Constructor and destructor
@@ -56,7 +57,7 @@ private:    // Source parameter from input file
 		SourceParameters()                          ;
     G4double                 m_EnergyLow        ;  // Lower limit of energy range
     G4double                 m_EnergyHigh       ;  // Upper limit of energy range
-    TString			m_EnergyDistribution;
+    TString		     m_EnergyDistribution;
     G4double                 m_HalfOpenAngleMin ;  // Min Half open angle of the source
     G4double                 m_HalfOpenAngleMax ;  // Max Half open angle of the source
     G4double                 m_x0               ;  // Vertex Position X
@@ -72,5 +73,6 @@ private:    // Source parameter from input file
 	  vector<SourceParameters> m_Parameters       ;
     ParticleStack*           m_ParticleStack    ;
     TF1* fEnergyDist;
+    TH1F* m_EnergyDistributionHist;
 };
 #endif

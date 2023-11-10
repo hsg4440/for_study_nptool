@@ -36,6 +36,7 @@
 #include "RootOutput.h"
 #include "NPNucleus.h"
 #include "NPOptionManager.h"
+#include "NPFunction.h"
 using namespace CLHEP;
 
 
@@ -43,6 +44,8 @@ using namespace CLHEP;
 EventGeneratorIsotropic::EventGeneratorIsotropic(){
   m_ParticleStack = ParticleStack::getInstance();
   event_ID=0;
+
+  m_EnergyDistributionHist   = NULL;
 }
 
 
@@ -82,6 +85,10 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
       it->m_EnergyHigh        =blocks[i]->GetDouble("EnergyHigh","MeV");
       if(blocks[i]->HasToken("EnergyDistribution"))
         it->m_EnergyDistribution=blocks[i]->GetString("EnergyDistribution");
+      if(blocks[i]->HasToken("EnergyDistributionHist")){
+        vector<string> file = blocks[i]->GetVectorString("EnergyDistributionHist");
+        m_EnergyDistributionHist = NPL::Read1DProfile(file[0],file[1]);
+      }
       it->m_HalfOpenAngleMin  =blocks[i]->GetDouble("HalfOpenAngleMin","deg");
       it->m_HalfOpenAngleMax  =blocks[i]->GetDouble("HalfOpenAngleMax","deg");
       it->m_x0                =blocks[i]->GetDouble("x0","mm");
@@ -165,12 +172,14 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
           particle_energy = par.m_EnergyLow + RandFlat::shoot() * (par.m_EnergyHigh - par.m_EnergyLow)    ;
           event_ID++;
         }
-        else if(par.m_EnergyDistribution=="Watt"){
-          particle_energy = fEnergyDist->GetRandom();
+        else if(par.m_EnergyDistribution=="FromHisto"){
+          if(m_EnergyDistributionHist)
+            particle_energy = m_EnergyDistributionHist->GetRandom();
         }
         else{
           particle_energy = fEnergyDist->GetRandom();
         }
+
 
 
         // Direction of particle, energy and laboratory angle
