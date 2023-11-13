@@ -223,9 +223,10 @@ void TCATSPhysics::BuildPhysicalEvent(){
  // });
   // At least two CATS need to gave back position in order to reconstruct on Target 
   if(Positions.size()>1){
-      double t = (m_Zproj-Positions[2].first)/(Positions[2].first-Positions[1].first);
-      PositionOnTargetX= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*t;
-      PositionOnTargetY= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*t;
+      double t = (m_Zproj-Positions[2].first)/(m_Zproj-Positions[1].first);
+      PositionOnTargetX= (Positions[2].second.first - Positions[1].second.first*t)/(1 - t);
+      PositionOnTargetY= (Positions[2].second.second - Positions[1].second.second*t)/(1 - t);
+      // PositionOnTargetY= Positions[2].second.second + (Positions[2].second.second-3-Positions[1].second.second)*t;
     if(Mask1_Z != 0 && Mask2_Z != 0)
      { 
       double tmask1 = (Mask1_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);

@@ -21,7 +21,7 @@
 
 #include<iostream>
 using namespace std;
-#include"Analysis.h"
+#include"Analysis_E805.h"
 #include"NPAnalysisFactory.h"
 #include"NPDetectorManager.h"
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,8 +218,6 @@ bool Analysis::UnallocateBeforeBuild(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
-}
-/*
 
     //std::cout << "Bonjour je suis Nicolas" << std::endl;
     ReInit();
@@ -303,7 +301,7 @@ void Analysis::TreatEvent(){
     /////////////////////////////// Drift Chambers ///////////////////
 
 
-    /*if(DCRawM <=2 && DATATRIG_CATSTS[0] > 0){
+    if(DCRawM <=2 && DATATRIG_CATSTS[0] > 0){
       for(int DCmult = 0; DCmult < DCRawM; DCmult++){
         DC_Nr = DCRawNr[DCmult];
         
@@ -433,7 +431,6 @@ void Analysis::TreatEvent(){
   
   //std::cout << "Bonjour Nicolas est parti " << std::endl;
 }
-*/
 
 
 

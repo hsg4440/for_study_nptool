@@ -105,9 +105,7 @@ class Analysis: public NPL::VAnalysis{
   std::vector<double> M2_Y;
   std::vector<double> M2_Z;
   std::vector<double> M2_dE;
-  std::vector<double> M2_ECsI_from_deltaE ;
-  std::vector<double> Beta_from_deltaE;
-  std::vector<double> Beth_from_deltaE;
+  
 
   double OriginalBeamEnergy ; // AMEV
   double FinalBeamEnergy; 
@@ -133,7 +131,14 @@ class Analysis: public NPL::VAnalysis{
   unsigned short Inner6MVN[48];
   TTreeReaderArray<unsigned short>* Inner6MVN_;
   unsigned long long Inner6MVTS[48];
+  TTreeReaderArray<unsigned long long>* Inner6MVTS_;
   
+  int OutersVM;
+  TTreeReaderValue<int>* OutersVM_;
+  float OutersV[192];
+  TTreeReaderArray<float>* OutersV_;
+  unsigned short OutersVN[192];
+  TTreeReaderArray<unsigned short>* OutersVN_;
   
   int BGOVM;
   TTreeReaderValue<int>* BGOVM_;
@@ -169,19 +174,13 @@ class Analysis: public NPL::VAnalysis{
   float EnergyAddBackDoppler; 
   float EnergyAddBack;
   int ExogamDetNb[3];
-  // int CristalNb[3];
+  int CristalNb[3];
   int SegmentNb[3];
   
   std::vector<int> event1;
   std::vector<int> event2;
   int highest_E;
 
-  int OutersVM;
-  TTreeReaderValue<int>* OutersVM_;
-  float OutersV[192];
-  TTreeReaderArray<float>* OutersV_;
-  unsigned short OutersVN[192];
-  TTreeReaderArray<unsigned short>* OutersVN_;
 
   int DCRawM;
   unsigned short DCRaw[4];

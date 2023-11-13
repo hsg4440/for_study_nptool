@@ -17,8 +17,9 @@ using namespace std;
 
 MCRMethod::MCRMethod()
 {
-  Init();
-  MetroHast();
+  //Init();
+  // MetroHast();
+  Nappe();
   //MinimizationFunction();
 }
 
@@ -185,8 +186,8 @@ void MCRMethod::Init(){
   Temperature = TemperatureInitiale;
   TemperatureFinale = 0.1;
   Step = 0.1;
-  runmask[0] = "r0314_algo";
-  runmask[1] = "r0315_algo";
+  runmask[0] = "r0367_mask1";
+  runmask[1] = "r0368_mask1";
   for(unsigned int i = 0; i < 2; i++){
     Chain[i] = new TChain("PhysicsTree");
     Chain[i]->Add(path+runmask[i]+".root"); //CATS1
@@ -281,7 +282,130 @@ double MCRMethod::MinimizationFunction(){
   return distdiff;
 }
 
+void MCRMethod::Nappe(){
+  int X1 = 40;
+  int X2 = 40;
+  double stepx1 = 0.1;
+  double stepx2 = 0.1;
+  string Side = "Y";
 
+
+  TH1Map = new std::map<int,std::map<string,TH1F*>>;
+  double norm[2*X1+1][2*X2+1];
+  for(unsigned int i = 0; i < 2; i++){
+    for(int i1 = -X1; i1 <= X1; i1++){
+      for(int i2 = -X2; i2 <= X2; i2++){
+        (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)] = new TH1F(Form("h_m%i_x1%i_x2%i",i, i1, i2),Form("h_m%i_x1%i_x2%i",i, i1, i2),200,-10,10);
+      }
+    }
+  }
+  // std::cout << "test2" << std::endl;
+  runmask[0] = "r0314_mask1";
+  runmask[1] = "r0315_mask1";
+  for(unsigned int i = 0; i < 2; i++){
+    Chain[i] = new TChain("PhysicsTree");
+    Chain[i]->Add(path+runmask[i]+".root"); //CATS1
+    if (!(Chain[i]->GetEntries())){
+      printf("ERROR in the Chain !! \n");
+      return;
+    }
+  // std::cout << "test3" << std::endl;
+  TreeReader[i] = new TTreeReader(Chain[i]);
+  CATSPhysics_[i]= new TTreeReaderValue<TCATSPhysics>(*TreeReader[i],"CATS");
+
+  }
+  TString CName = "CUT_314_mask1";
+  CFile[0] = new TFile(CName+".root");
+  CUT[0] = (TCutG*)CFile[0]->FindObjectAny(CName);
+  std::cout << CUT[0] << std::endl;
+  CName = "CUT_315_mask1";
+  CFile[1] = new TFile(CName+".root");
+  CUT[1] = (TCutG*)CFile[1]->FindObjectAny(CName);
+  std::cout << CUT[1] << std::endl;
+  for(unsigned int i = 0; i < 2; i++){
+    while (TreeReader[i]->Next()){
+      CATSPhysics = &**(CATSPhysics_[i]);
+      if(CATSPhysics->PositionX.size() == 2){
+  // std::cout << "test5 " << CATSPhysics->GetCATSMult() << " " << CATSPhysics->DetNumber[0] << " " << (CATSPhysics->PositionX).size() << " " << CATSPhysics->PositionY[i] << " " << CUT[i]->IsInside(CATSPhysics->PositionX[i],CATSPhysics->PositionY[i]) << std::endl;
+        if(CATSPhysics->DetNumber[0] == 1 && CUT[i]->IsInside(CATSPhysics->PositionX[i],CATSPhysics->PositionY[i])){
+          for(int i1 = -X1; i1 <= X1; i1++){
+            for(int i2 = -X2; i2 <= X2; i2++){
+              // std::cout << "test " <<  i1 << " " << i2 << std::endl;
+  // std::cout << "test4" << std::endl;
+              double x1, x2;
+              if(Side == "X"){
+                x1 = CATSPhysics->PositionX[0] +i1*stepx1;
+                x2 = CATSPhysics->PositionX[1] +i2*stepx2;
+              }
+              else if(Side == "Y"){
+                x1 = CATSPhysics->PositionY[0] +i1*stepx1;
+                x2 = CATSPhysics->PositionY[1] +i2*stepx2;
+              }
+              (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)]->Fill(ProjectOnCats(i,x1,x2));
+              norm[X1+i1][X2+i2] = 0;
+
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  (*TH1Map)[0][Form("h_m%i_x1%i_x2%i",0, 0, 0)]->Draw();
+  (*TH1Map)[0][Form("h_m%i_x1%i_x2%i",0, 1, 1)]->Draw("same");
+  (*TH1Map)[0][Form("h_m%i_x1%i_x2%i",0, 2, 2)]->Draw("same");
+  auto c1 = new TCanvas;
+  TH2F* HeatMap[2];
+  auto fitfunc = new TF1("fitfunc","gausn",-10,10);
+  auto SumHeatMap = new TH2F("Sumheatmap","Sumheatmap",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  HeatMap[0] = new TH2F("heatmap_0","heatmap_0",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  HeatMap[1] = new TH2F("heatmap_1","heatmap_1",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  TSpectrum* Spec = new TSpectrum(1,1.);
+  for(unsigned int i = 0; i < 2; i++){
+    for(int i1 = -X1; i1 <= X1; i1++){
+      for(int i2 = -X2; i2 <= X2; i2++){
+        Int_t nfound = Spec->Search((*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)],2,"",0.15);
+        Double_t* PeaksPosX = Spec->GetPositionX();
+        fitfunc->SetParameters(200,PeaksPosX[0],1);
+        fitfunc->SetParLimits(1,-10,10);
+        (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)]->Fit(fitfunc,"QL","",-10,10);
+        // std::cout << i1 << " " << i2 << " " << PeaksPosX[0] << std::endl;
+        double value;
+        if(Side == "X")
+          value = abs(fitfunc->GetParameter(1) - MaskPosX[i]);
+        else if(Side == "Y")
+          value = abs(fitfunc->GetParameter(1) - MaskPosY[i]);
+        HeatMap[i]->SetBinContent(X1+i1+1,X2+i2+1,value);
+        //HeatMap[i]->SetBinContent(i1+1,i2+1,value);
+        std::cout << norm[X1+i1][X2+i2] << std::endl;
+        norm[X1+i1][X2+i2] += value*value;
+        if(i ==1){
+          norm[X1+i1][X2+i2] = sqrt(norm[X1+i1][X2+i2]);
+     
+         }
+      }
+    }
+  }
+  for(int i1 = -X1; i1 <= X1; i1++){
+    for(int i2 = -X2; i2 <= X2; i2++){
+      SumHeatMap->SetBinContent(X1+i1+1,X2+i2+1,norm[X1+i1][X2+i2]);
+  
+    }
+  }
+  // SumHeatMap->Add(HeatMap[0],HeatMap[1],1,1);
+  for(unsigned int i = 0; i < 2; i++){
+  auto c = new TCanvas();
+  HeatMap[i]->Draw("colz");
+  }
+  auto c = new TCanvas();
+  SumHeatMap->Draw("colz");
+}
+
+
+float MCRMethod::ProjectOnCats(unsigned int i, double x1, double x2){
+  double tmask = (CATSPosZ[1]-MASKPosZ[i])/(CATSPosZ[0] - MASKPosZ[i]);
+  return x2 -x1*tmask;
+};
 
 
 

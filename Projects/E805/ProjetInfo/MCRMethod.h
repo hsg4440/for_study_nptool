@@ -12,6 +12,9 @@
 #include "TTreeReaderValue.h"
 #include "TH2F.h"
 #include "TSpectrum2.h"
+#include "TSpectrum.h"
+#include "TCutG.h"
+#include "TF1.h"
 
 // NPTOOL
 #include "TCATSPhysics.h"
@@ -32,6 +35,10 @@ class MCRMethod
   void RandomStep();
   double MinimizationFunction();
   void Init();
+  float ProjectOnCats(unsigned int i, double x1, double x2);
+
+
+  void Nappe();
 
  private:
 
@@ -55,9 +62,11 @@ class MCRMethod
   private:
   TChain *Chain[2];
   TTreeReader *TreeReader[2];
-  TString path = "./NPRootA/";
+  TString path = "./RootR/";
   TTreeReaderValue<TCATSPhysics> *CATSPhysics_[2];
-  TCATSPhysics *CATSPhysics; 
+  TCATSPhysics *CATSPhysics;
+  TCutG *CUT[2]; 
+  TFile *CFile[2]; 
   Double_t TopLeft[2][2];
   Double_t BotLeft[2][2];
   Double_t BotRight[2][2];
@@ -66,7 +75,11 @@ class MCRMethod
   Double_t BotLeftGeo[4] = {-12.5,-12.3,-12.4,-13.6};
   Double_t BotRightGeo[4] = {12.5,-12.3,12.6,-13.6};
 
+  std::map<int,std::map<string,TH1F*>>* TH1Map; 
   TGraph* Graph;
+
+  double MaskPosX[2] = {0,0.1};
+  double MaskPosY[2] = {0.2,-1.1};
 
   double tini;
   double tfinale;

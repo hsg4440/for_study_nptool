@@ -75,13 +75,14 @@ void Analysis::Init(){
 
 bool Analysis::UnallocateBeforeBuild(){
   // std::cout << "test unallocate" << std::endl;
+  return true;
   GATCONFMASTER = **GATCONFMASTER_;
   return (GATCONFMASTER > 0); 
   //return true;
 }
 
 bool Analysis::UnallocateBeforeTreat(){
-  for(int i = 0; i < 10; i++){
+/*  for(int i = 0; i < 10; i++){
   PlasticRaw[i] = (*PlasticRaw_   )[i];
   PlasticRawTS[i] = (*PlasticRaw_TS_)[i];
   }
@@ -125,6 +126,7 @@ bool Analysis::UnallocateBeforeTreat(){
   TAC_PL_4TS = **TAC_PL_4_TS_;
   TAC_PL_5 = **TAC_PL_5_;
   TAC_PL_5TS = **TAC_PL_5_TS_;
+*/
   return true;
 }
 
@@ -137,8 +139,7 @@ bool Analysis::FillOutputCondition(){
 void Analysis::TreatEvent(){
 
     //  if(M2->CsI_E.size() > 0) 
-    //  std::cout << "Analysis test " << M2->CsI_E[0] << " " << M2->CsI_E.size() << " " << "\n \n";
-
+    //  std::cout << "Analysis test " << M2->CsI_E[0] << " " << M2->CsI_E.size() << " " << "\n \n";*
     ReInit();
     // std::cout << CATS->PositionX.size() << std::endl;
     //////////////////// MUST2 Part ////////////////////
@@ -158,7 +159,7 @@ void Analysis::TreatEvent(){
 
       //BeamImpact = TVector3(0,0,0); 
       
-      BeamDirection = TVector3(CATS->PositionX[1] - CATS->PositionX[0],CATS->PositionY[1] - CATS->PositionY[0],CATS->PositionZ[1] - CATS->PositionZ[0]);
+      BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],CATS->PositionZ[0] - CATS->PositionZ[1]);
       // std::cout << "Position XY " <<  CATS->PositionX[1] - CATS->PositionX[0] << " " << CATS->PositionY[1] - CATS->PositionY[0] << " " << CATS->PositionZ[1] - CATS->PositionZ[0] << std::endl;
       // BeamDirection = TVector3(0,0,1);
       
@@ -200,7 +201,6 @@ void Analysis::TreatEvent(){
         Energy[ParticleType[i]] = LightTarget[ParticleType[i]].EvaluateInitialEnergy(Energy[ParticleType[i]] ,TargetThickness*0.5, ThetaNormalTarget);
       else
         Energy[ParticleType[i]] = -1000;
-      // std::cout << "DILO tata " << Energy[ParticleType[i]] << std::endl;
 
 
       }
@@ -214,6 +214,7 @@ void Analysis::TreatEvent(){
       // Part 3 : Excitation Energy Calculation
       M2_Ex_p.push_back(reaction->ReconstructRelativistic( Energy["proton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_d.push_back(Reaction_pd->ReconstructRelativistic( Energy["deuteron"] , M2_ThetaLab[countMust2] ));
+       std::cout << "oui " << M2_Ex_d[countMust2] << std::endl;
       M2_Ex_t.push_back(Reaction_pt->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
       
@@ -232,6 +233,47 @@ void Analysis::TreatEvent(){
       //  
     }//end loop MUST2
     }
+/*
+  }
+  if(M2->Si_E.size() > 0){
+    if(Inner6MVM > 0){
+      
+      int ExoMultMax = 2;
+      if(OutersVM < 2){
+        ExoMultMax == OutersVM;
+      }
+      for(int ExoMult = 0; ExoMult < ExoMultMax;ExoMult++){
+        ExogamDetNb[ExoMult] = (OutersVN[ExoMult] - 32)/16;
+        CristalNb[ExoMult] = (OutersVN[ExoMult] - (2+ ExogamDetNb[ExoMult])*16)/4;
+        SegmentNb[ExoMult] = (OutersVN[ExoMult] - 16*(ExogamDetNb[ExoMult] + 2) - 4*(CristalNb[ExoMult]));
+      }
+      
+      if(Inner6MVM == 1){
+        if(OutersVM > 0 && BGOV[0] < 20){
+            Theta_seg = Exogam_Clovers_struc[ExogamDetNb[0]].Theta_Crystal_Seg[CristalNb[0]][SegmentNb[0]];
+            Phi_seg = Exogam_Clovers_struc[ExogamDetNb[0]].Phi_Crystal_Seg[CristalNb[0]][SegmentNb[0]];
+            EnergyDoppler = Doppler_Correction(Theta_seg,Phi_seg,0,0,Beta,Inner6MV[0]);
+            EnergyAddBackDoppler = EnergyDoppler;
+          }
+      }
+      if(Inner6MVM == 2 && OutersVM > 1 && BGOV[0] < 20 && BGOV[1] < 20){
+        if(Inner6MVN[0]/4 == Inner6MVN[1]/4){
+          EnergyAddBack = Inner6MV[0] + Inner6MV[1];
+        }
+      }
+      if(EnergyAddBack > -1000){
+        for(int i = 0;i < ExoMultMax; i++){
+          if(OutersV[i] > OutersV[highest_E]){
+            highest_E = i;
+          }
+        }
+        Theta_seg = Exogam_Clovers_struc[ExogamDetNb[highest_E]].Theta_Crystal_Seg[CristalNb[highest_E]][SegmentNb[highest_E]];
+        Phi_seg = Exogam_Clovers_struc[ExogamDetNb[highest_E]].Phi_Crystal_Seg[CristalNb[highest_E]][SegmentNb[highest_E]];
+        EnergyAddBackDoppler = Doppler_Correction(Theta_seg,Phi_seg,0,0,Beta,EnergyAddBack);
+      }
+    } 
+  }
+  
 
   
   //for(unsigned int countMust2 = 0 ; countMust2 < M2->Si_E.size() ; countMust2++){
@@ -254,11 +296,13 @@ void Analysis::TreatEvent(){
   //    }
   //  }
   //}
+*/
 }
 
 
 
 void Analysis::InitOutputBranch() {
+  /*
   RootOutput::getInstance()->GetTree()->Branch("M2_TelescopeM",&M2_TelescopeM,"M2_TelescopeM/s");
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_p",&M2_CsI_E_p);
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_d",&M2_CsI_E_d);
@@ -278,7 +322,7 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("M2_Z",&M2_Z);
   RootOutput::getInstance()->GetTree()->Branch("M2_dE",&M2_dE);
   RootOutput::getInstance()->GetTree()->Branch("CsI_E_M2",&CsI_E_M2);
-  RootOutput::getInstance()->GetTree()->Branch("M2_ECsI_from_deltaE",&M2_ECsI_from_deltaE);
+  // RootOutput::getInstance()->GetTree()->Branch("M2_ECsI_from_deltaE",&M2_ECsI_from_deltaE);
   RootOutput::getInstance()->GetTree()->Branch("GATCONF",&GATCONFMASTER);
   
   RootOutput:: getInstance()->GetTree()->Branch("TAC_CATS_PL",&TAC_CATS_PL,"TAC_CATS_PL/s");
@@ -321,15 +365,32 @@ void Analysis::InitOutputBranch() {
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRaw",IC_ZDDRaw,"IC_ZDDRaw[6]/s");
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRawTS",IC_ZDDRawTS,"IC_ZDDRawTS[6]/l");
   
+  RootOutput:: getInstance()->GetTree()->Branch("EnergyDoppler",&EnergyDoppler,"EnergyDoppler/F");
+  RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBack",&EnergyAddBack,"EnergyAddBack/F");
+  RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBackDoppler",&EnergyAddBackDoppler,"EnergyAddBackDoppler/F");
+  
+  RootOutput:: getInstance()->GetTree()->Branch("Inner6MVM",&Inner6MVM,"Inner6MVM/I");
+  RootOutput:: getInstance()->GetTree()->Branch("Inner6MV",Inner6MV,"Inner6MV[Inner6MVM]/F");
+  RootOutput:: getInstance()->GetTree()->Branch("Inner6MVN",Inner6MVN,"Inner6MVN[Inner6MVM]/s");
+  RootOutput:: getInstance()->GetTree()->Branch("Inner6MVTS",Inner6MVTS,"Inner6MVTS[Inner6MVM]/l");
+  RootOutput:: getInstance()->GetTree()->Branch("BGOVM",&BGOVM,"BGOVM/I");
+  RootOutput:: getInstance()->GetTree()->Branch("BGOV",BGOV,"BGOV[BGOVM]/F");
+  RootOutput:: getInstance()->GetTree()->Branch("BGOVN",BGOVN,"BGOVN[BGOVM]/s"); 
+  RootOutput:: getInstance()->GetTree()->Branch("DeltaTVM",&DeltaTVM,"DeltaTVM/I");
+  RootOutput:: getInstance()->GetTree()->Branch("DeltaTV",DeltaTV,"DeltaTV[DeltaTVM]/F");
+  RootOutput:: getInstance()->GetTree()->Branch("DeltaTVN",DeltaTVN,"DeltaTVN[DeltaTVM]/s");
+  RootOutput:: getInstance()->GetTree()->Branch("DeltaTVTS",DeltaTVTS,"DeltaTVTS[DeltaTVM]/l");
+*/
 }
 
 void Analysis::UnallocateVariables(){
 }
 
 void Analysis::InitInputBranch(){
+
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
    GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
-  //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
+/*  //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
   PlasticRaw_   = new TTreeReaderArray<UShort_t>(*inputTreeReader,"PlasticRaw");
   PlasticRaw_TS_ = new TTreeReaderArray<ULong64_t>(*inputTreeReader,"PlasticRawTS");
   
@@ -370,6 +431,20 @@ void Analysis::InitInputBranch(){
   TAC_PL_4_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_4TS");
   TAC_PL_5_= new TTreeReaderValue<UShort_t>(*inputTreeReader,"TAC_PL_5");
   TAC_PL_5_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_5TS");
+  
+  Inner6MVM_ = new TTreeReaderValue<int>(*inputTreeReader,"Inner6MRawM");
+  Inner6MV_ = new TTreeReaderArray<float>(*inputTreeReader,"Inner6MRaw");
+  Inner6MVN_ = new TTreeReaderArray<unsigned short>(*inputTreeReader,"Inner6MRawNr");
+  //RootInput:: getInstance()->GetChain()->SetBranchAddress("Inner6MVTS",Inner6MVTS);
+
+  OutersVM_ = new TTreeReaderValue<int>(*inputTreeReader,"OutersRawM");
+  OutersV_ = new TTreeReaderArray<float>(*inputTreeReader,"OutersRaw");
+  OutersVN_ = new TTreeReaderArray<unsigned short>(*inputTreeReader,"OutersRawNr");
+  
+  BGOVM_ = new TTreeReaderValue<int>(*inputTreeReader,"BGORawM");
+  BGOV_ = new TTreeReaderArray<float>(*inputTreeReader,"BGORaw");
+  BGOVN_ = new TTreeReaderArray<unsigned short>(*inputTreeReader,"BGORawNr");
+*/
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -392,7 +467,7 @@ void Analysis::ReInit(){
   M2_CsI_E_t.clear();
   M2_CsI_E_a.clear();
   
-  M2_ECsI_from_deltaE.clear();
+  // M2_ECsI_from_deltaE.clear();
   //ExNoBeam=ExNoProto.clear();
   //EDC.clear();
   M2_ELab.clear();
