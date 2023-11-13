@@ -75,14 +75,14 @@ void Analysis::Init(){
 
 bool Analysis::UnallocateBeforeBuild(){
   // std::cout << "test unallocate" << std::endl;
-  return true;
+  //return true;
   GATCONFMASTER = **GATCONFMASTER_;
   return (GATCONFMASTER > 0); 
   //return true;
 }
 
 bool Analysis::UnallocateBeforeTreat(){
-/*  for(int i = 0; i < 10; i++){
+  for(int i = 0; i < 10; i++){
   PlasticRaw[i] = (*PlasticRaw_   )[i];
   PlasticRawTS[i] = (*PlasticRaw_TS_)[i];
   }
@@ -126,7 +126,7 @@ bool Analysis::UnallocateBeforeTreat(){
   TAC_PL_4TS = **TAC_PL_4_TS_;
   TAC_PL_5 = **TAC_PL_5_;
   TAC_PL_5TS = **TAC_PL_5_TS_;
-*/
+
   return true;
 }
 
@@ -214,7 +214,7 @@ void Analysis::TreatEvent(){
       // Part 3 : Excitation Energy Calculation
       M2_Ex_p.push_back(reaction->ReconstructRelativistic( Energy["proton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_d.push_back(Reaction_pd->ReconstructRelativistic( Energy["deuteron"] , M2_ThetaLab[countMust2] ));
-       std::cout << "oui " << M2_Ex_d[countMust2] << std::endl;
+      //  std::cout << "oui " << M2_Ex_d[countMust2] << std::endl;
       M2_Ex_t.push_back(Reaction_pt->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
       
@@ -302,7 +302,7 @@ void Analysis::TreatEvent(){
 
 
 void Analysis::InitOutputBranch() {
-  /*
+  
   RootOutput::getInstance()->GetTree()->Branch("M2_TelescopeM",&M2_TelescopeM,"M2_TelescopeM/s");
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_p",&M2_CsI_E_p);
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_d",&M2_CsI_E_d);
@@ -364,7 +364,7 @@ void Analysis::InitOutputBranch() {
   
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRaw",IC_ZDDRaw,"IC_ZDDRaw[6]/s");
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRawTS",IC_ZDDRawTS,"IC_ZDDRawTS[6]/l");
-  
+ /* 
   RootOutput:: getInstance()->GetTree()->Branch("EnergyDoppler",&EnergyDoppler,"EnergyDoppler/F");
   RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBack",&EnergyAddBack,"EnergyAddBack/F");
   RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBackDoppler",&EnergyAddBackDoppler,"EnergyAddBackDoppler/F");
@@ -390,7 +390,7 @@ void Analysis::InitInputBranch(){
 
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
    GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
-/*  //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
+  //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
   PlasticRaw_   = new TTreeReaderArray<UShort_t>(*inputTreeReader,"PlasticRaw");
   PlasticRaw_TS_ = new TTreeReaderArray<ULong64_t>(*inputTreeReader,"PlasticRawTS");
   
@@ -431,7 +431,7 @@ void Analysis::InitInputBranch(){
   TAC_PL_4_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_4TS");
   TAC_PL_5_= new TTreeReaderValue<UShort_t>(*inputTreeReader,"TAC_PL_5");
   TAC_PL_5_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_5TS");
-  
+  /*
   Inner6MVM_ = new TTreeReaderValue<int>(*inputTreeReader,"Inner6MRawM");
   Inner6MV_ = new TTreeReaderArray<float>(*inputTreeReader,"Inner6MRaw");
   Inner6MVN_ = new TTreeReaderArray<unsigned short>(*inputTreeReader,"Inner6MRawNr");
