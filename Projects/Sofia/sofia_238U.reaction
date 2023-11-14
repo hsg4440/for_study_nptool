@@ -7,8 +7,8 @@ Beam
  Energy= 135660
  ExcitationEnergy= 0 MeV
  SigmaEnergy= 2
- SigmaX= 5 mm
- SigmaY= 5 mm
+ SigmaX= 0 mm
+ SigmaY= 0 mm
  SigmaThetaX= 0 
  SigmaPhiY= 0
  MeanThetaX= 0
