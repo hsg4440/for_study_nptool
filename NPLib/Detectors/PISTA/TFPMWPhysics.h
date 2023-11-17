@@ -32,6 +32,7 @@ using namespace std;
 // ROOT headers
 #include "TObject.h"
 #include "TH1.h"
+#include "TF1.h"
 #include "TVector3.h"
 #include "TSpline.h"
 // NPTool headers
@@ -66,7 +67,12 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
     vector<double>   PositionY;
     vector<double>   ChargeX;
     vector<double>   ChargeY;
+    //double QXmax[4];
+    //int StripXmax[4];
+    //double QYmax[4];
+    //int StripYmax[4];
     double Xf;
+    double Yf;
     double Thetaf;
     double Xt;
     double Yt;
@@ -132,7 +138,12 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
 
     // clear the raw and physical data objects event by event
     void ClearEventPhysics() {Clear();}      
-    void ClearEventData()    {m_EventData->Clear();}   
+    void ClearEventData()    {m_EventData->Clear();}  
+
+    // Get Detector Position
+    double GetDetectorPositionX(int Det) {return DetPosX[Det];}
+    double GetDetectorPositionY(int Det) {return DetPosY[Det];}
+    double GetDetectorPositionZ(int Det) {return DetPosZ[Det];}
 
 
   //////////////////////////////////////////////////////////////
@@ -154,7 +165,9 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
     double fThresholdX;
     double fThresholdY;
 
+    double WeightedAverage(std::vector<std::pair<int,double>>& Map);
     double AnalyticHyperbolicSecant(std::pair<int,double>& MaxQ, std::vector<std::pair<int, double>>& Map);
+    double FittedHyperbolicSecant(std::pair<int,double>& MaxQ, std::vector<std::pair<int, double>>& Map);
 
 
   // objects are not written in the TTree
@@ -171,6 +184,8 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
   // parameters used in the analysis
   private:
     double m_E_Threshold;     //!
+    double m_Zf; //! Z focal plane position
+    double m_GapSize;
 
   // number of detectors
   private:

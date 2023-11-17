@@ -86,10 +86,12 @@ void TICPhysics::BuildPhysicalEvent() {
   if(fIC[1]>0 && fIC[5]>0){
     DE = 0.5*(fIC[0] + fIC[1] + fIC[2] + fIC[3]) + fIC[4];
     Eres = fIC[5] + fIC[6] + fIC[7] + fIC[8] + fIC[9];
+    Etot =0.02411*(0.8686*fIC[0]+0.7199*fIC[1]+0.6233*fIC[2]+0.4697*fIC[3]+0.9787*fIC[4]+0.9892*fIC[5]+2.1038*fIC[6]+1.9429*fIC[7]+1.754*fIC[8]+2.5*fIC[9]); 
   }
   else{
     DE = -100;
     Eres = -100;
+    Etot = -100;
   }
 
 }
@@ -175,6 +177,7 @@ void TICPhysics::ReadAnalysisConfig() {
 void TICPhysics::Clear() {
   DE = -100;
   Eres = -100;
+  Etot = -100;
 }
 
 

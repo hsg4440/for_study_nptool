@@ -46,6 +46,8 @@ TFPMWPhysics::TFPMWPhysics()
   : m_EventData(new TFPMWData),
   m_PreTreatedData(new TFPMWData),
   m_EventPhysics(this),
+  m_Zf(7600),
+  m_GapSize(0),
   m_NumberOfDetectors(0){
   }
 
@@ -104,6 +106,8 @@ void TFPMWPhysics::BuildPhysicalEvent() {
       QSumX[NX] += QX;
       if(MaxQX.find(NX)==MaxQX.end() || MaxQX[NX].second<QX){
         MaxQX[NX] = make_pair(StrX,QX);
+        //QXmax[NX] = QX;
+        //StripXmax[NX] = StrX;
       }
     }
   }
@@ -116,13 +120,23 @@ void TFPMWPhysics::BuildPhysicalEvent() {
       QSumY[NY] += QY;
       if(MaxQY.find(NY)==MaxQY.end() || MaxQY[NY].second<QY){
         MaxQY[NY] = make_pair(StrY,QY);
+        //QYmax[NY] = QY;
+        //StripYmax[NY] = StrY;
       }
     }
   }
 
   for(auto &DetN : DetectorHit){
+    //double PosX = WeightedAverage(MapX[DetN]);
+    //double PosY = WeightedAverage(MapY[DetN]);
     double PosX = AnalyticHyperbolicSecant(MaxQX[DetN],MapX[DetN]);
     double PosY = AnalyticHyperbolicSecant(MaxQY[DetN],MapY[DetN]);
+    //double PosX = FittedHyperbolicSecant(MaxQX[DetN],MapX[DetN]);
+    //double PosY = FittedHyperbolicSecant(MaxQY[DetN],MapY[DetN]);
+
+
+    PosX = -PosX - DetPosX[DetN];
+    PosY = PosY - DetPosY[DetN];
 
     int sx0 = (int) PosX;
     int sx1 = sx0+1;
@@ -136,8 +150,7 @@ void TFPMWPhysics::BuildPhysicalEvent() {
     PositionY.push_back(PosY);
   }
 
-  double Zf = 9000;
-  CalculateFocalPlanePosition(Zf);
+  CalculateFocalPlanePosition(m_Zf);
   CalculateTargetPosition();
 }
 
@@ -145,14 +158,19 @@ void TFPMWPhysics::BuildPhysicalEvent() {
 void TFPMWPhysics::CalculateFocalPlanePosition(double Zf){
 
   if(PositionX.size()==4){
-    double Z2 = DetPosZ[2];
-    double Z3 = DetPosZ[3];
+    double Z2 = DetPosZ[2]-m_GapSize;
+    double Z3 = DetPosZ[3]-m_GapSize;
     double X2 = PositionX[2];
     double X3 = PositionX[3];
+    double Y2 = PositionY[2];
+    double Y3 = PositionY[3];
 
     Xf = X2 + (X3-X2)/(Z3-Z2)*(Zf-Z2);
     Thetaf = atan((X3-X2)/(Z3-Z2));
 
+    Z2 = DetPosZ[2]+m_GapSize;
+    Z3 = DetPosZ[3]+m_GapSize;
+    Yf = Y2 + (Y3-Y2)/(Z3-Z2)*(Zf-Z2);
   }
 
 }
@@ -161,25 +179,46 @@ void TFPMWPhysics::CalculateFocalPlanePosition(double Zf){
 void TFPMWPhysics::CalculateTargetPosition(){
 
   if(PositionX.size()>1){
-    double Z0 = DetPosZ[0];
-    double Z1 = DetPosZ[1];
+    double Z0 = DetPosZ[0]-m_GapSize;
+    double Z1 = DetPosZ[1]-m_GapSize;
     double X0 = PositionX[0];
     double X1 = PositionX[1];
     double Y0 = PositionY[0];
     double Y1 = PositionY[1];
-
-    TVector3 vFF = TVector3(X1-X0,Y1-Y0,Z1-Z0);
-
-    Theta_in = vFF.Theta();
-    Phi_in = vFF.Phi();
-
     Xt = X1 + (X0-X1)*Z1/Z0;
+
+    Z0 = DetPosZ[0]+m_GapSize;
+    Z1 = DetPosZ[1]+m_GapSize;
     Yt = Y1 + (Y0-Y1)*Z1/Z0;
 
+    Z0 = DetPosZ[0];
+    Z1 = DetPosZ[1];
+    TVector3 vFF = TVector3(X1-X0,Y1-Y0,Z1-Z0);
+    Theta_in = vFF.Theta();
+    Phi_in = vFF.Phi();
   }
 
 }
-  
+
+/////////////////////////////////////////////////////////////////////
+double TFPMWPhysics::WeightedAverage(std::vector<std::pair<int,double>>& Map){
+
+  unsigned int sizeQ = Map.size(); 
+
+  double num=0;
+  double denum=0;
+  for(unsigned int i = 0 ; i < sizeQ ; i++){
+    num += Map[i].first * Map[i].second;
+    denum += Map[i].second;
+  }
+
+  double weighted_average = num/denum;
+
+  return weighted_average;
+
+
+}
+
 /////////////////////////////////////////////////////////////////////
 double TFPMWPhysics::AnalyticHyperbolicSecant(std::pair<int,double>& MaxQ,std::vector<std::pair<int,double>>& Map){
   double sech = -1000 ;
@@ -223,6 +262,45 @@ double TFPMWPhysics::AnalyticHyperbolicSecant(std::pair<int,double>& MaxQ,std::v
 
   return sech ;
 }
+
+///////////////////////////////////////////////////////////////////////////
+double TFPMWPhysics::FittedHyperbolicSecant(std::pair<int,double>& MaxQ,std::vector<std::pair<int,double>>& Map){
+  // Warning: should not delete static variable
+  static TF1* f = new TF1("sechs","[0]/(cosh(TMath::Pi()*(x-[1])/[2])*cosh(TMath::Pi()*(x-[1])/[2]))",1,1000);
+
+  // Help the fit by computing the position of the maximum by analytic method
+  double StartingPoint = AnalyticHyperbolicSecant(MaxQ,Map);
+  // if analytic method fails then the starting point in strip max
+  if(StartingPoint==-1000) StartingPoint = MaxQ.first; 
+
+  // Maximum is close to charge max, Mean value is close to Analytic one, typical width is 3.8 strip
+  f->SetParameters(MaxQ.first,StartingPoint,1);
+
+  static vector<double> y ;
+  static vector<double> q ; 
+  y.clear(); q.clear();
+  double final_size = 0 ;
+  unsigned int sizeQ = Map.size(); 
+
+  for(unsigned int i = 0 ; i < sizeQ ; i++){
+    if(Map[i].second > (MaxQ.second)*0.2){
+      q.push_back(Map[i].second);
+      y.push_back(Map[i].first);
+      final_size++;
+    }
+  }
+
+  // requiered at least 3 point to perfom a fit
+  if(final_size<3){
+    return -1000 ;
+  }
+
+  TGraph* g = new TGraph(q.size(),&y[0],&q[0]);
+  g->Fit(f,"QN0");
+  delete g;
+  return f->GetParameter(1)  ;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -336,11 +414,19 @@ void TFPMWPhysics::Clear() {
   MaxQY.clear();
 
   Xf = -1000;
+  Yf = -1000;
   Thetaf = -1000;
   Theta_in = -1000;
   Phi_in = -1000;
   Xt = -1000;
   Yt = -1000;
+
+  /*for(int i=0; i<4; i++){
+    QXmax[i] = -1;
+  //QYmax[i] = -1;
+  StripXmax[i] = -1;
+  //StripYmax[i] = -1;
+  }*/
 }
 
 

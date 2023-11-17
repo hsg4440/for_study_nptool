@@ -63,7 +63,7 @@ class TICPhysics : public TObject, public NPL::VDetector {
   public:
     double DE;
     double Eres;
-
+    double Etot;
   private:
     
     /// A usefull method to bundle all operation to add a detector
