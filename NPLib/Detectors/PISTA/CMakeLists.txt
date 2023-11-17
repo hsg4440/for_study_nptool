@@ -10,8 +10,10 @@ add_custom_command(OUTPUT TICDataDict.cxx COMMAND ../../scripts/build_dict.sh TI
 
 add_custom_command(OUTPUT TICPhysicsDict.cxx COMMAND ../../scripts/build_dict.sh TICPhysics.h TICPhysicsDict.cxx TICPhysics.rootmap libNPPISTA.dylib DEPENDS TICPhysics.h)
 
-add_library(NPPISTA SHARED TPISTASpectra.cxx TPISTAData.cxx TPISTAPhysics.cxx TPISTADataDict.cxx TPISTAPhysicsDict.cxx TFPMWData.cxx TFPMWDataDict.cxx TFPMWPhysics.cxx TFPMWPhysicsDict.cxx TICData.cxx TICDataDict.cxx TICPhysics.cxx TICPhysicsDict.cxx)
+add_custom_command(OUTPUT TVamosReconstructionDict.cxx COMMAND ../../scripts/build_dict.sh TVamosReconstruction.h TVamosReconstructionDict.cxx TVamosReconstruction.rootmap libNPPISTA.dylib DEPENDS TVamosReconstruction.h)
+
+add_library(NPPISTA SHARED TPISTASpectra.cxx TPISTAData.cxx TPISTAPhysics.cxx TPISTADataDict.cxx TPISTAPhysicsDict.cxx TFPMWData.cxx TFPMWDataDict.cxx TFPMWPhysics.cxx TFPMWPhysicsDict.cxx TICData.cxx TICDataDict.cxx TICPhysics.cxx TICPhysicsDict.cxx TVamosReconstruction.cxx TVamosReconstructionDict.cxx)
 
 target_link_libraries(NPPISTA ${ROOT_LIBRARIES} NPCore) 
-install(FILES TPISTAData.h TPISTAPhysics.h TPISTASpectra.h TFPMWData.h TFPMWPhysics.h TICData.h TICPhysics.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES TPISTAData.h TPISTAPhysics.h TPISTASpectra.h TFPMWData.h TFPMWPhysics.h TICData.h TICPhysics.h TVamosReconstruction.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 

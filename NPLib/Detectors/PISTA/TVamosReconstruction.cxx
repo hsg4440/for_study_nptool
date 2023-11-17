@@ -1,7 +1,6 @@
-#include "TReconstruction.h"
+#include "TVamosReconstruction.h"
 
-Int_t MRec[1100][550][3];
-
+// STL
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,29 +9,29 @@ Int_t MRec[1100][550][3];
 
 using namespace std;
 
-ClassImp(TReconstruction);
+ClassImp(TVamosReconstruction);
 
 //////////////////////////////////////////////////////////
-TReconstruction::TReconstruction(){
+TVamosReconstruction::TVamosReconstruction(){
 
 }
 
 //////////////////////////////////////////////////////////
-TReconstruction::~TReconstruction(){
-
+TVamosReconstruction::~TVamosReconstruction(){
 }
 
+/*
 //////////////////////////////////////////////////////////
-void TReconstruction::RandomInit()
+void TVamosReconstruction::RandomInit()
 {  
-  Array = Ptr = new Float_t[255];
-  for(UShort_t i=0;i<255;i++)
-    *(Ptr++) = ((Float_t) i)/254.0 - 0.5;
+  Array = Ptr = new float[255];
+  for(unsigned int i=0;i<255;i++)
+    *(Ptr++) = ((float) i)/254.0 - 0.5;
   Ptr = Array;
 }
 
 //////////////////////////////////////////////////////////
-float TReconstruction::GetRandom()
+float TVamosReconstruction::GetRandom()
 {
   float value = *Ptr;
  
@@ -43,9 +42,11 @@ float TReconstruction::GetRandom()
  
   return value;
 }
+*/
+
 
 //////////////////////////////////////////////////////////
-void TReconstruction::ReadMatrix(Char_t * FName)
+void TVamosReconstruction::ReadMatrix(string FName)
 {
   int Len=255;
   int i,j;
@@ -54,7 +55,7 @@ void TReconstruction::ReadMatrix(Char_t * FName)
   ifstream File;
 
    ifstream IF;
-   IF.open(FName);
+   IF.open(FName.c_str());
    
    while(IF.getline(Line,Len))
      {
@@ -66,16 +67,18 @@ void TReconstruction::ReadMatrix(Char_t * FName)
        *InOut >> MRec[i][j][1];
        *InOut >> MRec[i][j][2];
        delete InOut;
-     } 
+     }
+
+   cout << "*** Reading the VAMOS magnetic field Matrix ***" << endl; 
 }
 
  
  
 //////////////////////////////////////////////////////////
-void Reconstruction::CalculateReconstruction(float Xf, float Tf, float BrhoRef, float&Brho, float&Theta, float&Path)
+void TVamosReconstruction::CalculateReconstruction(double Xf, double Tf, double BrhoRef, double&Brho, double&Theta, double&Path)
 {
-  Double_t Brhot,Thetat,Patht;
-  Int_t VecI[2];
+  double Brhot,Thetat,Patht;
+  int VecI[2];
     
   Brho = Theta = Path = -500;                  
 
@@ -92,19 +95,19 @@ void Reconstruction::CalculateReconstruction(float Xf, float Tf, float BrhoRef, 
      )
     {
       
-      Brhot = (((Double_t) MRec[VecI[0]][VecI[1]][0]) + GetRandom())/1000.;
-      Thetat = (((Double_t) MRec[VecI[0]][VecI[1]][1]) + GetRandom()) - 200.;
+      Brhot = (((double) MRec[VecI[0]][VecI[1]][0]) + rand.Uniform(-0.5,0.5))/1000.;
+      Thetat = (((double) MRec[VecI[0]][VecI[1]][1]) + rand.Uniform(-0.5,0.5)) - 200.;
       Thetat *=-1;
-      Patht = (((Double_t) MRec[VecI[0]][VecI[1]][2]) + GetRandom()) /10.;
+      Patht = (((double) MRec[VecI[0]][VecI[1]][2]) + rand.Uniform(-0.5,0.5)) /10.;
     }
 
   if(Brhot >0.001 && Thetat > -300. && Thetat < 300.
                                                 && Patht >0 && Patht < 2000.)
     {
       
-      Brho = BrhoRef*((Float_t) Brhot);
-      Theta = (Float_t) Thetat*-1;
-      Path = (Float_t) Patht;
+      Brho = BrhoRef*((float) Brhot);
+      Theta = (float) Thetat*-1;
+      Path = (float) Patht;
     }
 }
 

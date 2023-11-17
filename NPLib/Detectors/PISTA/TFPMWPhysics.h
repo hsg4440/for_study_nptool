@@ -66,7 +66,14 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
     vector<double>   PositionY;
     vector<double>   ChargeX;
     vector<double>   ChargeY;
-  
+    double Xf;
+    double Thetaf;
+    double Xt;
+    double Yt;
+    double Theta_in;
+    double Phi_in;
+
+
   private:
     std::set<int> DetectorHitX;//!
     std::set<int> DetectorHit;//!
@@ -87,7 +94,9 @@ class TFPMWPhysics : public TObject, public NPL::VDetector {
     /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 Pos); 
   void AddDetector(double R, double Theta, double Phi); 
-  
+  void CalculateFocalPlanePosition(double Zf);
+  void CalculateTargetPosition();
+
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
   public:

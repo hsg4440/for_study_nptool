@@ -136,6 +136,48 @@ void TFPMWPhysics::BuildPhysicalEvent() {
     PositionY.push_back(PosY);
   }
 
+  double Zf = 9000;
+  CalculateFocalPlanePosition(Zf);
+  CalculateTargetPosition();
+}
+
+/////////////////////////////////////////////////////////////////////
+void TFPMWPhysics::CalculateFocalPlanePosition(double Zf){
+
+  if(PositionX.size()==4){
+    double Z2 = DetPosZ[2];
+    double Z3 = DetPosZ[3];
+    double X2 = PositionX[2];
+    double X3 = PositionX[3];
+
+    Xf = X2 + (X3-X2)/(Z3-Z2)*(Zf-Z2);
+    Thetaf = atan((X3-X2)/(Z3-Z2));
+
+  }
+
+}
+
+/////////////////////////////////////////////////////////////////////
+void TFPMWPhysics::CalculateTargetPosition(){
+
+  if(PositionX.size()>1){
+    double Z0 = DetPosZ[0];
+    double Z1 = DetPosZ[1];
+    double X0 = PositionX[0];
+    double X1 = PositionX[1];
+    double Y0 = PositionY[0];
+    double Y1 = PositionY[1];
+
+    TVector3 vFF = TVector3(X1-X0,Y1-Y0,Z1-Z0);
+
+    Theta_in = vFF.Theta();
+    Phi_in = vFF.Phi();
+
+    Xt = X1 + (X0-X1)*Z1/Z0;
+    Yt = Y1 + (Y0-Y1)*Z1/Z0;
+
+  }
+
 }
   
 /////////////////////////////////////////////////////////////////////
@@ -292,6 +334,13 @@ void TFPMWPhysics::Clear() {
   MapY.clear();
   MaxQX.clear();
   MaxQY.clear();
+
+  Xf = -1000;
+  Thetaf = -1000;
+  Theta_in = -1000;
+  Phi_in = -1000;
+  Xt = -1000;
+  Yt = -1000;
 }
 
 
