@@ -162,7 +162,7 @@ void NeutronHPphysics::ConstructProcess() {
   G4HadronInelasticProcess* process2 = new G4HadronInelasticProcess("neutronInelastic", G4Neutron::Definition() );
 #endif
 #ifndef GEANT4_11
-  G4NeutronInelasticProcess* process2 = new G4NeutronInelasticProcess("neutronInelastic", G4Neutron::Definition() );
+  G4NeutronInelasticProcess* process2 = new G4NeutronInelasticProcess("neutronInelastic");
 #endif
  
   pManager->AddDiscreteProcess(process2);
