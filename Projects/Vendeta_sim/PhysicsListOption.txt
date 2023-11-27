@@ -11,5 +11,5 @@ HadronPhysicsINCLXX 0
 HadronPhysicsQGSP_BIC_HP 0
 HadronPhysicsQGSP_BERT_HP 0
 Decay 0
-Menate_R 0
+Menate_R 1
 NeutronHP 1

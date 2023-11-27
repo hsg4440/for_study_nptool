@@ -130,7 +130,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
     if(par.m_Multiplicty.size()==0)
       par.m_Multiplicty.resize(par.m_particleName.size(),1);
 
-    if(par.m_EnergyDistribution!="flat"){
+    if(par.m_EnergyDistribution!="flat" && par.m_EnergyDistribution!="FromHisto"){
       if(par.m_EnergyDistribution=="Watt"){
         fEnergyDist = new TF1("fWatt","0.4865*TMath::SinH(sqrt(2*x))*TMath::Exp(-x)",par.m_EnergyLow,par.m_EnergyHigh);
       }
@@ -173,8 +173,9 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
           event_ID++;
         }
         else if(par.m_EnergyDistribution=="FromHisto"){
-          if(m_EnergyDistributionHist)
+          if(m_EnergyDistributionHist){
             particle_energy = m_EnergyDistributionHist->GetRandom();
+          }
         }
         else{
           particle_energy = fEnergyDist->GetRandom();
