@@ -165,7 +165,8 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList() {
 
 #ifdef USE_NEUTRONHP
   if (m_NeutronHP) {
-    RegisterPhysics(new NeutronHPphysics("neutronHP"));
+    //RegisterPhysics(new NeutronHPphysics("neutronHP"));
+    m_PhysList["NeutronHPphysics"] = new NeutronHPphysics("neutronHP");
     cout << "//// Using NeutronHPPhysics ////" << endl;
   }
 #endif
