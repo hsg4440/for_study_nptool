@@ -47,11 +47,15 @@ void TZDDData::Clear() {
     fZDD_IC_E.clear();
     fZDD_IC_N.clear();
     fZDD_IC_TS.clear();
-    fZDD_PM_E.clear();
-    fZDD_PM_N.clear();
-    fZDD_PM_TS.clear();
+
+    fZDD_PL_E.clear();
+    fZDD_PL_N.clear();
+    fZDD_PL_TS.clear();
+
+    fZDD_DC_E.clear();
     fZDD_DC_N.clear();
     fZDD_DC_TS.clear();
+
     fZDD_EXO_E.clear();
     fZDD_EXO_N.clear();
     fZDD_EXO_TS.clear();
@@ -68,9 +72,9 @@ void TZDDData::Dump() const {
   for (size_t i = 0 ; i < fZDD_IC_E.size(); i++){
     cout << "DetNbr: " << fZDD_IC_N[i] << " Energy: " << fZDD_IC_E[i] << " TimeStamp: " << fZDD_IC_TS[i] << endl;
   }
-  cout << "ZDD_PME Mult: " << fZDD_PM_E.size() << endl;
-  for (size_t i = 0 ; i < fZDD_PM_E.size(); i++){
-    cout << "DetNbr: " << fZDD_PM_N[i] << " Energy: " << fZDD_PM_E[i] << " TimeStamp: " << fZDD_PM_TS[i] << endl;
+  cout << "ZDD_PLE Mult: " << fZDD_PL_E.size() << endl;
+  for (size_t i = 0 ; i < fZDD_PL_E.size(); i++){
+    cout << "DetNbr: " << fZDD_PL_N[i] << " Energy: " << fZDD_PL_E[i] << " TimeStamp: " << fZDD_PL_TS[i] << endl;
   }
   cout << "ZDD_DCE Mult: " << fZDD_DC_E.size() << endl;
   for (size_t i = 0 ; i < fZDD_DC_E.size(); i++){
