@@ -16,49 +16,41 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 #include "TTACData.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
-using namespace std; 
+using namespace std;
 
 ClassImp(TTACData)
 
+    //////////////////////////////////////////////////////////////////////
+    TTACData::TTACData() {}
 
 //////////////////////////////////////////////////////////////////////
-TTACData::TTACData() {
-}
-
-
+TTACData::~TTACData() {}
 
 //////////////////////////////////////////////////////////////////////
-TTACData::~TTACData() {
-}
-
-
-
-//////////////////////////////////////////////////////////////////////
-void TTACData::Clear() { 
-  fTAC_Channel.clear();
-  fTAC_Nbr.clear();
+void TTACData::Clear() {
+  fTAC_Time.clear();
+  fTAC_N.clear();
+  fTAC_Name.clear();
   fTAC_TS.clear();
 }
 
-
-
 //////////////////////////////////////////////////////////////////////
 void TTACData::Dump() const {
-  // This method is very useful for debuging and worth the dev.
-  cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TTACData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
+  // // This method is very useful for debuging and worth the dev.
+  // cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TTACData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  size_t mysize = fTAC_Channel.size();
-  cout << "TAC_Mult: " << mysize << endl;
-  for (size_t i = 0 ; i < mysize ; i++){
-    cout << "TACNbr: " << fTAC_Nbr[i]  << " Channel: " << fTAC_Channel[i] << " TS: " << fTAC_TS[i] << endl;
-  }
+  // size_t mysize = fTAC_Channel.size();
+  // cout << "TAC_Mult: " << mysize << endl;
+  // for (size_t i = 0 ; i < mysize ; i++){
+  //   cout << "TACNbr: " << fTAC_Nbr[i]  << " Channel: " << fTAC_Channel[i] << " TS: " << fTAC_TS[i] << endl;
+  // }
 }

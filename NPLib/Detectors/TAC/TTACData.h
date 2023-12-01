@@ -18,7 +18,7 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
@@ -31,59 +31,54 @@ using namespace std;
 
 class TTACData : public TObject {
   //////////////////////////////////////////////////////////////
-  // data members are hold into vectors in order 
+  // data members are hold into vectors in order
   // to allow multiplicity treatment
-  private: 
-    // Energy
-    vector<UShort_t>   fTAC_Channel;
-    vector<UShort_t>   fTAC_Nbr;
-    vector<ULong64_t>  fTAC_TS;
+ private:
+  // Energy
+  vector<unsigned int> fTAC_Time;
+  vector<unsigned int> fTAC_N;
+  vector<std::string> fTAC_Name;
+  vector<unsigned long long> fTAC_TS;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
-  public: 
-    TTACData();
-    ~TTACData();
-    
+ public:
+  TTACData();
+  ~TTACData();
 
   //////////////////////////////////////////////////////////////
   // Inherited from TObject and overriden to avoid warnings
-  public:
-    void Clear();
-    void Clear(const Option_t*) {};
-    void Dump() const;
-
+ public:
+  void Clear();
+  void Clear(const Option_t*){};
+  void Dump() const;
 
   //////////////////////////////////////////////////////////////
   // Getters and Setters
-  // Prefer inline declaration to avoid unnecessary called of 
+  // Prefer inline declaration to avoid unnecessary called of
   // frequently used methods
   // add //! to avoid ROOT creating dictionnary for the methods
-  public:
-    //////////////////////    SETTERS    ////////////////////////
-    inline void SetTAC(const UShort_t& TACNbr,const UShort_t& Channel, const ULong64_t& TS){
-      fTAC_Nbr.push_back(TACNbr);
-      fTAC_Channel.push_back(Channel);
-      fTAC_TS.push_back(TS);
-    };//!
+ public:
+  //////////////////////    SETTERS    ////////////////////////
+  // Channel -> N
+  inline void SetTAC(const unsigned int& Channel, const unsigned int& Time, const unsigned long long& TS,
+                     const std::string& Name) {
+    fTAC_N.push_back(Channel);
+    fTAC_Name.push_back(Name);
+    fTAC_Time.push_back(Time);
+    fTAC_TS.push_back(TS);
+  }; //!
 
-
-
-    //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetTAC_Mult() const
-      {return fTAC_Channel.size();}
-    inline UShort_t GetTAC_Channel(const UShort_t &i) const 
-      {return fTAC_Channel[i];}//!
-    inline UShort_t GetTAC_Nbr(const UShort_t &i) const 
-      {return fTAC_Nbr[i];}//!
-    inline ULong64_t GetTAC_TS(const ULong64_t &i) const 
-      {return fTAC_TS[i];}//!
-
+  //////////////////////    GETTERS    ////////////////////////
+  // Energy
+  inline unsigned int GetTAC_Mult() const { return fTAC_Time.size(); }
+  inline unsigned int GetTAC_Channel(const unsigned int& i) const { return fTAC_Time[i]; } //!
+  inline unsigned int GetTAC_N(const unsigned int& i) const { return fTAC_N[i]; }        //!
+  inline unsigned long long GetTAC_TS(const unsigned long long& i) const { return fTAC_TS[i]; }    //!
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
-  ClassDef(TTACData,1)  // TACData structure
+  ClassDef(TTACData, 1) // TACData structure
 };
 
 #endif
