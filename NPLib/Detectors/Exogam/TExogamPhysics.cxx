@@ -450,18 +450,23 @@ void TExogamPhysics::Clear() {
 
 //	Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
 void TExogamPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Exogam");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("EXOGAM");
   if (NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl;
+    cout << "//// " << blocks.size() << " EXOGAM clover found " << endl;
 
-  vector<string> token = {"ANGLE_FILE"};
+  // FIXME ANGLE FILE??? NOT SURE I GET IT...
+  // For Doppler I guess... Something like that should be added later
+  // But maybe the more stand R,THETA,PHI or X,Y,Z 
+  // vector<string> token = {"ANGLE_FILE"};
+  vector<string> token = {"Board, Flange, Channel0, Channel1"};
+  // FIXME To be implemented in the future
+  // vector<string> token = {"Board, Flange, Channel0, Channel1, R, THETA, PHI"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(token)) {
-      string AngleFile = blocks[i]->GetString("ANGLE_FILE");
-      AddClover(AngleFile);
+      int Board, Flange, Channel0, Channel1; // FIXME!!!! Should come from Data...
+      AddClover(Board, Flange, Channel0, Channel1);
     }
-
     else {
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
@@ -493,58 +498,66 @@ map<string, TH1*> TExogamPhysics::GetSpectra() {
     return empty;
   }
 }
+
+
 //////////////////////////////////////////////////////////////////////////
-void TExogamPhysics::AddClover(string AngleFile) {
-  ifstream file;
-  //  TString filename = Form("posBaptiste/angles_exogam_clover%d.txt",NumberOfClover);
-  //  TString filename = Form("posz42_simu50mm/angles_exogam_clover%d.txt",NumberOfClover);
-  //  TString filename = Form("posz42_exp_stat_demiring/angles_exogam_clover%d.txt",NumberOfClover);
+void TExogamPhysics::AddClover(int Board, int Flange, int Channel0, int Channel1) {
 
-  string path = "configs/";
-  TString filename = path + AngleFile;
-
-  cout << filename << endl;
-  file.open(filename);
-  if (!file)
-    cout << filename << " was not opened" << endl;
-
-  vector<double> Angles;
-  vector<vector<double>> Segment_angles;
-  vector<vector<vector<double>>> Cristal_angles;
-
-  Cristal_angles.clear();
-
-  double angle;
-  string buffer;
-
-  for (int i = 0; i < 4; i++) {
-    Segment_angles.clear();
-
-    for (int j = 0; j < 4; j++) {
-      Angles.clear();
-
-      for (int k = 0; k < 2; k++) {
-        file >> buffer >> angle;
-
-        Angles.push_back(angle); // Theta (k = 0)   Phi (k = 1)
-
-        // cout << angle << endl;
-        if (Angles.size() == 2)
-          cout << "Clover " << NumberOfClover << ": Theta=" << Angles[0] << " Phi=" << Angles[1] << endl;
-      }
-
-      Segment_angles.push_back(Angles);
-    }
-
-    Cristal_angles.push_back(Segment_angles);
-  }
-
-  Clover_Angles_Theta_Phi.push_back(Cristal_angles);
-
-  file.close();
-
-  NumberOfClover++;
 }
+
+// FIXME Legacy thing... Might delete later
+//////////////////////////////////////////////////////////////////////////
+// void TExogamPhysics::AddClover(string AngleFile) {
+//   ifstream file;
+//   //  TString filename = Form("posBaptiste/angles_exogam_clover%d.txt",NumberOfClover);
+//   //  TString filename = Form("posz42_simu50mm/angles_exogam_clover%d.txt",NumberOfClover);
+//   //  TString filename = Form("posz42_exp_stat_demiring/angles_exogam_clover%d.txt",NumberOfClover);
+
+//   string path = "configs/";
+//   TString filename = path + AngleFile;
+
+//   cout << filename << endl;
+//   file.open(filename);
+//   if (!file)
+//     cout << filename << " was not opened" << endl;
+
+//   vector<double> Angles;
+//   vector<vector<double>> Segment_angles;
+//   vector<vector<vector<double>>> Cristal_angles;
+
+//   Cristal_angles.clear();
+
+//   double angle;
+//   string buffer;
+
+//   for (int i = 0; i < 4; i++) {
+//     Segment_angles.clear();
+
+//     for (int j = 0; j < 4; j++) {
+//       Angles.clear();
+
+//       for (int k = 0; k < 2; k++) {
+//         file >> buffer >> angle;
+
+//         Angles.push_back(angle); // Theta (k = 0)   Phi (k = 1)
+
+//         // cout << angle << endl;
+//         if (Angles.size() == 2)
+//           cout << "Clover " << NumberOfClover << ": Theta=" << Angles[0] << " Phi=" << Angles[1] << endl;
+//       }
+
+//       Segment_angles.push_back(Angles);
+//     }
+
+//     Cristal_angles.push_back(Segment_angles);
+//   }
+
+//   Clover_Angles_Theta_Phi.push_back(Cristal_angles);
+
+//   file.close();
+
+//   NumberOfClover++;
+// }
 
 //	Add Parameter to the CalibrationManger
 void TExogamPhysics::AddParameterToCalibrationManager() {

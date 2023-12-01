@@ -154,7 +154,8 @@ class TExogamPhysics : public TObject, public NPL::VDetector{
 
  public:		//	Specific to EXOGAM Array
   //	Add a Clover
-  void AddClover(string AngleFile);
+  // void AddClover(string AngleFile);
+  void AddClover(int Board, int Flange, int Channel0, int Channel1);
 
   Int_t GetClover_Mult()    { return(CloverNumber.size()); }
   //  Int_t GetECC_Mult()   { return(ECC_CristalNumber.size()); }

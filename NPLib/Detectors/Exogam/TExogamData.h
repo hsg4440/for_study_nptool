@@ -24,30 +24,10 @@
 
 // STL
 #include "TObject.h"
+#include <map>
 #include <vector>
 
 class TExogamData : public TObject {
- private:
-  std::vector<UShort_t> fExoE;
-  std::vector<UShort_t> fExoE_CrystalNbr;
-  std::vector<ULong64_t> fExoE_TS;
-
-  std::vector<UShort_t> fExoHG; // Same as Energy but with High Gain (for Low Energy events) 
-  std::vector<UShort_t> fExoHG_CrystalNbr;
-  std::vector<ULong64_t> fExoHG_TS;
-
-  std::vector<UShort_t> fExoTDC; // Internal TDC of EXOGAM
-  std::vector<UShort_t> fExoTDC_CrystalNbr;
-  std::vector<ULong64_t> fExoTDC_TS;
-
-  std::vector<UShort_t> fExoOuter;
-  std::vector<UShort_t> fExoOuter_SubCrystalNbr; 
-
-  std::vector<UShort_t> fExoBGO;
-  std::vector<UShort_t> fExoBGO_CrystalNbr;
-
-  std::vector<UShort_t> fExoCsI;
-  std::vector<UShort_t> fExoCsI_CrystalNbr;
 
  public:
   TExogamData();
@@ -57,50 +37,48 @@ class TExogamData : public TObject {
   void Clear(const Option_t*){};
   void Dump() const;
 
+ public:
+  std::vector<unsigned int> fExo_Flange;
+  std::vector<unsigned int> fExo_Crystal;
+  std::vector<unsigned int> fExo_E;
+  std::vector<unsigned int> fExo_E_HG; // High gain x20
+  std::vector<unsigned long long> fExo_TS;
+  std::vector<unsigned int> fExo_TDC;
+  std::vector<unsigned int> fExo_BGO;
+  std::vector<unsigned int> fExo_CsI;
+  std::vector<unsigned int> fExo_Outer1;
+  std::vector<unsigned int> fExo_Outer2;
+  std::vector<unsigned int> fExo_Outer3;
+  std::vector<unsigned int> fExo_Outer4;
+
+
   /////////////////////           SETTERS           ////////////////////////
-  inline void SetExo(const UShort_t& Energy, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
-    fExoE.push_back(Energy);
-    fExoE_CrystalNbr.push_back(DetNumb);
-    fExoE_TS.push_back(TimeStamp);
-  }
-  inline void SetExoHG(const UShort_t& Energy, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
-    fExoHG.push_back(Energy);
-    fExoHG_CrystalNbr.push_back(DetNumb);
-    fExoHG_TS.push_back(TimeStamp);
-  }
-  inline void SetExoDelta(const UShort_t& Time, const UShort_t& DetNumb, const ULong64_t& TimeStamp) {
-    fExoTDC.push_back(Time);
-    fExoTDC_CrystalNbr.push_back(DetNumb);
-    fExoTDC_TS.push_back(TimeStamp);
-  }
-  inline void SetExoOuter(const UShort_t& Energy, const UShort_t& OutersNumb) {
-    fExoOuter.push_back(Energy);
-    fExoOuter_SubCrystalNbr.push_back(OutersNumb);
-  }
-  inline void SetExoBGO(const UShort_t& Energy, const UShort_t& BGONumb) {
-    fExoBGO.push_back(Energy);
-    fExoBGO_CrystalNbr.push_back(BGONumb);
-  }
-  inline void SetExoCsI(const UShort_t& Energy, const UShort_t& CsINumb) {
-    fExoCsI.push_back(Energy);
-    fExoCsI_CrystalNbr.push_back(CsINumb);
-  }
+  inline void SetExoFlange(unsigned int& Flange) { fExo_Flange.push_back(Flange); }
+  inline void SetExoCrystal(unsigned int& Crystal) { fExo_Crystal.push_back(Crystal); }
+  inline void SetExoE(unsigned int& Energy) { fExo_E.push_back(Energy); }
+  inline void SetExoEHG(unsigned int& Energy) { fExo_E_HG.push_back(Energy); }
+  inline void SetExoTS(unsigned long long& TS) { fExo_TS.push_back(TS); }
+  inline void SetExoTDC(unsigned int& TDC) { fExo_TDC.push_back(TDC); }
+  inline void SetExoBGO(unsigned int& BGO) { fExo_BGO.push_back(BGO); }
+  inline void SetExoCsI(unsigned int& CsI) { fExo_CsI.push_back(CsI); }
+  inline void SetExoOuter1(unsigned int& Outer1) { fExo_Outer1.push_back(Outer1); }
+  inline void SetExoOuter2(unsigned int& Outer2) { fExo_Outer2.push_back(Outer2); }
+  inline void SetExoOuter3(unsigned int& Outer3) { fExo_Outer3.push_back(Outer3); }
+  inline void SetExoOuter4(unsigned int& Outer4) { fExo_Outer4.push_back(Outer4); }
+
   /////////////////////           GETTERS           ////////////////////////
-  inline UShort_t GetExoE(UShort_t& i) { return fExoE[i]; }
-  inline UShort_t GetExoE_CrystalNbr(UShort_t& i) { return fExoE_CrystalNbr[i]; }
-  inline ULong64_t GetExoE_TS(UShort_t& i) { return fExoE_TS[i]; }
-  inline UShort_t GetExoHG(UShort_t& i) { return fExoHG[i]; }
-  inline UShort_t GetExoHG_CrystalNbr(UShort_t& i) { return fExoHG_CrystalNbr[i]; }
-  inline ULong64_t GetExoHG_TS(UShort_t& i) { return fExoHG_TS[i]; }
-  inline UShort_t GetExoTDC(UShort_t& i) { return fExoTDC[i]; }
-  inline UShort_t GetExoTDC_CrystalNbr(UShort_t& i) { return fExoTDC_CrystalNbr[i]; }
-  inline ULong64_t GetExoTDC_TS(UShort_t& i) { return fExoTDC_TS[i]; }
-  inline UShort_t GetExoOuter(UShort_t& i) { return fExoOuter[i]; }
-  inline UShort_t GetExoOuter_SubCrystalNbr(UShort_t& i) { return fExoOuter_SubCrystalNbr[i]; }
-  inline UShort_t GetExoBGO(UShort_t& i) { return fExoBGO[i]; }
-  inline UShort_t GetExoBGO_CrystalNbr(UShort_t& i) { return fExoBGO_CrystalNbr[i]; }
-  inline UShort_t GetExoCsI(UShort_t& i) { return fExoCsI[i]; }
-  inline UShort_t GetExoCsI_CrystalNbr(UShort_t& i) { return fExoCsI_CrystalNbr[i]; }
+  inline unsigned int GetExoFlange(unsigned int& i) { return fExo_Flange[i]; }
+  inline unsigned int GetExoCrystal(unsigned int& i) { return fExo_Crystal[i]; }
+  inline unsigned int GetExoE(unsigned int& i) { return fExo_E[i]; }
+  inline unsigned int GetExoEHG(unsigned int& i) { return fExo_E_HG[i]; }
+  inline unsigned long long GetExoTS(unsigned int& i) { return fExo_TS[i]; }
+  inline unsigned int GetExoTDC(unsigned int& i) { return fExo_TDC[i]; }
+  inline unsigned int GetExoBGO(unsigned int& i) { return fExo_BGO[i]; }
+  inline unsigned int GetExoCsI(unsigned int& i) { return fExo_CsI[i]; }
+  inline unsigned int GetExoOuter1(unsigned int& i) { return fExo_Outer1[i]; }
+  inline unsigned int GetExoOuter2(unsigned int& i) { return fExo_Outer2[i]; }
+  inline unsigned int GetExoOuter3(unsigned int& i) { return fExo_Outer3[i]; }
+  inline unsigned int GetExoOuter4(unsigned int& i) { return fExo_Outer4[i]; }
 
   ClassDef(TExogamData, 1) // ExogamData structure
 };

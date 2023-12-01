@@ -24,70 +24,29 @@ using namespace std;
 
 #include "TExogamData.h"
 
-
 ClassImp(TExogamData)
 
-TExogamData::TExogamData()
-{
-   // Default constructor
-   Clear();
+    TExogamData::TExogamData() {
+  // Default constructor
+  Clear();
 }
 
+TExogamData::~TExogamData() {}
 
-
-TExogamData::~TExogamData()
-{
+void TExogamData::Clear() {
+  fExo_Flange.clear();
+  fExo_Crystal.clear();
+  fExo_E.clear();
+  fExo_E_HG.clear(); // High gain x20
+  fExo_TS.clear();
+  fExo_TDC.clear();
+  fExo_BGO.clear();
+  fExo_CsI.clear();
+  fExo_Outer1.clear();
+  fExo_Outer2.clear();
+  fExo_Outer3.clear();
+  fExo_Outer4.clear();
 }
 
+void TExogamData::Dump() const {}
 
-
-void TExogamData::Clear()
-{
-  fExoE.clear();
-  fExoE_CrystalNbr.clear();
-  fExoE_TS.clear();
-  fExoHG.clear(); 
-  fExoHG_CrystalNbr.clear();
-  fExoHG_TS.clear();
-  fExoTDC.clear();
-  fExoTDC_CrystalNbr.clear();
-  fExoTDC_TS.clear();
-  fExoOuter.clear();
-  fExoOuter_SubCrystalNbr.clear(); 
-  fExoBGO.clear();
-  fExoBGO_CrystalNbr.clear();
-  fExoCsI.clear();
-  fExoCsI_CrystalNbr.clear();
-}
-
-
-
-void TExogamData::Dump() const
-{
-   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event XXXXXXXXXXXXXXXXX" << endl;
-   
-   cout << "Inner6MV Mult = " << fExoE.size() << endl;
-   for (UShort_t i = 0; i < fExoE.size(); i++) {
-      cout << "Energy: " << fExoE[i] << " Cristal Numb: " << fExoE_CrystalNbr[i] << " TimeStamp: " << fExoE_TS[i] << endl;
-   }
-   cout << "Inner20MV Mult = " << fExoHG.size() << endl;
-   for (UShort_t i = 0; i < fExoHG.size(); i++) {
-      cout << "Energy: " << fExoHG[i] << " Cristal Numb: " << fExoHG_CrystalNbr[i] << " TimeStamp: " << fExoHG_TS[i] << endl;
-   }
-   cout << "OutersV Mult = " << fExoOuter.size() << endl;
-   for (UShort_t i = 0; i < fExoOuter.size(); i++) {
-      cout << "Energy: " << fExoOuter[i] << " Cristal Numb: " << fExoOuter_SubCrystalNbr[i] << endl;
-   }
-   cout << "DeltaTV Mult = " << fExoTDC.size() << endl;
-   for (UShort_t i = 0; i < fExoTDC.size(); i++) {
-      cout << "Energy: " << fExoTDC[i] << " Cristal Numb: " << fExoTDC_CrystalNbr[i] << " TimeStamp: " << fExoTDC_TS[i] << endl;
-   }
-   cout << "BGOV Mult = " << fExoBGO.size() << endl;
-   for (UShort_t i = 0; i < fExoBGO.size(); i++) {
-      cout << "Energy: " << fExoBGO[i] << " Cristal Numb: " << fExoBGO_CrystalNbr[i] << endl;
-   }
-   cout << "CsIV Mult = " << fExoCsI.size() << endl;
-   for (UShort_t i = 0; i < fExoCsI.size(); i++) {
-      cout << "Energy: " << fExoCsI[i] << " Cristal Numb: " << fExoCsI_CrystalNbr[i] << endl;
-   }
-}
