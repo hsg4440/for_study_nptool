@@ -98,15 +98,22 @@ class TZDDData : public TObject {
   }; //!
 
   //////////////////////    GETTERS    ////////////////////////
+  inline unsigned int	GetZDD_ICMult()		                const {return fZDD_IC_E.size();}
   inline unsigned int GetZDD_ICE(const unsigned int& i) const { return fZDD_IC_E[i]; }
   inline unsigned int GetZDD_ICN(const unsigned int& i) const { return fZDD_IC_N[i]; }
   inline unsigned long long GetZDD_ICTS(const unsigned int& i) const { return fZDD_IC_TS[i]; }
+  
+  inline unsigned int	GetZDD_PLMult()		                const {return fZDD_PL_E.size();}
   inline unsigned int GetZDD_PLE(const unsigned int& i) const { return fZDD_PL_E[i]; }
   inline unsigned int GetZDD_PLN(const unsigned int& i) const { return fZDD_PL_N[i]; }
   inline unsigned long long GetZDD_PLTS(const unsigned int& i) const { return fZDD_PL_TS[i]; }
+  
+  inline unsigned int	GetZDD_DCMult()		                const {return fZDD_DC_E.size();}
   inline unsigned int GetZDD_DCE(const unsigned int& i) const { return fZDD_DC_E[i]; }
   inline unsigned int GetZDD_DCN(const unsigned int& i) const { return fZDD_DC_N[i]; }
   inline unsigned long long GetZDD_DCTS(const unsigned int& i) const { return fZDD_DC_TS[i]; }
+  
+  inline unsigned int	GetZDD_EXOMult()		                const {return fZDD_EXO_E.size();}
   inline unsigned int GetZDD_EXOE(const unsigned int& i) const { return fZDD_EXO_E[i]; }
   inline unsigned int GetZDD_EXON(const unsigned int& i) const { return fZDD_EXO_N[i]; }
   inline unsigned long long GetZDD_EXOTS(const unsigned int& i) const { return fZDD_EXO_TS[i]; }
