@@ -1625,7 +1625,9 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
       htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
       (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200); 
       
-      if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+      // Missing == ??
+      // if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+      if((*TFileMap)["MUST2"][CutName] == new TFile(CutsPath+cFileName))
       {
         (*TCutGMap)["MUST2"][CutName]= (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
       }
