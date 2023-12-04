@@ -565,6 +565,7 @@ void MUST2Array::ReadConfiguration(NPL::InputParser parser) {
       int SILI = blocks[i]->GetInt("SILI");
       int CSI = blocks[i]->GetInt("CSI");
       AddTelescope(A, B, C, D, SI == 1, SILI == 1, CSI == 1);
+      m_CsIOffset[i + 1] = blocks[i]->GetInt("CsIOffset");
     }
 
     else if (blocks[i]->HasTokenList(sphe)) {
@@ -577,6 +578,7 @@ void MUST2Array::ReadConfiguration(NPL::InputParser parser) {
       int SILI = blocks[i]->GetInt("SILI");
       int CSI = blocks[i]->GetInt("CSI");
       AddTelescope(R, Theta, Phi, beta[0], beta[1], beta[2], SI == 1, SILI == 1, CSI == 1);
+      m_CsIOffset[i + 1] = blocks[i]->GetInt("CsIOffset");
     }
 
     else {
@@ -930,7 +932,10 @@ void MUST2Array::ReadSensitive(const G4Event*) {
       double ECsI = RandGauss::shoot(CsIScorer->GetEnergy(i), ResoCsI);
       vector<unsigned int> level = CsIScorer->GetLevel(i);
       if (ECsI > ThresholdCsI) {
-        m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 250, 8192, 16384));
+        if (m_CsIOffset[level[0]] == 1)
+          m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 500, 0, 16384));
+        else
+          m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 250, 8192, 16384));
         double timeCsI = RandGauss::shoot(CsIScorer->GetTime(i), ResoTimeMust);
         m_Event->SetCsIT(level[0], level[1], NPL::EnergyToADC(timeCsI, 0, 1000, 16384, 8192));
       }

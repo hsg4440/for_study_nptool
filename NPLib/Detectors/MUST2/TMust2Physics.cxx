@@ -23,15 +23,14 @@ using namespace MUST2_LOCAL;
 
 //   STL
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdlib.h>
-#include <filesystem>
 
 //   NPL
 // #include "NPDetectorFactory.h"
-#include "TSpectrum.h"
 #include "NPInputParser.h"
 #include "NPOptionManager.h"
 #include "NPSystemOfUnits.h"
@@ -40,6 +39,7 @@ using namespace MUST2_LOCAL;
 #include "RootOutput.h"
 #include "TAsciiFile.h"
 #include "TF1.h"
+#include "TSpectrum.h"
 using namespace NPUNITS;
 //   ROOT
 #include "TChain.h"
@@ -527,10 +527,9 @@ void TMust2Physics::PreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > m_CsI_E_RAW_Threshold &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
-      //double ECsI = fCsI_E(m_EventData, i);
+      // double ECsI = fCsI_E(m_EventData, i);
       double ECsI = m_EventData->GetMMCsIEEnergy(i);
-      if (ECsI > 8192)
-      {
+      if (ECsI > 8192) {
         m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
       }
     }
@@ -1062,6 +1061,7 @@ void TMust2Physics::ReadConfiguration(NPL::InputParser parser) {
       AddTelescope(A, B, C, D);
       m_CsIPresent[i + 1] = blocks[i]->GetInt("CSI");
       m_SiLiPresent[i + 1] = blocks[i]->GetInt("SILI");
+      m_CsIOffset[i + 1] = blocks[i]->GetInt("CsIOffset");
     }
 
     else if (blocks[i]->HasTokenList(sphe)) {
@@ -1077,6 +1077,7 @@ void TMust2Physics::ReadConfiguration(NPL::InputParser parser) {
 
       m_CsIPresent[i + 1] = blocks[i]->GetInt("CSI");
       m_SiLiPresent[i + 1] = blocks[i]->GetInt("SILI");
+      m_CsIOffset[i + 1] = blocks[i]->GetInt("CsIOffset");
     }
 
     else {
@@ -1093,18 +1094,16 @@ void TMust2Physics::ReadConfiguration(NPL::InputParser parser) {
   ReadAnalysisConfig();
 }
 
-
 void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("M2Telescope");
   vector<NPL::InputBlock*> Energyblocks = parser.GetAllBlocksWithToken("EnergyCalibrationParameters");
   vector<NPL::InputBlock*> CSIblocks = parser.GetAllBlocksWithToken("CSICalibrationParameters");
-  //if (NPOptionManager::getInstance()->GetVerboseLevel())
-    //cout << "//// " << blocks.size() << " Telescope found " << endl;
+  // if (NPOptionManager::getInstance()->GetVerboseLevel())
+  // cout << "//// " << blocks.size() << " Telescope found " << endl;
 
-  vector<string> calibs = {"TelescopeNumber","Time","Energy","CSI"};
-  vector<string> EnergyParameters = {"TelescopeNumber","XThreshold","YThreshold","AlphaFitType"};
-  vector<string> CSIParameters = {"TelescopeNumber","CsIEnergyXThreshold","CsIEnergyYThreshold","CSIEThreshold"};
-
+  vector<string> calibs = {"TelescopeNumber", "Time", "Energy", "CSI"};
+  vector<string> EnergyParameters = {"TelescopeNumber", "XThreshold", "YThreshold", "AlphaFitType"};
+  vector<string> CSIParameters = {"TelescopeNumber", "CsIEnergyXThreshold", "CsIEnergyYThreshold", "CSIEThreshold"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(calibs)) {
@@ -1113,28 +1112,28 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
         cout << endl << "////  Must2 Telescope " << TelescopeNumber << endl;
       DoCalibrationTime[TelescopeNumber] = blocks[i]->GetInt("Time");
       DoCalibrationEnergy[TelescopeNumber] = blocks[i]->GetInt("Energy");
-      DoCalibrationCsI[TelescopeNumber]= blocks[i]->GetInt("CSI");
-      if(DoCalibrationEnergy[TelescopeNumber] == 1){
+      DoCalibrationCsI[TelescopeNumber] = blocks[i]->GetInt("CSI");
+      if (DoCalibrationEnergy[TelescopeNumber] == 1) {
         IsCalibEnergy = true;
-        if(EnergyXThreshold.count(TelescopeNumber) == 0){
+        if (EnergyXThreshold.count(TelescopeNumber) == 0) {
           EnergyXThreshold[TelescopeNumber] = 8192;
         }
-        if(EnergyYThreshold.count(TelescopeNumber) == 0){
+        if (EnergyYThreshold.count(TelescopeNumber) == 0) {
           EnergyYThreshold[TelescopeNumber] = 8192;
         }
-        if(AlphaFitType.count(TelescopeNumber) == 0){
+        if (AlphaFitType.count(TelescopeNumber) == 0) {
           AlphaFitType[TelescopeNumber] = "NoSatellite";
         }
       }
-      if(DoCalibrationCsI[TelescopeNumber] == 1){
+      if (DoCalibrationCsI[TelescopeNumber] == 1) {
         IsCalibCSI = true;
-        if(CSIEnergyXThreshold.count(TelescopeNumber) == 0){
+        if (CSIEnergyXThreshold.count(TelescopeNumber) == 0) {
           CSIEnergyXThreshold[TelescopeNumber] = 0;
         }
-        if(CSIEnergyYThreshold.count(TelescopeNumber) == 0){
+        if (CSIEnergyYThreshold.count(TelescopeNumber) == 0) {
           CSIEnergyYThreshold[TelescopeNumber] = 0;
         }
-        if(CSIEThreshold.count(TelescopeNumber) == 0){
+        if (CSIEThreshold.count(TelescopeNumber) == 0) {
           CSIEThreshold[TelescopeNumber] = 8192;
         }
       }
@@ -1151,7 +1150,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
     if (Energyblocks[i]->HasTokenList(EnergyParameters)) {
       unsigned int TelescopeNumber = Energyblocks[i]->GetInt("TelescopeNumber");
       if (NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Energy Calibration parameters for MUST2 Telescope " << TelescopeNumber << endl; 
+        cout << endl << "////  Energy Calibration parameters for MUST2 Telescope " << TelescopeNumber << endl;
       EnergyXThreshold[TelescopeNumber] = Energyblocks[i]->GetInt("XThreshold");
       EnergyYThreshold[TelescopeNumber] = Energyblocks[i]->GetInt("YThreshold");
       AlphaFitType[TelescopeNumber] = Energyblocks[i]->GetString("AlphaFitType");
@@ -1168,7 +1167,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
     if (CSIblocks[i]->HasTokenList(CSIParameters)) {
       unsigned int TelescopeNumber = CSIblocks[i]->GetInt("TelescopeNumber");
       if (NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  CSI Calibration parameters for MUST2 Telescope " << TelescopeNumber << endl; 
+        cout << endl << "////  CSI Calibration parameters for MUST2 Telescope " << TelescopeNumber << endl;
       CSIEnergyXThreshold[TelescopeNumber] = CSIblocks[i]->GetInt("CsIEnergyXThreshold");
       CSIEnergyYThreshold[TelescopeNumber] = CSIblocks[i]->GetInt("CsIEnergyYThreshold");
       CSIEThreshold[TelescopeNumber] = CSIblocks[i]->GetInt("CSIEThreshold");
@@ -1186,9 +1185,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
 //////////////////////////////////////////////////////////////////////////
 void TMust2Physics::InitSpectra() { m_Spectra = new TMust2Spectra(m_NumberOfTelescope); }
 
-void TMust2Physics::SetTreeReader(TTreeReader* TreeReader) {
-   TMust2PhysicsReader::r_SetTreeReader(TreeReader);
- }
+void TMust2Physics::SetTreeReader(TTreeReader* TreeReader) { TMust2PhysicsReader::r_SetTreeReader(TreeReader); }
 
 ///////////////////////////////////////////////////////////////////////////
 void TMust2Physics::FillSpectra() {
@@ -1225,11 +1222,17 @@ void TMust2Physics::AddParameterToCalibrationManager() {
   // Good for simulation, close to typical values
   vector<double> standardX = {-63, 63. / 8192.};
   vector<double> standardY = {63, -63. / 8192.};
-  vector<double> standardCsI = {-250, 250. / 8192.};
   vector<double> standardSiLi = {-250, 250. / 8192.};
   vector<double> standardT = {-1000, 1000. / 8192.};
 
+  vector<double> standardCsI;
   for (int i = 0; i < m_NumberOfTelescope; ++i) {
+
+    if (m_CsIOffset[i] == 1) {
+      vector<double> standardCsI = {0, 500. / 16384.};
+    }
+    else
+      vector<double> standardCsI = {-250, 250. / 8192.};
 
     for (int j = 0; j < 128; ++j) {
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_Si_X" + NPL::itoa(j + 1) + "_E",
@@ -1254,27 +1257,26 @@ void TMust2Physics::AddParameterToCalibrationManager() {
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
-      
+
       Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
                         "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
-      
-     Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+
+      Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
                         "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
-      
+
       Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
                         "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
-      
+
       Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
                         "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
-    
     }
   }
 
@@ -1290,7 +1292,7 @@ void TMust2Physics::InitializeRootInputRaw() {
     inputTreeReader->SetTree(inputChain);
   }
   // Option to use the standard npanalysis
-  else{
+  else {
     inputChain->SetBranchStatus("MUST2", true);
     inputChain->SetBranchStatus("fMM_*", true);
     inputChain->SetBranchAddress("MUST2", &m_EventData);
@@ -1306,7 +1308,7 @@ void TMust2Physics::InitializeRootInputPhysics() {
     inputTreeReader->SetTree(inputChain);
   }
   // Option to use the standard npanalysis
-  else{
+  else {
     inputChain->SetBranchStatus("MUST2", true);
     inputChain->SetBranchStatus("EventMultiplicity", true);
     inputChain->SetBranchStatus("EventType", true);
@@ -1553,46 +1555,40 @@ TVector3 TMust2Physics::GetTelescopeNormal(const int i) const {
   TVector3 Normal = U.Cross(V);
 
   return (Normal.Unit());
-
 }
-void TMust2Physics::InitializeRootHistogramsCalib(){
+void TMust2Physics::InitializeRootHistogramsCalib() {
   std::cout << "Initialize Histograms" << std::endl;
   map<int, bool>::iterator it;
-  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++)
-  {
-    if(it->second)
-    {
+  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++) {
+    if (it->second) {
       InitializeRootHistogramsEnergyF(it->first);
     }
   }
-  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-  {
-    if(it->second)
-    {
+  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++) {
+    if (it->second) {
       InitializeRootHistogramsTimeF(it->first);
     }
   }
-  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
-  {
-    if(it->second)
-    {
+  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++) {
+    if (it->second) {
       InitializeRootHistogramsCSIF(it->first);
     }
   }
 }
 
-void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
-  if(NPOptionManager::getInstance()->IsReader() == true) {
+void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber) {
+  if (NPOptionManager::getInstance()->IsReader() == true) {
     TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
-    GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
+    GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader, "GATCONFMASTER");
   }
   string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
   string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
   DoCSIFit = true;
 
-  if(DoCSIFit){
-   for(unsigned int i = 0; i < ParticleType.size(); i++){
-      ParticleSi[ParticleType[i].c_str()] = new NPL::EnergyLoss(EnergyLossPath+ ParticleType[i].c_str()+"_Si.G4table", "G4Table", 100);
+  if (DoCSIFit) {
+    for (unsigned int i = 0; i < ParticleType.size(); i++) {
+      ParticleSi[ParticleType[i].c_str()] =
+          new NPL::EnergyLoss(EnergyLossPath + ParticleType[i].c_str() + "_Si.G4table", "G4Table", 100);
     }
   }
   unsigned int NbCSI = 16;
@@ -1600,101 +1596,95 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber){
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
   auto TFileMap = RootHistogramsCalib::getInstance()->GetTFileMap();
-  
+
   for (Int_t j = 0; j < NbCSI; j++) {
-    TString hnameCSIE     = Form("hMM%d_CSI_E%d", DetectorNumber, j+1);
-    TString htitleCSIE    = Form("MM%d_CSI_E%d", DetectorNumber, j+1);
+    TString hnameCSIE = Form("hMM%d_CSI_E%d", DetectorNumber, j + 1);
+    TString htitleCSIE = Form("MM%d_CSI_E%d", DetectorNumber, j + 1);
     (*TH2Map)["MUST2"][hnameCSIE] = new TH2F(hnameCSIE, htitleCSIE, 8192, 8192, 16384, 2000, 0, 60);
-    
-    TString hnameFITCSIE     = Form("hMM%d_FITCSI_E%d", DetectorNumber, j+1);
-    TString htitleFITCSIE    = Form("MM%d_FITCSI_E%d", DetectorNumber, j+1);
+
+    TString hnameFITCSIE = Form("hMM%d_FITCSI_E%d", DetectorNumber, j + 1);
+    TString htitleFITCSIE = Form("MM%d_FITCSI_E%d", DetectorNumber, j + 1);
     (*TGraphMap)["MUST2"][hnameFITCSIE] = new TGraphErrors(3);
     (*TGraphMap)["MUST2"][hnameFITCSIE]->SetTitle(htitleFITCSIE);
-    (*TGraphMap)["MUST2"][hnameFITCSIE]->SetName(hnameFITCSIE);  
-  
-  if(DoCSIFit){
-    string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
-    string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+    (*TGraphMap)["MUST2"][hnameFITCSIE]->SetName(hnameFITCSIE);
 
-    for(unsigned int i = 0; i < ParticleType.size(); i++){
-       std::cout << ParticleType[i] << "\n";
-      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
-      TString cFileName = CutName+".root";
-      std::cout << CutName << "  " << cFileName << " " << CutsPath+cFileName <<  "\n";
-      
-      htitleCSIE    = Form("%s_MM%u_CSI%u",ParticleType[i].c_str(), DetectorNumber, j+1);
-      (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200); 
-      
-      // Missing == ??
-      // if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
-      if((*TFileMap)["MUST2"][CutName] == new TFile(CutsPath+cFileName))
-      {
-        (*TCutGMap)["MUST2"][CutName]= (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
+    if (DoCSIFit) {
+      string EnergyLossPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+      string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+
+      for (unsigned int i = 0; i < ParticleType.size(); i++) {
+        std::cout << ParticleType[i] << "\n";
+        TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), DetectorNumber, j + 1);
+        TString cFileName = CutName + ".root";
+        std::cout << CutName << "  " << cFileName << " " << CutsPath + cFileName << "\n";
+
+        htitleCSIE = Form("%s_MM%u_CSI%u", ParticleType[i].c_str(), DetectorNumber, j + 1);
+        (*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 8192, 8192, 16384, 2000, 0, 200);
+
+        // Missing == ??
+        // if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+        if ((*TFileMap)["MUST2"][CutName] == new TFile(CutsPath + cFileName)) {
+          (*TCutGMap)["MUST2"][CutName] = (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
+        }
       }
-        
-
-    }
-
-
-
     }
   }
 }
 
-void TMust2Physics::InitializeRootHistogramsEnergyF(Int_t DetectorNumber){
+void TMust2Physics::InitializeRootHistogramsEnergyF(Int_t DetectorNumber) {
   unsigned int NbStrips = 128;
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
-  
+
   for (Int_t j = 0; j < NbStrips; j++) {
-    TString hnameXE     = Form("hMM%d_STRX_E%d", DetectorNumber, j+1);
-    TString htitleXE    = Form("MM%d_STRX_E%d", DetectorNumber, j+1);
+    TString hnameXE = Form("hMM%d_STRX_E%d", DetectorNumber, j + 1);
+    TString htitleXE = Form("MM%d_STRX_E%d", DetectorNumber, j + 1);
     (*TH1Map)["MUST2"][hnameXE] = new TH1F(hnameXE, htitleXE, 16384, 0, 16384);
     // strips YE
-    TString hnameYE     = Form("hMM%d_STRY_E%d", DetectorNumber, j+1);
-    TString htitleYE    = Form("MM%d_STRY_E%d", DetectorNumber, j+1);
+    TString hnameYE = Form("hMM%d_STRY_E%d", DetectorNumber, j + 1);
+    TString htitleYE = Form("MM%d_STRY_E%d", DetectorNumber, j + 1);
     (*TH1Map)["MUST2"][hnameYE] = new TH1F(hnameYE, htitleYE, 16384, 0, 16384);
-    
-    TString hnameFITXE     = Form("hMM%d_FITX_E%d", DetectorNumber, j+1);
-    TString htitleFITXE    = Form("MM%d_FITX_E%d", DetectorNumber, j+1);
+
+    TString hnameFITXE = Form("hMM%d_FITX_E%d", DetectorNumber, j + 1);
+    TString htitleFITXE = Form("MM%d_FITX_E%d", DetectorNumber, j + 1);
     (*TGraphMap)["MUST2"][hnameFITXE] = new TGraphErrors(3);
     (*TGraphMap)["MUST2"][hnameFITXE]->SetTitle(htitleFITXE);
     (*TGraphMap)["MUST2"][hnameFITXE]->SetName(hnameFITXE);
-    
-    TString hnameFITYE     = Form("hMM%d_FITY_E%d", DetectorNumber, j+1);
-    TString htitleFITYE    = Form("MM%d_FITY_E%d", DetectorNumber, j+1);
+
+    TString hnameFITYE = Form("hMM%d_FITY_E%d", DetectorNumber, j + 1);
+    TString htitleFITYE = Form("MM%d_FITY_E%d", DetectorNumber, j + 1);
     (*TGraphMap)["MUST2"][hnameFITYE] = new TGraphErrors(3);
     (*TGraphMap)["MUST2"][hnameFITYE]->SetTitle(htitleFITYE);
     (*TGraphMap)["MUST2"][hnameFITYE]->SetName(hnameFITYE);
   }
-  TString hname     =Form("SigmaFit_T%d",DetectorNumber) ;
-  (*TH1Map)["MUST2"][hname] = new TH1F("Sigma", "Sigma from fit (channel)", 80, 0,10);
-      
-  hname =Form("Dispersion_T%d",DetectorNumber); 
-  (*TH1Map)["MUST2"][hname] = new TH1F("Dispersion", "Dispersion from Zero Extrapolation (channel)", 40, -20,20);
-      
-  hname =Form("coeffX_a_T%d",DetectorNumber); 
+  TString hname = Form("SigmaFit_T%d", DetectorNumber);
+  (*TH1Map)["MUST2"][hname] = new TH1F("Sigma", "Sigma from fit (channel)", 80, 0, 10);
+
+  hname = Form("Dispersion_T%d", DetectorNumber);
+  (*TH1Map)["MUST2"][hname] = new TH1F("Dispersion", "Dispersion from Zero Extrapolation (channel)", 40, -20, 20);
+
+  hname = Form("coeffX_a_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
   (*TGraphMap)["MUST2"][hname]->Draw("ap");
-     
-  hname =Form("coeffX_b_T%d",DetectorNumber); 
+
+  hname = Form("coeffX_b_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
   (*TGraphMap)["MUST2"][hname]->Draw("ap");
-     
-  hname =Form("coeffY_a_T%d",DetectorNumber); 
+
+  hname = Form("coeffY_a_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
   (*TGraphMap)["MUST2"][hname]->Draw("ap");
-     
-  hname =Form("coeffY_b_T%d",DetectorNumber); 
+
+  hname = Form("coeffY_b_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
@@ -1702,168 +1692,166 @@ void TMust2Physics::InitializeRootHistogramsEnergyF(Int_t DetectorNumber){
   (*TGraphMap)["MUST2"][hname]->Draw("ap");
 }
 
-void TMust2Physics::FillHistogramsCalib(){
+void TMust2Physics::FillHistogramsCalib() {
   map<int, bool>::iterator it;
-  if (IsCalibEnergy)
-  {
-    if(NPOptionManager::getInstance()->IsReader())
+  if (IsCalibEnergy) {
+    if (NPOptionManager::getInstance()->IsReader())
       m_EventData = &(**r_ReaderEventData);
     FillHistogramsCalibEnergyF();
   }
 
-  //if(**GATCONFMASTER_ > 0)  
+  // if(**GATCONFMASTER_ > 0)
   //{
-  //test0++;
-  //std::cout << "test0 " << test0 << std::endl;
-  //}
-  if(IsCalibCSI){
+  // test0++;
+  // std::cout << "test0 " << test0 << std::endl;
+  // }
+  if (IsCalibCSI) {
     // if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader())
-    if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader() && **(GATCONFMASTER_) > 0)
-  {
+    if (!IsCalibEnergy && NPOptionManager::getInstance()->IsReader() && **(GATCONFMASTER_) > 0) {
       m_EventData = &(**r_ReaderEventData);
       FillHistogramsCalibCSIF();
-  }
+    }
     // std::cout << "Test bien" << std::endl;
   }
-  //if(NPOptionManager::getInstance()->IsReader() == true && IsCalibEnergy) {
-  //  // std::cout << "Test pas bien" << std::endl;
-  //  m_EventData = &(**r_ReaderEventData);
-  //}
-  //else if(NPOptionManager::getInstance()->IsReader() == true && IsCalibCSI && **(GATCONFMASTER_) > 0) {
-  //  // std::cout << "Test bien" << std::endl;
-  //  m_EventData = &(**r_ReaderEventData);
-  //}
-//  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-//  {
-//    if(it->second)
-//    {
-//      FillHistogramsCalibTimeF();
-//    }
-//  }
-
+  // if(NPOptionManager::getInstance()->IsReader() == true && IsCalibEnergy) {
+  //   // std::cout << "Test pas bien" << std::endl;
+  //   m_EventData = &(**r_ReaderEventData);
+  // }
+  // else if(NPOptionManager::getInstance()->IsReader() == true && IsCalibCSI && **(GATCONFMASTER_) > 0) {
+  //   // std::cout << "Test bien" << std::endl;
+  //   m_EventData = &(**r_ReaderEventData);
+  // }
+  //  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
+  //  {
+  //    if(it->second)
+  //    {
+  //      FillHistogramsCalibTimeF();
+  //    }
+  //  }
 }
 
-void TMust2Physics::FillHistogramsCalibEnergyF(){
+void TMust2Physics::FillHistogramsCalibEnergyF() {
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   TString hnameXE, hnameYE;
-  for(UShort_t i = 0; i < m_EventData->GetMMStripXEMult(); i++){
+  for (UShort_t i = 0; i < m_EventData->GetMMStripXEMult(); i++) {
     unsigned int DetectorNbr = m_EventData->GetMMStripXEDetectorNbr(i);
     unsigned int StripNbr = m_EventData->GetMMStripXEStripNbr(i);
     unsigned int Energy = m_EventData->GetMMStripXEEnergy(i);
-    if(DoCalibrationEnergy[DetectorNbr] && EnergyXThreshold[DetectorNbr] < Energy)
-    {
-    hnameXE = Form("hMM%d_STRX_E%d", DetectorNbr, StripNbr);
-    (*TH1Map)["MUST2"][hnameXE]->Fill(Energy);    
+    if (DoCalibrationEnergy[DetectorNbr] && EnergyXThreshold[DetectorNbr] < Energy) {
+      hnameXE = Form("hMM%d_STRX_E%d", DetectorNbr, StripNbr);
+      (*TH1Map)["MUST2"][hnameXE]->Fill(Energy);
     }
   }
-  for(UShort_t i = 0; i < m_EventData->GetMMStripYEMult(); i++){
+  for (UShort_t i = 0; i < m_EventData->GetMMStripYEMult(); i++) {
     unsigned int DetectorNbr = m_EventData->GetMMStripYEDetectorNbr(i);
     unsigned int StripNbr = m_EventData->GetMMStripYEStripNbr(i);
     unsigned int Energy = m_EventData->GetMMStripYEEnergy(i);
-    if(DoCalibrationEnergy[DetectorNbr] && EnergyYThreshold[DetectorNbr] > Energy)
-    {
-    hnameYE = Form("hMM%d_STRY_E%d", DetectorNbr, StripNbr);
-    (*TH1Map)["MUST2"][hnameYE]->Fill(Energy);    
+    if (DoCalibrationEnergy[DetectorNbr] && EnergyYThreshold[DetectorNbr] > Energy) {
+      hnameYE = Form("hMM%d_STRY_E%d", DetectorNbr, StripNbr);
+      (*TH1Map)["MUST2"][hnameYE]->Fill(Energy);
     }
   }
 }
 
-void TMust2Physics::FillHistogramsCalibCSIF(){
+void TMust2Physics::FillHistogramsCalibCSIF() {
   DoCalibrationCSIPreTreat();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
-  
+
   double matchSigma = m_StripEnergyMatchingSigma;
   double NmatchSigma = m_StripEnergyMatchingNumberOfSigma;
-  
-  unsigned int StripXMult =m_PreTreatedData->GetMMStripXEMult();  
-  unsigned int StripYMult =m_PreTreatedData->GetMMStripYEMult();
-  
+
+  unsigned int StripXMult = m_PreTreatedData->GetMMStripXEMult();
+  unsigned int StripYMult = m_PreTreatedData->GetMMStripYEMult();
+
   // test1++;
   // std::cout << "test1 " << test1 << std::endl;
   // for(unsigned int ix = 0; ix < StripXMult; ix++){
-    // for(unsigned int iy = 0; iy < StripYMult; iy++){
-  if(StripXMult == 1 && StripYMult == 1){
-      unsigned int StripXDetNbr =m_PreTreatedData->GetMMStripXEDetectorNbr(0);  
-      unsigned int StripYDetNbr =m_PreTreatedData->GetMMStripYEDetectorNbr(0);
-  
-      // Condition ensures that the calibration is done only for Detectors input
-      if (DoCalibrationCsI.find(StripXDetNbr) != DoCalibrationCsI.end() &&  StripXDetNbr == StripYDetNbr) {
-        unsigned int DetNbr = StripXDetNbr;
+  // for(unsigned int iy = 0; iy < StripYMult; iy++){
+  if (StripXMult == 1 && StripYMult == 1) {
+    unsigned int StripXDetNbr = m_PreTreatedData->GetMMStripXEDetectorNbr(0);
+    unsigned int StripYDetNbr = m_PreTreatedData->GetMMStripYEDetectorNbr(0);
 
-        // Declaration of variable for clarity
-        double StripXEnergy = m_PreTreatedData->GetMMStripXEEnergy(0);
-        double StripXNbr = m_PreTreatedData->GetMMStripXEStripNbr(0);
+    // Condition ensures that the calibration is done only for Detectors input
+    if (DoCalibrationCsI.find(StripXDetNbr) != DoCalibrationCsI.end() && StripXDetNbr == StripYDetNbr) {
+      unsigned int DetNbr = StripXDetNbr;
 
-        double StripYEnergy = m_PreTreatedData->GetMMStripYEEnergy(0);
-        double StripYNbr = m_PreTreatedData->GetMMStripYEStripNbr(0);
+      // Declaration of variable for clarity
+      double StripXEnergy = m_PreTreatedData->GetMMStripXEEnergy(0);
+      double StripXNbr = m_PreTreatedData->GetMMStripXEStripNbr(0);
+
+      double StripYEnergy = m_PreTreatedData->GetMMStripYEEnergy(0);
+      double StripYNbr = m_PreTreatedData->GetMMStripYEStripNbr(0);
 
       if (abs((StripXEnergy - StripYEnergy) / 2.) < NmatchSigma * matchSigma) {
-              
-      
-        unsigned int CSIMult =m_PreTreatedData->GetMMCsIEMult();  
-      
-        for (unsigned int icsi = 0; icsi < CSIMult; ++icsi) {
-      
-          unsigned int CSIDetNbr =m_PreTreatedData->GetMMCsIEDetectorNbr(icsi);  
 
-          if(StripXDetNbr == CSIDetNbr){
+        unsigned int CSIMult = m_PreTreatedData->GetMMCsIEMult();
+
+        for (unsigned int icsi = 0; icsi < CSIMult; ++icsi) {
+
+          unsigned int CSIDetNbr = m_PreTreatedData->GetMMCsIEDetectorNbr(icsi);
+
+          if (StripXDetNbr == CSIDetNbr) {
             // test2++;
             // std::cout << "test2 " << test2 << std::endl;
-              
-            unsigned int Cristal =m_PreTreatedData->GetMMCsIECristalNbr(icsi);
-              
-            if (Match_Si_CsI(StripXNbr,StripYNbr, Cristal, CSIDetNbr)) {
-              unsigned int CSIE =m_PreTreatedData->GetMMCsIEEnergy(icsi);  
-              TString hnameCSIE     = Form("hMM%d_CSI_E%d", CSIDetNbr, Cristal);
-              (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE,StripXEnergy);
-              if(DoCSIFit){
+
+            unsigned int Cristal = m_PreTreatedData->GetMMCsIECristalNbr(icsi);
+
+            if (Match_Si_CsI(StripXNbr, StripYNbr, Cristal, CSIDetNbr)) {
+              unsigned int CSIE = m_PreTreatedData->GetMMCsIEEnergy(icsi);
+              TString hnameCSIE = Form("hMM%d_CSI_E%d", CSIDetNbr, Cristal);
+              (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE, StripXEnergy);
+              if (DoCSIFit) {
                 Si_X.clear();
                 Si_Y.clear();
                 TelescopeNumber.clear();
                 Si_X.push_back(StripXNbr);
                 Si_Y.push_back(StripYNbr);
                 TelescopeNumber.push_back(DetNbr);
-                TVector3 BeamImpact = TVector3(0,0,0);
-                TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact ;
-                double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0) );
-                for(unsigned int i = 0; i < ParticleType.size(); i++){ 
-                
-                TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), CSIDetNbr, Cristal);
-                if((*TCutGMap)["MUST2"][CutName] != 0 && (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE,StripXEnergy)){
+                TVector3 BeamImpact = TVector3(0, 0, 0);
+                TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact;
+                double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0));
+                for (unsigned int i = 0; i < ParticleType.size(); i++) {
+
+                  TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), CSIDetNbr, Cristal);
+                  if ((*TCutGMap)["MUST2"][CutName] != 0 &&
+                      (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE, StripXEnergy)) {
                     // test3++;
                     // std::cout << "test3 " << test3 << std::endl;
-                  (*TH2Map)["MUST2"][CutName]->Fill(CSIE,(ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV,0.001 * MeV, 10000)) - StripXEnergy);
-                }
+                    (*TH2Map)["MUST2"][CutName]->Fill(
+                        CSIE, (ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(
+                                  StripXEnergy, 300 * um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV, 0.001 * MeV, 10000)) -
+                                  StripXEnergy);
+                  }
                 }
               }
-            }  
+            }
           }
         }
       }
     }
   }
-  //TString hnameCSIE, hnameCSIE;
-  //for(UShort_t i = 0; i < m_EventData->GetMMCsIEMult(); i++){
-  //  unsigned int DetectorNbr = m_EventData->GetMMCsIEDetectorNbr(i);
-  //  unsigned int CristalNbr = m_EventData->GetMMCsIECristalNbr(i);
-  //  unsigned int Energy = m_EventData->GetMMCsIEEnergy(i);
-  //  if(DoCalibrationCsI[DetectorNbr] && CalibFile[DetectorNbr] != "" && SiEThreshold[DetectorNbr] < )
-  //  {
-  //  hnameXE = Form("hMM%d_STRX_E%d", DetectorNbr, StripNbr);
-  //  (*TH1Map)["MUST2"][hnameXE]->Fill(Energy);    
-  //  }
-  //}
-  //for(UShort_t i = 0; i < m_EventData->GetMMStripYEMult(); i++){
-  //  unsigned int DetectorNbr = m_EventData->GetMMStripYEDetectorNbr(i);
-  //  unsigned int StripNbr = m_EventData->GetMMStripYEStripNbr(i);
-  //  unsigned int Energy = m_EventData->GetMMStripYEEnergy(i);
-  //  if(DoCalibrationEnergy[DetectorNbr] && EnergyYThreshold[DetectorNbr] > Energy)
-  //  {
-  //  hnameYE = Form("hMM%d_STRY_E%d", DetectorNbr, StripNbr);
-  //  (*TH1Map)["MUST2"][hnameYE]->Fill(Energy);    
-  //  }
-  //}
+  // TString hnameCSIE, hnameCSIE;
+  // for(UShort_t i = 0; i < m_EventData->GetMMCsIEMult(); i++){
+  //   unsigned int DetectorNbr = m_EventData->GetMMCsIEDetectorNbr(i);
+  //   unsigned int CristalNbr = m_EventData->GetMMCsIECristalNbr(i);
+  //   unsigned int Energy = m_EventData->GetMMCsIEEnergy(i);
+  //   if(DoCalibrationCsI[DetectorNbr] && CalibFile[DetectorNbr] != "" && SiEThreshold[DetectorNbr] < )
+  //   {
+  //   hnameXE = Form("hMM%d_STRX_E%d", DetectorNbr, StripNbr);
+  //   (*TH1Map)["MUST2"][hnameXE]->Fill(Energy);
+  //   }
+  // }
+  // for(UShort_t i = 0; i < m_EventData->GetMMStripYEMult(); i++){
+  //   unsigned int DetectorNbr = m_EventData->GetMMStripYEDetectorNbr(i);
+  //   unsigned int StripNbr = m_EventData->GetMMStripYEStripNbr(i);
+  //   unsigned int Energy = m_EventData->GetMMStripYEEnergy(i);
+  //   if(DoCalibrationEnergy[DetectorNbr] && EnergyYThreshold[DetectorNbr] > Energy)
+  //   {
+  //   hnameYE = Form("hMM%d_STRY_E%d", DetectorNbr, StripNbr);
+  //   (*TH1Map)["MUST2"][hnameYE]->Fill(Energy);
+  //   }
+  // }
 }
 
 void TMust2Physics::DoCalibrationCSIPreTreat() {
@@ -1893,359 +1881,366 @@ void TMust2Physics::DoCalibrationCSIPreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > CSIEThreshold[m_EventData->GetMMCsIEDetectorNbr(i)] &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
-      m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), m_EventData->GetMMCsIEEnergy(i));
+      m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i),
+                                m_EventData->GetMMCsIEEnergy(i));
     }
   }
   return;
 }
 
-void TMust2Physics::WriteHistogramsCalib(){
+void TMust2Physics::WriteHistogramsCalib() {
   std::cout << "Writing Histograms\n";
   // map<int, bool>::iterator it;
   // for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-//  {
-   WriteHistogramsEnergyF();
-//  }
-//  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-//  {
-   WriteHistogramsTimeF();
-//  }
-//  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
-//  {
-   WriteHistogramsCSIF();
-//  }
+  //  {
+  WriteHistogramsEnergyF();
+  //  }
+  //  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
+  //  {
+  WriteHistogramsTimeF();
+  //  }
+  //  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
+  //  {
+  WriteHistogramsCSIF();
+  //  }
 }
 
-void TMust2Physics::WriteHistogramsCSIF(){
+void TMust2Physics::WriteHistogramsCSIF() {
   auto File = RootHistogramsCalib::getInstance()->GetFile();
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbCSI = 16;
-  
-  if(!File->GetDirectory("MUST2"))
+
+  if (!File->GetDirectory("MUST2"))
     File->mkdir("MUST2");
   File->cd("MUST2");
   map<int, bool>::iterator it;
-  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
-  {
-  std::cout << "Writing Calibs for MUST2 : " << it->first << "\n";
-    if(it->second)
-    {
-      if(!gDirectory->GetDirectory(Form("M2_Telescope%d",it->first)))
-    {
-        gDirectory->mkdir(Form("M2_Telescope%d",it->first));
-    }
-      gDirectory->cd(Form("M2_Telescope%d",it->first));
+  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++) {
+    std::cout << "Writing Calibs for MUST2 : " << it->first << "\n";
+    if (it->second) {
+      if (!gDirectory->GetDirectory(Form("M2_Telescope%d", it->first))) {
+        gDirectory->mkdir(Form("M2_Telescope%d", it->first));
+      }
+      gDirectory->cd(Form("M2_Telescope%d", it->first));
       gDirectory->mkdir("CSI");
-      //gDirectory->mkdir("Time");
-      gDirectory->cd("CSI");   
+      // gDirectory->mkdir("Time");
+      gDirectory->cd("CSI");
       for (Int_t j = 1; j <= NbCSI; j++) {
-        TString hnameCSIE     = Form("hMM%d_CSI_E%d", it->first, j);
+        TString hnameCSIE = Form("hMM%d_CSI_E%d", it->first, j);
         (*TH2Map)["MUST2"][hnameCSIE]->Write();
-        if(DoCSIFit){
-          for(unsigned int i = 0; i < ParticleType.size(); i++){
-            TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[i].c_str(), it->first, j);
-            (*TH2Map)["MUST2"][CutName]->Write(); 
-	          (*TH1Map)["MUST2"][CutName+"_0"]->Write();
-	          (*TH1Map)["MUST2"][CutName+"_1"]->Write();
-	          (*TH1Map)["MUST2"][CutName+"_2"]->Write();
+        if (DoCSIFit) {
+          for (unsigned int i = 0; i < ParticleType.size(); i++) {
+            TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), it->first, j);
+            (*TH2Map)["MUST2"][CutName]->Write();
+            (*TH1Map)["MUST2"][CutName + "_0"]->Write();
+            (*TH1Map)["MUST2"][CutName + "_1"]->Write();
+            (*TH1Map)["MUST2"][CutName + "_2"]->Write();
           }
         }
-        //(*TGraphMap)["MUST2"][hnameFITXE]->Write();    
-        //(*TGraphMap)["MUST2"][hnameFITYE]->Write();    
+        //(*TGraphMap)["MUST2"][hnameFITXE]->Write();
+        //(*TGraphMap)["MUST2"][hnameFITYE]->Write();
       }
-  //(*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
-  //(*TGraphMap)["MUST2"][Form("coeffX_a_T%d",it->first)]->Write(); 
-  //(*TGraphMap)["MUST2"][Form("coeffY_a_T%d",it->first)]->Write(); 
-  //(*TGraphMap)["MUST2"][Form("coeffX_b_T%d",it->first)]->Write(); 
-  //(*TGraphMap)["MUST2"][Form("coeffY_b_T%d",it->first)]->Write(); 
+      //(*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
+      //(*TGraphMap)["MUST2"][Form("coeffX_a_T%d",it->first)]->Write();
+      //(*TGraphMap)["MUST2"][Form("coeffY_a_T%d",it->first)]->Write();
+      //(*TGraphMap)["MUST2"][Form("coeffX_b_T%d",it->first)]->Write();
+      //(*TGraphMap)["MUST2"][Form("coeffY_b_T%d",it->first)]->Write();
     }
-  File->cd("MUST2");
+    File->cd("MUST2");
   }
   File->Close();
 }
 
-void TMust2Physics::WriteHistogramsEnergyF(){
+void TMust2Physics::WriteHistogramsEnergyF() {
   auto File = RootHistogramsCalib::getInstance()->GetFile();
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   TString hnameXE, hnameYE;
   unsigned int NbStrips = 128;
-  
-  if(!File->GetDirectory("MUST2"))
+
+  if (!File->GetDirectory("MUST2"))
     File->mkdir("MUST2");
   File->cd("MUST2");
   map<int, bool>::iterator it;
-  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++)
-  {
-    if(it->second)
-    {
-      if(!gDirectory->GetDirectory(Form("M2_Telescope%d",it->first)))
-        gDirectory->mkdir(Form("M2_Telescope%d",it->first));
-      gDirectory->cd(Form("M2_Telescope%d",it->first));
+  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++) {
+    if (it->second) {
+      if (!gDirectory->GetDirectory(Form("M2_Telescope%d", it->first)))
+        gDirectory->mkdir(Form("M2_Telescope%d", it->first));
+      gDirectory->cd(Form("M2_Telescope%d", it->first));
       gDirectory->mkdir("Energy");
-      //gDirectory->mkdir("Time");
-      gDirectory->cd("Energy");   
+      // gDirectory->mkdir("Time");
+      gDirectory->cd("Energy");
       for (Int_t j = 0; j < NbStrips; j++) {
-        TString hnameXE     = Form("hMM%d_STRX_E%d", it->first, j+1);
-        TString hnameYE     = Form("hMM%d_STRY_E%d", it->first, j+1);
-        (*TH1Map)["MUST2"][hnameXE]->Write();    
-        (*TH1Map)["MUST2"][hnameYE]->Write();    
-        TString hnameFITXE     = Form("hMM%d_FITX_E%d", it->first, j+1);
-        TString hnameFITYE     = Form("hMM%d_FITY_E%d", it->first, j+1);
-        (*TGraphMap)["MUST2"][hnameFITXE]->Write();    
-        (*TGraphMap)["MUST2"][hnameFITYE]->Write();    
+        TString hnameXE = Form("hMM%d_STRX_E%d", it->first, j + 1);
+        TString hnameYE = Form("hMM%d_STRY_E%d", it->first, j + 1);
+        (*TH1Map)["MUST2"][hnameXE]->Write();
+        (*TH1Map)["MUST2"][hnameYE]->Write();
+        TString hnameFITXE = Form("hMM%d_FITX_E%d", it->first, j + 1);
+        TString hnameFITYE = Form("hMM%d_FITY_E%d", it->first, j + 1);
+        (*TGraphMap)["MUST2"][hnameFITXE]->Write();
+        (*TGraphMap)["MUST2"][hnameFITYE]->Write();
       }
-  (*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
-  (*TGraphMap)["MUST2"][Form("coeffX_a_T%d",it->first)]->Write(); 
-  (*TGraphMap)["MUST2"][Form("coeffY_a_T%d",it->first)]->Write(); 
-  (*TGraphMap)["MUST2"][Form("coeffX_b_T%d",it->first)]->Write(); 
-  (*TGraphMap)["MUST2"][Form("coeffY_b_T%d",it->first)]->Write(); 
+      (*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", it->first)]->Write();
     }
-  File->cd("MUST2");
+    File->cd("MUST2");
   }
 }
 
-void TMust2Physics::DoCalibration(){
+void TMust2Physics::DoCalibration() {
   std::cout << "Do Calibration" << std::endl;
   map<int, bool>::iterator it;
-  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++)
-  {
-    if(it->second)
-    {
+  for (it = DoCalibrationEnergy.begin(); it != DoCalibrationEnergy.end(); it++) {
+    if (it->second) {
       MakeEnergyCalibFolders();
       DoCalibrationEnergyF(it->first);
     }
   }
-  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-  {
-    if(it->second)
-    {
+  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++) {
+    if (it->second) {
       DoCalibrationTimeF(it->first);
     }
   }
-  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++)
-  {
-    if(it->second)
-    { 
+  for (it = DoCalibrationCsI.begin(); it != DoCalibrationCsI.end(); it++) {
+    if (it->second) {
       MakeCSICalibFolders();
       DoCalibrationCsIF(it->first);
     }
   }
 }
 
-void TMust2Physics::DoCalibrationEnergyF(Int_t DetectorNumber){
+void TMust2Physics::DoCalibrationEnergyF(Int_t DetectorNumber) {
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbStrips = 128;
-  ofstream *calib_file = new ofstream;
-  ofstream *dispersion_file = new ofstream;
+  ofstream* calib_file = new ofstream;
+  ofstream* dispersion_file = new ofstream;
 
   DefineCalibrationSource();
-  
-  CreateCalibrationEnergyFiles(DetectorNumber,"X", calib_file, dispersion_file);
-  for(unsigned int StripNb = 1; StripNb < NbStrips+1; StripNb++){
+
+  CreateCalibrationEnergyFiles(DetectorNumber, "X", calib_file, dispersion_file);
+  for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {
     double a = 0, b = 0;
-    if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRX_E%d", DetectorNumber, StripNb)]), "X", StripNb,DetectorNumber)){
-      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]),"X",StripNb, DetectorNumber,&a, &b);
-      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,a);
-      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,b);
-      double dispersion = -b/a ;
-      (*TH1Map)["MUST2"][Form("Dispersion_T%d",DetectorNumber)]->Fill(dispersion);
-      *dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion << endl ;
+    if (FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRX_E%d", DetectorNumber, StripNb)]), "X", StripNb,
+                   DetectorNumber)) {
+      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]), "X", StripNb,
+                      DetectorNumber, &a, &b);
+      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a);
+      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b);
+      double dispersion = -b / a;
+      (*TH1Map)["MUST2"][Form("Dispersion_T%d", DetectorNumber)]->Fill(dispersion);
+      *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion
+                       << endl;
     }
-    *calib_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E " << b << " " << a  << endl ;
+    *calib_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E " << b << " " << a << endl;
 
     AlphaMean.clear();
     AlphaSigma.clear();
   }
   CloseCalibrationEnergyFiles(calib_file, dispersion_file);
-  CreateCalibrationEnergyFiles(DetectorNumber,"Y", calib_file, dispersion_file);
-  for(unsigned int StripNb = 1; StripNb < NbStrips+1; StripNb++){
+  CreateCalibrationEnergyFiles(DetectorNumber, "Y", calib_file, dispersion_file);
+  for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {
     double a = 0, b = 0;
-    if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRY_E%d", DetectorNumber, StripNb)]), "Y", StripNb, DetectorNumber)){
-      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]),"Y",StripNb, DetectorNumber, & a,& b);
-      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,a);
-      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,b);
-      double dispersion = -b/a ;
-      (*TH1Map)["MUST2"][Form("Dispersion_T%d",DetectorNumber)]->Fill(dispersion);
-      *dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion << endl ;
+    if (FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
+                   DetectorNumber)) {
+      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
+                      DetectorNumber, &a, &b);
+      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a);
+      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b);
+      double dispersion = -b / a;
+      (*TH1Map)["MUST2"][Form("Dispersion_T%d", DetectorNumber)]->Fill(dispersion);
+      *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion
+                       << endl;
     }
-    *calib_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E " << b << " " << a  << endl ;
+    *calib_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E " << b << " " << a << endl;
     AlphaMean.clear();
     AlphaSigma.clear();
   }
   CloseCalibrationEnergyFiles(calib_file, dispersion_file);
 }
 
-void TMust2Physics::DefineCalibrationSource(){
-    // 239Pu
-    Source_isotope.push_back("$^{239}$Pu"); Source_E.push_back(5.15659 ); Source_Sig.push_back(0.00014); Source_branching_ratio.push_back(70.77) ;
-    Source_isotope.push_back("$^{239}$Pu"); Source_E.push_back(5.14438 ); Source_Sig.push_back(0.00014); Source_branching_ratio.push_back(17.11) ;
-    Source_isotope.push_back("$^{239}$Pu"); Source_E.push_back(5.1055  ); Source_Sig.push_back(0.00014); Source_branching_ratio.push_back(11.94) ;
-    // 241Am
-    Source_isotope.push_back("$^{241}$Am"); Source_E.push_back(5.48556 ); Source_Sig.push_back(0.00012); Source_branching_ratio.push_back(84.8 );
-    Source_isotope.push_back("$^{241}$Am"); Source_E.push_back(5.44280 ); Source_Sig.push_back(0.00012); Source_branching_ratio.push_back(13.1 );
-    Source_isotope.push_back("$^{241}$Am"); Source_E.push_back(5.388   ); Source_Sig.push_back(0.00012); Source_branching_ratio.push_back(1.66 );
-    // 244Cm
-    Source_isotope.push_back("$^{244}$Cm"); Source_E.push_back(5.80477 ); Source_Sig.push_back(0.00005); Source_branching_ratio.push_back(76.40) ;
-    Source_isotope.push_back("$^{244}$Cm"); Source_E.push_back(5.76264 ); Source_Sig.push_back(0.00005); Source_branching_ratio.push_back(23.60) ;
-
+void TMust2Physics::DefineCalibrationSource() {
+  // 239Pu
+  Source_isotope.push_back("$^{239}$Pu");
+  Source_E.push_back(5.15659);
+  Source_Sig.push_back(0.00014);
+  Source_branching_ratio.push_back(70.77);
+  Source_isotope.push_back("$^{239}$Pu");
+  Source_E.push_back(5.14438);
+  Source_Sig.push_back(0.00014);
+  Source_branching_ratio.push_back(17.11);
+  Source_isotope.push_back("$^{239}$Pu");
+  Source_E.push_back(5.1055);
+  Source_Sig.push_back(0.00014);
+  Source_branching_ratio.push_back(11.94);
+  // 241Am
+  Source_isotope.push_back("$^{241}$Am");
+  Source_E.push_back(5.48556);
+  Source_Sig.push_back(0.00012);
+  Source_branching_ratio.push_back(84.8);
+  Source_isotope.push_back("$^{241}$Am");
+  Source_E.push_back(5.44280);
+  Source_Sig.push_back(0.00012);
+  Source_branching_ratio.push_back(13.1);
+  Source_isotope.push_back("$^{241}$Am");
+  Source_E.push_back(5.388);
+  Source_Sig.push_back(0.00012);
+  Source_branching_ratio.push_back(1.66);
+  // 244Cm
+  Source_isotope.push_back("$^{244}$Cm");
+  Source_E.push_back(5.80477);
+  Source_Sig.push_back(0.00005);
+  Source_branching_ratio.push_back(76.40);
+  Source_isotope.push_back("$^{244}$Cm");
+  Source_E.push_back(5.76264);
+  Source_Sig.push_back(0.00005);
+  Source_branching_ratio.push_back(23.60);
 }
 
-void TMust2Physics::FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb, unsigned int DetectorNumber, double* a, double* b){
-  if(AlphaMean.size() == 3 && AlphaSigma.size() == 3){    
+void TMust2Physics::FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb,
+                                    unsigned int DetectorNumber, double* a, double* b) {
+  if (AlphaMean.size() == 3 && AlphaSigma.size() == 3) {
     double AlphaSourceEnergy[3];
     double AlphaSourceSigma[3];
-    //double AlphaMeanP[3];
-    //double AlphaSigmaP[3];
-    if(side == "X"){
-      for(unsigned int i = 0; i < 3; i++){
-      AlphaSourceEnergy[i] = Source_E[3*i];
-      AlphaSourceSigma[i] = Source_Sig[3*i];
-      //AlphaMeanP[i] = AlphaMean[i];
-      //AlphaSigmaP[i] = AlphaSigma[i];
+    // double AlphaMeanP[3];
+    // double AlphaSigmaP[3];
+    if (side == "X") {
+      for (unsigned int i = 0; i < 3; i++) {
+        AlphaSourceEnergy[i] = Source_E[3 * i];
+        AlphaSourceSigma[i] = Source_Sig[3 * i];
+        // AlphaMeanP[i] = AlphaMean[i];
+        // AlphaSigmaP[i] = AlphaSigma[i];
       }
     }
-    else if(side == "Y"){
-      for(unsigned int i = 0; i < 3; i++){
-      AlphaSourceEnergy[i] = Source_E[6-3*i];
-      AlphaSourceSigma[i] = Source_Sig[6-3*i];
-      //AlphaMeanP[i] = AlphaMean[i];
-      //AlphaSigmaP[i] = AlphaSigma[i];
+    else if (side == "Y") {
+      for (unsigned int i = 0; i < 3; i++) {
+        AlphaSourceEnergy[i] = Source_E[6 - 3 * i];
+        AlphaSourceSigma[i] = Source_Sig[6 - 3 * i];
+        // AlphaMeanP[i] = AlphaMean[i];
+        // AlphaSigmaP[i] = AlphaSigma[i];
       }
     }
-    else{
+    else {
       std::cout << "Check side string formatting" << std::endl;
     }
     for (Int_t p = 0; p < 3; p++) {
       FitHist->SetPoint(p, AlphaMean[p], AlphaSourceEnergy[p]);
-      FitHist->SetPointError(p, AlphaSigma[p], AlphaSourceSigma[p]);    
+      FitHist->SetPointError(p, AlphaSigma[p], AlphaSourceSigma[p]);
     }
 
-    TF1 *f1 = new TF1("f1","[1]+[0]*x");
-    if(side == "X"){
-      f1->SetParameter(0,0.007);
-      f1->SetParameter(1,-60);
+    TF1* f1 = new TF1("f1", "[1]+[0]*x");
+    if (side == "X") {
+      f1->SetParameter(0, 0.007);
+      f1->SetParameter(1, -60);
     }
-    else if(side == "Y"){
-      f1->SetParameter(0,-0.007);
-      f1->SetParameter(1,60);
+    else if (side == "Y") {
+      f1->SetParameter(0, -0.007);
+      f1->SetParameter(1, 60);
     }
-    FitHist->Fit("f1", "Q" );
+    FitHist->Fit("f1", "Q");
 
-    *a = f1 -> GetParameter(0);
-    *b =f1 -> GetParameter(1);
+    *a = f1->GetParameter(0);
+    *b = f1->GetParameter(1);
   }
 }
 
-bool TMust2Physics::FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber){
+bool TMust2Physics::FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber) {
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   Double_t ResSigma = 5;
   Double_t ResSigmaTSpec = 1;
   Double_t Threshold = 0.05;
-  Int_t Npeaks = 3;   // maximum number of peaks that can be found
+  Int_t Npeaks = 3; // maximum number of peaks that can be found
 
   //////// Peak finder
-  TSpectrum *s = new TSpectrum(Npeaks,ResSigmaTSpec);
+  TSpectrum* s = new TSpectrum(Npeaks, ResSigmaTSpec);
 
   Int_t Nfound = s->Search(CalibHist, ResSigma, "new", Threshold);
-  Double_t *Xpeaks = s->GetPositionX();
-  
-
+  Double_t* Xpeaks = s->GetPositionX();
 
   // If 3 peaks found
-  if(Nfound == 3)
-  {
-    for(Int_t p=0;p<Nfound;p++)
-    {
-      for(Int_t i=0;i<Nfound-1;i++)
-      {
-        if(Xpeaks[i]>Xpeaks[i+1])
-        {
-          Float_t varia=Xpeaks[i];
-          Xpeaks[i]=Xpeaks[i+1];
-          Xpeaks[i+1]=varia;
-        }	  
+  if (Nfound == 3) {
+    for (Int_t p = 0; p < Nfound; p++) {
+      for (Int_t i = 0; i < Nfound - 1; i++) {
+        if (Xpeaks[i] > Xpeaks[i + 1]) {
+          Float_t varia = Xpeaks[i];
+          Xpeaks[i] = Xpeaks[i + 1];
+          Xpeaks[i + 1] = varia;
+        }
       }
     }
-    if((AlphaFitType[DetectorNumber] == "NoSatellite") || (AlphaFitType[DetectorNumber] == "")){
-    Float_t linf=0, lsup=0; 
-    for (Int_t p=0;p<Nfound;p++)
-      {   
-        if(side == "X")
-        {			
-          //linf = Xpeaks[p]-2;
-          //lsup = Xpeaks[p]+8;
-          linf = Xpeaks[p]-5;
-          lsup = Xpeaks[p]+5;
+    if ((AlphaFitType[DetectorNumber] == "NoSatellite") || (AlphaFitType[DetectorNumber] == "")) {
+      Float_t linf = 0, lsup = 0;
+      for (Int_t p = 0; p < Nfound; p++) {
+        if (side == "X") {
+          // linf = Xpeaks[p]-2;
+          // lsup = Xpeaks[p]+8;
+          linf = Xpeaks[p] - 5;
+          lsup = Xpeaks[p] + 5;
         }
 
-        else if (side == "Y")
-        {			
-          linf = Xpeaks[p]-5;
-          lsup = Xpeaks[p]+5;
-          //linf = Xpeaks[p]-8;
-          //lsup = Xpeaks[p]+2;
+        else if (side == "Y") {
+          linf = Xpeaks[p] - 5;
+          lsup = Xpeaks[p] + 5;
+          // linf = Xpeaks[p]-8;
+          // lsup = Xpeaks[p]+2;
         }
-      TF1 *gauss = new TF1("gauss","gaus",linf,lsup);
-      CalibHist->Fit(gauss,"RQ");
-      AlphaMean.push_back(gauss->GetParameter(1));
-      AlphaSigma.push_back(gauss->GetParameter(2));
-      (*TH1Map)["MUST2"][Form("SigmaFit_T%d",DetectorNumber)]->Fill(gauss->GetParameter(2));
+        TF1* gauss = new TF1("gauss", "gaus", linf, lsup);
+        CalibHist->Fit(gauss, "RQ");
+        AlphaMean.push_back(gauss->GetParameter(1));
+        AlphaSigma.push_back(gauss->GetParameter(2));
+        (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(gauss->GetParameter(2));
       }
     }
-    else if(AlphaFitType[DetectorNumber] == "WithSatellite"){
-        Float_t linf[3]; 
-        Float_t lsup[3]; 
-        for (Int_t p=0;p<Nfound;p++)
-        {
-          if(side == "X")
-          {			
-            linf[p] = Xpeaks[p]-20;
-            lsup[p] = Xpeaks[p]+20;
-          }
-
-          else if (side == "Y")
-          {			
-            linf[p] = Xpeaks[p]+20;
-            lsup[p] = Xpeaks[p]-20;
-          }
+    else if (AlphaFitType[DetectorNumber] == "WithSatellite") {
+      Float_t linf[3];
+      Float_t lsup[3];
+      for (Int_t p = 0; p < Nfound; p++) {
+        if (side == "X") {
+          linf[p] = Xpeaks[p] - 20;
+          lsup[p] = Xpeaks[p] + 20;
         }
-      TF1 *SatellitePu = new TF1("gauss",source_Pu,linf[0],lsup[0], 4);
-      SatellitePu->SetParameters(150, Xpeaks[0], Xpeaks[0] -1, 0.1);
-      CalibHist->Fit(SatellitePu,"RQ+");
+
+        else if (side == "Y") {
+          linf[p] = Xpeaks[p] + 20;
+          lsup[p] = Xpeaks[p] - 20;
+        }
+      }
+      TF1* SatellitePu = new TF1("gauss", source_Pu, linf[0], lsup[0], 4);
+      SatellitePu->SetParameters(150, Xpeaks[0], Xpeaks[0] - 1, 0.1);
+      CalibHist->Fit(SatellitePu, "RQ+");
       AlphaMean.push_back(SatellitePu->GetParameter(1));
       AlphaSigma.push_back(SatellitePu->GetParameter(3));
-      (*TH1Map)["MUST2"][Form("SigmaFit_T%d",DetectorNumber)]->Fill(SatellitePu->GetParameter(3));
-      
-      TF1 *SatelliteAm = new TF1("gauss",source_Am,linf[1],lsup[1], 4);
-      SatelliteAm->SetParameters(150, Xpeaks[1], Xpeaks[1] -1, 0.1);
-      CalibHist->Fit(SatelliteAm,"RQ+");
+      (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatellitePu->GetParameter(3));
+
+      TF1* SatelliteAm = new TF1("gauss", source_Am, linf[1], lsup[1], 4);
+      SatelliteAm->SetParameters(150, Xpeaks[1], Xpeaks[1] - 1, 0.1);
+      CalibHist->Fit(SatelliteAm, "RQ+");
       AlphaMean.push_back(SatelliteAm->GetParameter(1));
       AlphaSigma.push_back(SatelliteAm->GetParameter(3));
-      (*TH1Map)["MUST2"][Form("SigmaFit_T%d",DetectorNumber)]->Fill(SatelliteAm->GetParameter(3));
-      
-      TF1 *SatelliteCm = new TF1("gauss",source_Cm,linf[2],lsup[2], 4);
-      SatelliteCm->SetParameters(150, Xpeaks[2], Xpeaks[2] -1, 0.1);
-      CalibHist->Fit(SatelliteCm,"RQ+");
+      (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatelliteAm->GetParameter(3));
+
+      TF1* SatelliteCm = new TF1("gauss", source_Cm, linf[2], lsup[2], 4);
+      SatelliteCm->SetParameters(150, Xpeaks[2], Xpeaks[2] - 1, 0.1);
+      CalibHist->Fit(SatelliteCm, "RQ+");
       AlphaMean.push_back(SatelliteCm->GetParameter(1));
       AlphaSigma.push_back(SatelliteCm->GetParameter(3));
-      (*TH1Map)["MUST2"][Form("SigmaFit_T%d",DetectorNumber)]->Fill(SatelliteCm->GetParameter(3));
+      (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatelliteCm->GetParameter(3));
     }
   }
 
-  if(Nfound!=3)
-  {
+  if (Nfound != 3) {
     BadStrip[side][StripNb] = Nfound;
-    return false ;
+    return false;
   }
 
-  return true ;
+  return true;
 }
 
-Double_t TMust2Physics::source_Pu(Double_t *x, Double_t *par){
+Double_t TMust2Physics::source_Pu(Double_t* x, Double_t* par) {
   // [0] : constant
   // [1] : position peak1
   // [2] : position peak2
@@ -2255,24 +2250,24 @@ Double_t TMust2Physics::source_Pu(Double_t *x, Double_t *par){
   Double_t arg2 = 0;
   Double_t arg3 = 0;
 
-  if(par[4]!=0) { 
-    arg1 = (x[0]-par[1])/par[3];
-    arg2 = (x[0]-par[2])/par[3];
-    arg3 = (x[0]-par[1] - (par[1] - par[2])*(5.15659 - 5.1055)/(5.15659 - 5.14438))/par[3];
+  if (par[4] != 0) {
+    arg1 = (x[0] - par[1]) / par[3];
+    arg2 = (x[0] - par[2]) / par[3];
+    arg3 = (x[0] - par[1] - (par[1] - par[2]) * (5.15659 - 5.1055) / (5.15659 - 5.14438)) / par[3];
   }
 
-  else cout << " Attention, sigma est nul !" << endl;
+  else
+    cout << " Attention, sigma est nul !" << endl;
 
-  Double_t gaus1 =           par[0]*exp(-0.5*arg1*arg1);
-  Double_t gaus2 = 15.1/73.8*par[0]*exp(-0.5*arg2*arg2);
-  Double_t gaus3 = 11.5/73.8*par[0]*exp(-0.5*arg3*arg3);
-  Double_t fitval = gaus1+gaus2+gaus3;
+  Double_t gaus1 = par[0] * exp(-0.5 * arg1 * arg1);
+  Double_t gaus2 = 15.1 / 73.8 * par[0] * exp(-0.5 * arg2 * arg2);
+  Double_t gaus3 = 11.5 / 73.8 * par[0] * exp(-0.5 * arg3 * arg3);
+  Double_t fitval = gaus1 + gaus2 + gaus3;
 
   return fitval;
 }
 
-Double_t TMust2Physics::source_Am(Double_t *x, Double_t *par)
-{
+Double_t TMust2Physics::source_Am(Double_t* x, Double_t* par) {
   // [0] : constant
   // [1] : position peak1
   // [2] : position peak2
@@ -2282,24 +2277,24 @@ Double_t TMust2Physics::source_Am(Double_t *x, Double_t *par)
   Double_t arg2 = 0;
   Double_t arg3 = 0;
 
-  if(par[4]!=0) { 
-    arg1 = (x[0]-par[1])/par[3];
-    arg2 = (x[0]-par[2])/par[3];
-    arg3 = (x[0]-par[1] - (par[1] - par[2])*(5.48556 - 5.388)/(5.48556 - 5.44280) )/par[3];
+  if (par[4] != 0) {
+    arg1 = (x[0] - par[1]) / par[3];
+    arg2 = (x[0] - par[2]) / par[3];
+    arg3 = (x[0] - par[1] - (par[1] - par[2]) * (5.48556 - 5.388) / (5.48556 - 5.44280)) / par[3];
   }
 
-  else cout << " Attention, sigma est nul !" << endl;
+  else
+    cout << " Attention, sigma est nul !" << endl;
 
-  Double_t gaus1 =           par[0]*exp(-0.5*arg1*arg1);
-  Double_t gaus2 = 13.0/84.5*par[0]*exp(-0.5*arg2*arg2);
-  Double_t gaus3 = 1.6/84.5 *par[0]*exp(-0.5*arg3*arg3);
-  Double_t fitval= gaus1+gaus2+gaus3;
+  Double_t gaus1 = par[0] * exp(-0.5 * arg1 * arg1);
+  Double_t gaus2 = 13.0 / 84.5 * par[0] * exp(-0.5 * arg2 * arg2);
+  Double_t gaus3 = 1.6 / 84.5 * par[0] * exp(-0.5 * arg3 * arg3);
+  Double_t fitval = gaus1 + gaus2 + gaus3;
 
   return fitval;
 }
 
-Double_t TMust2Physics::source_Cm(Double_t *x, Double_t *par)
-{
+Double_t TMust2Physics::source_Cm(Double_t* x, Double_t* par) {
   // [0] : constante
   // [1] : position peak1
   // [2] : position peak2
@@ -2308,135 +2303,130 @@ Double_t TMust2Physics::source_Cm(Double_t *x, Double_t *par)
   Double_t arg1 = 0;
   Double_t arg2 = 0;
 
-  if(par[3]!=0) { 
-    arg1 = (x[0]-par[1])/par[3];
-    arg2 = (x[0]-par[2])/par[3];
+  if (par[3] != 0) {
+    arg1 = (x[0] - par[1]) / par[3];
+    arg2 = (x[0] - par[2]) / par[3];
   }
 
-  else cout << " Attention, sigma est nul !" << endl;
+  else
+    cout << " Attention, sigma est nul !" << endl;
 
-  Double_t gaus1 =           par[0]*exp(-0.5*arg1*arg1);
-  Double_t gaus2 = 23.6/76.4*par[0]*exp(-0.5*arg2*arg2);
-  Double_t fitval= gaus1+gaus2; 
+  Double_t gaus1 = par[0] * exp(-0.5 * arg1 * arg1);
+  Double_t gaus2 = 23.6 / 76.4 * par[0] * exp(-0.5 * arg2 * arg2);
+  Double_t fitval = gaus1 + gaus2;
 
   return fitval;
-}  
-
-void TMust2Physics::MakeEnergyCalibFolders(){
-  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
-  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
-  if(OutputName.size() > 5){
-    if(OutputName.substr(OutputName.size()-5,OutputName.size()) == ".root"){
-      OutputName = OutputName.substr(0,OutputName.size()-5);
-    }
-  }
-  TString test_folder = "test -f "+Path+OutputName;
-  TString make_folder = "mkdir "+Path+OutputName;
-  
-    system(make_folder);
-    system(make_folder+"/peaks");
-    system(make_folder+"/dispersion");
-    system(make_folder+"/latex");
-    system(make_folder+"/latex/pictures");
 }
 
-void TMust2Physics::MakeCSICalibFolders(){
-  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
-  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
-  if(OutputName.size() > 5){
-    if(OutputName.substr(OutputName.size()-5,OutputName.size()) == ".root"){
-      OutputName = OutputName.substr(0,OutputName.size()-5);
+void TMust2Physics::MakeEnergyCalibFolders() {
+  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath();
+  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();
+  if (OutputName.size() > 5) {
+    if (OutputName.substr(OutputName.size() - 5, OutputName.size()) == ".root") {
+      OutputName = OutputName.substr(0, OutputName.size() - 5);
     }
   }
-  TString test_folder = "test -f "+Path+OutputName;
-  TString make_folder = "mkdir "+Path+OutputName;
-  
-    system(make_folder);
+  TString test_folder = "test -f " + Path + OutputName;
+  TString make_folder = "mkdir " + Path + OutputName;
+
+  system(make_folder);
+  system(make_folder + "/peaks");
+  system(make_folder + "/dispersion");
+  system(make_folder + "/latex");
+  system(make_folder + "/latex/pictures");
 }
 
-void TMust2Physics::CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream *calib_file, ofstream *dispersion_file){
-  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
-  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
-  if(OutputName.size() > 5){
-    if(OutputName.substr(OutputName.size()-5,OutputName.size()) == ".root"){
-      OutputName = OutputName.substr(0,OutputName.size()-5);
+void TMust2Physics::MakeCSICalibFolders() {
+  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath();
+  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();
+  if (OutputName.size() > 5) {
+    if (OutputName.substr(OutputName.size() - 5, OutputName.size()) == ".root") {
+      OutputName = OutputName.substr(0, OutputName.size() - 5);
     }
   }
-  TString Filename = "Cal_Str_"+side+"_E_MM"+std::to_string(DetectorNumber);
-//  fname =  Path+OutputName + "/peaks/" + str1 + ".peak";
+  TString test_folder = "test -f " + Path + OutputName;
+  TString make_folder = "mkdir " + Path + OutputName;
+
+  system(make_folder);
+}
+
+void TMust2Physics::CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream* calib_file,
+                                                 ofstream* dispersion_file) {
+  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath();
+  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();
+  if (OutputName.size() > 5) {
+    if (OutputName.substr(OutputName.size() - 5, OutputName.size()) == ".root") {
+      OutputName = OutputName.substr(0, OutputName.size() - 5);
+    }
+  }
+  TString Filename = "Cal_Str_" + side + "_E_MM" + std::to_string(DetectorNumber);
+  //  fname =  Path+OutputName + "/peaks/" + str1 + ".peak";
   // peaks_file.open( ( (string)(Path+OutputName+"/peaks/"+Filename+".peak") ).c_str() );
-  (*calib_file).open( ( (string)(Path+OutputName+"/"+Filename+".cal") ).c_str() );
-  (*dispersion_file).open( ( (string)(Path+OutputName+"/dispersion/"+Filename+".dispersion") ).c_str() );
+  (*calib_file).open(((string)(Path + OutputName + "/" + Filename + ".cal")).c_str());
+  (*dispersion_file).open(((string)(Path + OutputName + "/dispersion/" + Filename + ".dispersion")).c_str());
 }
 
-void TMust2Physics::CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream *calib_file, TString ParticleType){
-  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath(); 
-  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();  
-  if(OutputName.size() > 5){
-    if(OutputName.substr(OutputName.size()-5,OutputName.size()) == ".root"){
-      OutputName = OutputName.substr(0,OutputName.size()-5);
+void TMust2Physics::CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream* calib_file, TString ParticleType) {
+  std::string Path = NPOptionManager::getInstance()->GetCalibrationOutputPath();
+  std::string OutputName = NPOptionManager::getInstance()->GetOutputFile();
+  if (OutputName.size() > 5) {
+    if (OutputName.substr(OutputName.size() - 5, OutputName.size()) == ".root") {
+      OutputName = OutputName.substr(0, OutputName.size() - 5);
     }
   }
-  TString Filename = "CsI_MM"+std::to_string(DetectorNumber)+"_"+ParticleType;
+  TString Filename = "CsI_MM" + std::to_string(DetectorNumber) + "_" + ParticleType;
   std::cout << Filename << std::endl;
-  (*calib_file).open( ( (string)(Path+OutputName+"/"+Filename+".txt") ).c_str() );
-  std::cout << (string)(Path+OutputName+"/"+Filename+".txt") << std::endl;
+  (*calib_file).open(((string)(Path + OutputName + "/" + Filename + ".txt")).c_str());
+  std::cout << (string)(Path + OutputName + "/" + Filename + ".txt") << std::endl;
 }
 
-void TMust2Physics::CloseCalibrationCSIFiles(ofstream *calib_file){
-  calib_file->close();
-}
-  
-void TMust2Physics::CloseCalibrationEnergyFiles(ofstream *calib_file, ofstream *dispersion_file){
+void TMust2Physics::CloseCalibrationCSIFiles(ofstream* calib_file) { calib_file->close(); }
+
+void TMust2Physics::CloseCalibrationEnergyFiles(ofstream* calib_file, ofstream* dispersion_file) {
   // peaks_file.close();
   calib_file->close();
   dispersion_file->close();
 }
 
+void TMust2Physics::DoCalibrationTimeF(Int_t DetectorNumber) {}
 
-
-void TMust2Physics::DoCalibrationTimeF(Int_t DetectorNumber){
-
-}
-
-void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
-  TF1 *Gaus = new TF1("Gaus","gaus",0,200);
-	TF1 *f1 = new TF1("f1","pol1",8192,16384);
-  f1->SetParLimits(2,0,1e5);
-  f1->SetParameter(2,0.01);
-  auto File = new TFile("./FitSlices.root","RECREATE");
+void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
+  TF1* Gaus = new TF1("Gaus", "gaus", 0, 200);
+  TF1* f1 = new TF1("f1", "pol1", 8192, 16384);
+  f1->SetParLimits(2, 0, 1e5);
+  f1->SetParameter(2, 0.01);
+  auto File = new TFile("./FitSlices.root", "RECREATE");
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbCSI = 16;
-  
-  ofstream *calib_file = new ofstream;
-  
-  for(unsigned int j = 0; j < ParticleType.size(); j++){
+
+  ofstream* calib_file = new ofstream;
+
+  for (unsigned int j = 0; j < ParticleType.size(); j++) {
     CreateCalibrationCSIFiles(DetectorNumber, calib_file, ParticleType[j]);
-    for(unsigned int i = 1; i <= NbCSI; i++){ 
-      TString CutName = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
-      TString htitleCSIE    = Form("%s_hMM%u_CSI%u",ParticleType[j].c_str(), DetectorNumber, i);
+    for (unsigned int i = 1; i <= NbCSI; i++) {
+      TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[j].c_str(), DetectorNumber, i);
+      TString htitleCSIE = Form("%s_hMM%u_CSI%u", ParticleType[j].c_str(), DetectorNumber, i);
       double a = 0;
       double b = 0;
-      if((*TH2Map)["MUST2"][CutName] != 0){
+      if ((*TH2Map)["MUST2"][CutName] != 0) {
         std::cout << "test1" << std::endl;
-       (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus,0,2000,0,"QNG5",0);
+        (*TH2Map)["MUST2"][CutName]->FitSlicesY(Gaus, 0, 2000, 0, "QNG5", 0);
         std::cout << "test2" << std::endl;
-	      (*TH1Map)["MUST2"][CutName+"_0"]= (TH1F*)File->Get(htitleCSIE+"_0");
-	      File->Write();
-        (*TH1Map)["MUST2"][CutName+"_0"]->Draw();
-	      (*TH1Map)["MUST2"][CutName+"_1"]= (TH1F*)File->Get(htitleCSIE+"_1");
-	      (*TH1Map)["MUST2"][CutName+"_2"]= (TH1F*)File->Get(htitleCSIE+"_2");
+        (*TH1Map)["MUST2"][CutName + "_0"] = (TH1F*)File->Get(htitleCSIE + "_0");
+        File->Write();
+        (*TH1Map)["MUST2"][CutName + "_0"]->Draw();
+        (*TH1Map)["MUST2"][CutName + "_1"] = (TH1F*)File->Get(htitleCSIE + "_1");
+        (*TH1Map)["MUST2"][CutName + "_2"] = (TH1F*)File->Get(htitleCSIE + "_2");
         std::cout << "test3" << std::endl;
-	      (*TH1Map)["MUST2"][CutName+"_1"]->Fit(f1,"","",8192,16384);
+        (*TH1Map)["MUST2"][CutName + "_1"]->Fit(f1, "", "", 8192, 16384);
         a = f1->GetParameter(0);
         b = f1->GetParameter(1);
-      } 
-    *calib_file << "MUST2_T" << DetectorNumber << "_CsI" << i << "_E " << a << " " << b  << endl ;
-      
+      }
+      *calib_file << "MUST2_T" << DetectorNumber << "_CsI" << i << "_E " << a << " " << b << endl;
     }
-    CloseCalibrationCSIFiles(calib_file); 
+    CloseCalibrationCSIFiles(calib_file);
   }
 }
 /*
@@ -2450,12 +2440,14 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
   for(unsigned int StripNb = 1; StripNb < NbStrips+1; StripNb++){
     double a = 0, b = 0;
     if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRX_E%d", DetectorNumber, StripNb)]), "X", StripNb,DetectorNumber)){
-      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]),"X",StripNb, DetectorNumber,&a, &b);
+      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]),"X",StripNb,
+DetectorNumber,&a, &b);
       (*TGraphMap)["MUST2"][Form("coeffX_a_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,a);
       (*TGraphMap)["MUST2"][Form("coeffX_b_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,b);
       double dispersion = -b/a ;
       (*TH1Map)["MUST2"][Form("Dispersion_T%d",DetectorNumber)]->Fill(dispersion);
-      dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion << endl ;
+      dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion <<
+endl ;
     }
     calib_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E " << b << " " << a  << endl ;
 
@@ -2467,12 +2459,14 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber){
   for(unsigned int StripNb = 1; StripNb < NbStrips+1; StripNb++){
     double a = 0, b = 0;
     if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRY_E%d", DetectorNumber, StripNb)]), "Y", StripNb, DetectorNumber)){
-      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]),"Y",StripNb, DetectorNumber, & a,& b);
+      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]),"Y",StripNb,
+DetectorNumber, & a,& b);
       (*TGraphMap)["MUST2"][Form("coeffY_a_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,a);
       (*TGraphMap)["MUST2"][Form("coeffY_b_T%d",DetectorNumber)]->SetPoint(StripNb,StripNb,b);
       double dispersion = -b/a ;
       (*TH1Map)["MUST2"][Form("Dispersion_T%d",DetectorNumber)]->Fill(dispersion);
-      dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion << endl ;
+      dispersion_file  << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion <<
+endl ;
     }
     calib_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E " << b << " " << a  << endl ;
     AlphaMean.clear();
