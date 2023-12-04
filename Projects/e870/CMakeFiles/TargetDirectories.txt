@@ -1,0 +1,3 @@
+/Users/valerian/Software/nptool_gitlab/nptool/Projects/e870/CMakeFiles/NPAnalysis.dir
+/Users/valerian/Software/nptool_gitlab/nptool/Projects/e870/CMakeFiles/edit_cache.dir
+/Users/valerian/Software/nptool_gitlab/nptool/Projects/e870/CMakeFiles/rebuild_cache.dir

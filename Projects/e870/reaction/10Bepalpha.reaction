@@ -1,0 +1,39 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 10Be
+  Energy= 380 MeV
+  SigmaEnergy= 22.8 MeV
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+  %SigmaThetaX= 0.6138 deg
+  %SigmaPhiY= 0.3812 deg
+  %SigmaX= 6.216 mm
+  %SigmaY= 6.109 mm
+
+  %SigmaEnergy= 0 MeV
+  %ExcitationEnergy= 0 MeV
+  SigmaThetaX= 0 mrad
+  SigmaPhiY= 0 mrad
+  SigmaX= 0 mm
+  SigmaY= 0 mm
+  %MeanThetaX= 0 mrad
+  %MeanPhiY= 0 mrad
+  %MeanX= 0 mm
+  %MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 10Be
+ Target= 1H
+ Light= 4He
+ Heavy= 7Li 
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.0 MeV
+ CrossSectionPath= cross_sections/12CpAlphaNptoolCut20_50.txt CS 
+ ShootLight= 1
+ ShootHeavy= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+ 
