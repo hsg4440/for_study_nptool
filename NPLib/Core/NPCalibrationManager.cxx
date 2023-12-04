@@ -247,7 +247,7 @@ double CalibrationManager::ApplyCalibrationDebug(const std::string& ParameterPat
   it = fCalibrationCoeff.find(ParameterPath);
 
   // for (auto it2 = fCalibrationCoeff.begin(); it2 != fCalibrationCoeff.end(); it2++) {
-  //   std::cout << it2.first << std::endl;
+  //   std::cout << it2->first << std::endl;
   // }
 
   // If the find methods return the end iterator it's mean the parameter was not found

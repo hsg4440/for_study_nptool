@@ -530,9 +530,9 @@ void TMust2Physics::PreTreat() {
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
       double ECsI = fCsI_E(m_EventData, i);
       // double ECsI = m_EventData->GetMMCsIEEnergy(i);
-      // if (ECsI > 8192) {
-      // m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
-      // }
+      if (ECsI > m_CsI_E_RAW_Threshold) {
+      m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
+      }
     }
   }
 
@@ -2488,7 +2488,6 @@ namespace MUST2_LOCAL {
     name += "_Si_X";
     name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(i));
     name += "_E";
-    std::cout << name << std::endl;
     return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetMMStripXEEnergy(i));
   }
 
