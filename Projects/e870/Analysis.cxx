@@ -43,7 +43,6 @@ void Analysis::Init() {
     simulation = false;
   }
   simulation = true;
-  agata_zShift = 51 * mm;
 
   // initialize input and output branches
   if (simulation) {
@@ -55,7 +54,6 @@ void Analysis::Init() {
   InitInputBranch();
   // get MUST2 and Gaspard objects
   M2 = (TMust2Physics*)m_DetectorManager->GetDetector("M2Telescope");
-  MG = (TMugastPhysics*)m_DetectorManager->GetDetector("Mugast");
   if (!simulation)
     CATS = (TCATSPhysics*)m_DetectorManager->GetDetector("CATSDetector");
 
@@ -65,9 +63,6 @@ void Analysis::Init() {
   // target thickness
   TargetThickness = m_DetectorManager->GetTargetThickness();
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
-  // Cryo target case
-  WindowsThickness = 0;        // m_DetectorManager->GetWindowsThickness();
-  string WindowsMaterial = ""; // m_DetectorManager->GetWindowsMaterial();
 
   // energy losses
   // string light = NPL::ChangeNameToG4Standard(reaction.GetNucleus3()->GetName());
@@ -100,7 +95,6 @@ void Analysis::Init() {
   DetectorNumber = 0;
   ThetaNormalTarget = 0;
   ThetaM2Surface = 0;
-  ThetaMGSurface = 0;
   Si_E_M2 = 0;
   CsI_E_M2 = 0;
   Energy = 0;
@@ -192,8 +186,8 @@ void Analysis::TreatEvent() {
 
     /************************************************/
     // Part 3 : Excitation Energy Calculation
-    // Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    // reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy());
+    Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);
+    reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy());
     // ExNoBeam = reaction.ReconstructRelativistic(ELab, ThetaLab);
     // reaction.SetBeamEnergy(FinalBeamEnergy);
     // ExNoProton = reaction.ReconstructRelativistic(ReactionConditions->GetKineticEnergy(0),
@@ -208,74 +202,6 @@ void Analysis::TreatEvent() {
     /************************************************/
   } // end loop MUST2
 
-  ////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////// LOOP on MUGAST ////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  for (unsigned int countMugast = 0; countMugast < MG->DSSD_E.size(); countMugast++) {
-
-    // Part 1 : Impact Angle
-    ThetaMGSurface = 0;
-    ThetaNormalTarget = 0;
-    TVector3 HitDirection = MG->GetPositionOfInteraction(countMugast) - BeamImpact;
-    ThetaLab = HitDirection.Angle(BeamDirection);
-
-    X = MG->GetPositionOfInteraction(countMugast).X();
-    Y = MG->GetPositionOfInteraction(countMugast).Y();
-    Z = MG->GetPositionOfInteraction(countMugast).Z();
-
-    ThetaMGSurface = HitDirection.Angle(TVector3(0, 0, 1));
-    ThetaNormalTarget = HitDirection.Angle(TVector3(0, 0, 1));
-
-    // Part 2 : Impact Energy
-    Energy = ELab = 0;
-    Energy = MG->GetEnergyDeposit(countMugast);
-
-    ELab=Energy;
-    // ELab = LightAl.EvaluateInitialEnergy( Energy ,0.4*micrometer , ThetaMGSurface);
-    // Target Correction
-    // ELab = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, ThetaNormalTarget);
-
-    if (LightWindow)
-      ELab = LightWindow->EvaluateInitialEnergy(ELab, WindowsThickness, ThetaNormalTarget);
-
-    // Part 3 : Excitation Energy Calculation
-    // Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    // reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy() - 0.005 * Initial->GetIncidentFinalKineticEnergy());
-    // ExNoBeam = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    // reaction.SetBeamEnergy(FinalBeamEnergy);
-    // ExNoProton = reaction.ReconstructRelativistic(ReactionConditions->GetKineticEnergy(0),
-                                                  // ReactionConditions->GetParticleDirection(0).Angle(TVector3(0, 0, 1)));
-
-    // Part 4 : Theta CM Calculation
-    // ThetaCM = reaction.EnergyLabToThetaCM(ELab, ThetaLab) / deg;
-    ThetaLab = ThetaLab / deg;
-
-  } // end loop Mugast
-/*
-  ////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////// LOOP on AGATA ////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////
-  if (nbTrack == 1) { // keep only multiplicity one event
-    TLorentzVector GammaLV;
-    // Measured E
-    double Egamma = trackE[0];
-    // Gamma detection position
-    TVector3 GammaHit(trackX1[0], trackY1[0], trackZ1[0]);
-    // Gamma Direction
-    TVector3 GammaDirection = GammaHit - BeamImpact;
-    // Beta from Two body kinematic
-    // TVector3 beta = reaction.GetEnergyImpulsionLab_4().BoostVector();
-    // Construct LV in lab frame
-    GammaLV.SetPx(Egamma * GammaDirection.X());
-    GammaLV.SetPy(Egamma * GammaDirection.Y());
-    GammaLV.SetPz(Egamma * GammaDirection.Z());
-    GammaLV.SetE(Egamma);
-    // Boost back in CM
-    // GammaLV.Boost(-beta);
-    // Get EDC
-    EDC = GammaLV.Energy();
-  }
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
