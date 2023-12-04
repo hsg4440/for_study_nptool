@@ -142,7 +142,6 @@ void Analysis::TreatEvent() {
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
   for (unsigned int countMust2 = 0; countMust2 < M2->Si_E.size(); countMust2++) {
-  std::cout << 1 << std::endl;
     /************************************************/
     // Part 0 : Get the usefull Data
     //  MUST2

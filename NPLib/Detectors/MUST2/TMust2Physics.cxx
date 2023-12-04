@@ -62,7 +62,8 @@ ClassImp(TMust2Physics)
   m_Si_X_E_RAW_Threshold = 8192;
   m_Si_Y_E_RAW_Threshold = 8192;
   m_SiLi_E_RAW_Threshold = 8192;
-  m_CsI_E_RAW_Threshold = 8192;
+  // m_CsI_E_RAW_Threshold = 8192;
+  m_CsI_E_RAW_Threshold = 0;
   // Calibrated Threshold
   m_Si_X_E_Threshold = 0;
   m_Si_Y_E_Threshold = 0;
@@ -527,11 +528,11 @@ void TMust2Physics::PreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > m_CsI_E_RAW_Threshold &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
-      // double ECsI = fCsI_E(m_EventData, i);
-      double ECsI = m_EventData->GetMMCsIEEnergy(i);
-      if (ECsI > 8192) {
-        m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
-      }
+      double ECsI = fCsI_E(m_EventData, i);
+      // double ECsI = m_EventData->GetMMCsIEEnergy(i);
+      // if (ECsI > 8192) {
+      // m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
+      // }
     }
   }
 
@@ -1229,10 +1230,10 @@ void TMust2Physics::AddParameterToCalibrationManager() {
   for (int i = 0; i < m_NumberOfTelescope; ++i) {
 
     if (m_CsIOffset[i] == 1) {
-      vector<double> standardCsI = {0, 500. / 16384.};
+      standardCsI = {0, 500. / 16384.};
     }
     else
-      vector<double> standardCsI = {-250, 250. / 8192.};
+      standardCsI = {-250, 250. / 8192.};
 
     for (int j = 0; j < 128; ++j) {
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_Si_X" + NPL::itoa(j + 1) + "_E",
@@ -2487,6 +2488,7 @@ namespace MUST2_LOCAL {
     name += "_Si_X";
     name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(i));
     name += "_E";
+    std::cout << name << std::endl;
     return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetMMStripXEEnergy(i));
   }
 
