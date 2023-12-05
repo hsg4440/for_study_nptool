@@ -66,7 +66,7 @@ class Analysis: public NPL::VAnalysis{
   NPL::EnergyLoss LightTarget;
   NPL::EnergyLoss LightAl;
   NPL::EnergyLoss LightSi;
-  NPL::EnergyLoss BeamCD2;
+  NPL::EnergyLoss BeamTarget;
   NPL::EnergyLoss* BeamWindow;
   NPL::EnergyLoss* LightWindow;
 
