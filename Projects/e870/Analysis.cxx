@@ -42,6 +42,7 @@ void Analysis::Init() {
     cout << "Considering input data as real" << endl;
     simulation = false;
   }
+
   simulation = true;
 
   // initialize input and output branches
@@ -122,9 +123,9 @@ void Analysis::TreatEvent() {
     XTarget = 0;
     YTarget = 0;
     BeamDirection = TVector3(0, 0, 1);
-    //OriginalELab = ReactionConditions->GetKineticEnergy(0);
-    //OriginalThetaLab = ReactionConditions->GetTheta(0);
-    //BeamEnergy = ReactionConditions->GetBeamEnergy();
+    // OriginalELab = ReactionConditions->GetKineticEnergy(0);
+    // OriginalThetaLab = ReactionConditions->GetTheta(0);
+    // BeamEnergy = ReactionConditions->GetBeamEnergy();
   }
   BeamImpact = TVector3(XTarget, YTarget, 0);
   // determine beam energy for a randomized interaction point in target
@@ -167,41 +168,29 @@ void Analysis::TreatEvent() {
     if (CsI_E_M2 > 0) {
       // The energy in CsI is calculate form dE/dx Table because
       Energy = CsI_E_M2;
-      Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
+      if (simulation) {
+        Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
+      }
       Energy += Si_E_M2;
     }
 
     else
       Energy = Si_E_M2;
 
+    Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
     // Evaluate energy using the thickness
-    ELab = Energy;
-    // ELab = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
     // Target Correction
-    // ELab = LightTarget.EvaluateInitialEnergy(ELab, TargetThickness * 0.5, ThetaNormalTarget);
-
-    // if(LightWindow)
-    //   ELab = LightWindow->EvaluateInitialEnergy( ELab ,WindowsThickness, ThetaNormalTarget);
-    /************************************************/
+    Energy = LightTarget.EvaluateInitialEnergy(ELab, TargetThickness * 0.5, ThetaNormalTarget);
+    ELab = Energy;
 
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy());
-    // ExNoBeam = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    // reaction.SetBeamEnergy(FinalBeamEnergy);
-    // ExNoProton = reaction.ReconstructRelativistic(ReactionConditions->GetKineticEnergy(0),
-                                                  // ReactionConditions->GetParticleDirection(0).Angle(TVector3(0, 0, 1)));
+    // ExNoBeam = reaction.ReconstructRelativistic(, ThetaLab);
     ThetaLab = ThetaLab / deg;
-
     /************************************************/
 
-    /************************************************/
-    // Part 4 : Theta CM Calculation
-    // ThetaCM = reaction.EnergyLabToThetaCM(ELab, ThetaLab) / deg;
-    /************************************************/
   } // end loop MUST2
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,9 +198,6 @@ void Analysis::End() {}
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex, "Ex/D");
-  RootOutput::getInstance()->GetTree()->Branch("ExNoBeam", &ExNoBeam, "ExNoBeam/D");
-  RootOutput::getInstance()->GetTree()->Branch("ExNoProton", &ExNoProton, "ExNoProton/D");
-  RootOutput::getInstance()->GetTree()->Branch("EDC", &Ex, "Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab, "ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab, "ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM", &ThetaCM, "ThetaCM/D");
@@ -221,28 +207,6 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Z", &Z, "Z/D");
   RootOutput::getInstance()->GetTree()->Branch("dE", &dE, "dE/D");
   if (!simulation) {
-    // Vamos
-    RootOutput::getInstance()->GetTree()->Branch("LTS", &LTS, "LTS/l");
-
-    // Agata
-    // Time stamp of the agata trigger
-    RootOutput::getInstance()->GetTree()->Branch("TStrack", &TStrack, "TStrack/l");
-
-    // Array of reconstructed tracks
-    RootOutput::getInstance()->GetTree()->Branch("nbTrack", &nbTrack, "nbTrack/I");
-    RootOutput::getInstance()->GetTree()->Branch("trackE", trackE, "trackE[nbTrack]/F");
-    RootOutput::getInstance()->GetTree()->Branch("trackX1", trackX1, "trackX1[nbTrack]/F");
-    RootOutput::getInstance()->GetTree()->Branch("trackY1", trackY1, "trackY1[nbTrack]/F");
-    RootOutput::getInstance()->GetTree()->Branch("trackZ1", trackZ1, "trackZ1[nbTrack]/F");
-    RootOutput::getInstance()->GetTree()->Branch("trackT", trackT, "trackT[nbTrack]/F");
-    RootOutput::getInstance()->GetTree()->Branch("trackCrystalID", trackCrystalID, "trackCrystalID[nbTrack]/I");
-
-    // Array of reconstructed core
-    RootOutput::getInstance()->GetTree()->Branch("nbCores", &nbCores, "nbCores/I");
-    RootOutput::getInstance()->GetTree()->Branch("coreId", coreId, "coreId[nbCores]/I");
-    RootOutput::getInstance()->GetTree()->Branch("coreTS", coreTS, "coreTS[nbCores]/l");
-    RootOutput::getInstance()->GetTree()->Branch("coreE0", coreE0, "coreE0[nbCores]/F");
-    //
   }
   else {
     RootOutput::getInstance()->GetTree()->Branch("OriginalELab", &OriginalELab, "OriginalELab/D");
@@ -255,21 +219,6 @@ void Analysis::InitOutputBranch() {
 void Analysis::InitInputBranch() {
   // RootInput:: getInstance()->GetChain()->SetBranchAddress("GATCONF",&vGATCONF);
   if (!simulation) {
-    // Vamos
-    RootInput::getInstance()->GetChain()->SetBranchAddress("LTS", &LTS);
-    // Agata
-    RootInput::getInstance()->GetChain()->SetBranchAddress("TStrack", &TStrack);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("nbTrack", &nbTrack);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackE", trackE);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackX1", trackX1);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackY1", trackY1);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackZ1", trackZ1);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackT", trackT);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("trackCrystalID", trackCrystalID);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("nbCores", &nbCores);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("coreId", coreId);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("coreTS", coreTS);
-    RootInput::getInstance()->GetChain()->SetBranchAddress("coreE0", coreE0);
   }
   else {
     RootInput::getInstance()->GetChain()->SetBranchStatus("InitialConditions", true);
