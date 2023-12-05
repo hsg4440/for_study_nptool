@@ -2,7 +2,8 @@
 Beam
   Particle= 10Be
   Energy= 380 MeV
-  SigmaEnergy= 22.8 MeV
+  %SigmaEnergy= 22.8 MeV
+  SigmaEnergy= 0 MeV
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
   MeanX= 0 mm

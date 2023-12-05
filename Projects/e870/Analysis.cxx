@@ -160,7 +160,7 @@ void Analysis::TreatEvent() {
 
     /************************************************/
     // Part 2 : Impact Energy
-    Energy = ELab = 0;
+    Energy = 0;
     Si_E_M2 = M2->Si_E[countMust2];
     CsI_E_M2 = M2->CsI_E[countMust2];
 
@@ -173,16 +173,16 @@ void Analysis::TreatEvent() {
       }
       Energy += Si_E_M2;
     }
-
-    else
+    else {
       Energy = Si_E_M2;
+    }
 
     Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
     // Evaluate energy using the thickness
     // Target Correction
-    Energy = LightTarget.EvaluateInitialEnergy(ELab, TargetThickness * 0.5, ThetaNormalTarget);
-    ELab = Energy;
+    Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, ThetaNormalTarget);
 
+    ELab = Energy;
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);

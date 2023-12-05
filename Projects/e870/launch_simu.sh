@@ -34,8 +34,22 @@
 # npsimulation -D DetectorConfiguration/MUGAST_LISE_CD2_thick.detector -E reaction/10Bed6Li.reaction -O MugastAtLise10Bed6LiThick.root -B simu10Bed6Li.mac
 # ninja && npanalysis -D DetectorConfiguration/MUGAST_LISE_CD2.detector -E reaction/10Bed6Li.reaction -T /Users/valerian/Software/nptool_gitlab/nptool/Outputs/Simulation/MugastAtLise10Bed6Li.root SimulatedTree -O AnaMugastAtLise10Bed6LiThick.root
 
-ninja && npanalysis -D DetectorConfiguration/MUGAST_LISE_CD2.detector -E reaction/10Bed6Li.reaction -T /Users/valerian/Software/nptool_gitlab/nptool/Outputs/Simulation/MugastAtLise10Bed6Li.root SimulatedTree -O test.root
+# ninja && npanalysis -D DetectorConfiguration/MUGAST_LISE_CD2.detector -E reaction/10Bed6Li.reaction -T /Users/valerian/Software/nptool_gitlab/nptool/Outputs/Simulation/MugastAtLise10Bed6Li.root SimulatedTree -O test.root
 
+#################################################################################################
+
+# # Recompile the lib:
+# #npcompilation -l 
+# # Recompile the simulation:
+# #npcompilation -s 
+# # Compile the local analysis:
+# # make
+# All of the above:
+npcompilation
+
+npsimulation -D DetectorConfiguration/MUGAST_LISE.detector -E reaction/10Bepalpha.reaction -O test -B run.mac
+
+npanalysis -D DetectorConfiguration/MUGAST_LISE.detector -E reaction/10Bepalpha.reaction -T $NPTOOL/Outputs/Simulation/test.root SimulatedTree -O test
 
 
 
