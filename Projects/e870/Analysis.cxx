@@ -147,7 +147,7 @@ void Analysis::TreatEvent() {
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
     TVector3 HitDirection = M2->GetPositionOfInteraction(countMust2) - BeamImpact;
-    ThetaLab = HitDirection.Angle(BeamDirection);
+    double Theta = HitDirection.Angle(BeamDirection);
 
     X = M2->GetPositionOfInteraction(countMust2).X();
     Y = M2->GetPositionOfInteraction(countMust2).Y();
@@ -182,12 +182,10 @@ void Analysis::TreatEvent() {
     // Target Correction
     Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, ThetaNormalTarget);
 
-    ELab = Energy;
-    /************************************************/
-    // Part 3 : Excitation Energy Calculation
-    Ex = reaction.ReconstructRelativistic(ELab, ThetaLab);
-    // ExNoBeam = reaction.ReconstructRelativistic(, ThetaLab);
-    ThetaLab = ThetaLab / deg;
+    // What is written in the tree
+    ThetaLab.push_back(Theta / deg);
+    Ex.push_back(reaction.ReconstructRelativistic(Energy, Theta));
+    ELab.push_back(Energy);
     /************************************************/
 
   } // end loop MUST2
@@ -197,9 +195,9 @@ void Analysis::TreatEvent() {
 void Analysis::End() {}
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
-  RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex, "Ex/D");
-  RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab, "ELab/D");
-  RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab, "ThetaLab/D");
+  RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex);
+  RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab);
+  RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM", &ThetaCM, "ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("Run", &Run, "Run/I");
   RootOutput::getInstance()->GetTree()->Branch("X", &X, "X/D");
@@ -231,17 +229,17 @@ void Analysis::InitInputBranch() {
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue() {
-  Ex = -1000;
   ExNoBeam = ExNoProton = -1000;
   EDC = -1000;
-  ELab = -1000;
   BeamEnergy = -1000;
-  ThetaLab = -1000;
   ThetaCM = -1000;
   X = -1000;
   Y = -1000;
   Z = -1000;
   dE = -1000;
+  ELab.clear();
+  ThetaLab.clear();
+  Ex.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -51,12 +51,12 @@ class Analysis: public NPL::VAnalysis{
   static NPL::VAnalysis* Construct();
  
   private:
-  double Ex;
+  std::vector<double>Ex;
   double ExNoBeam;
   double ExNoProton;
   double EDC;
-  double ELab;
-  double ThetaLab;
+  std::vector<double> ELab;
+  std::vector<double> ThetaLab;
   double ThetaCM;
   double OriginalELab;
   double OriginalThetaLab;
