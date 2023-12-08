@@ -45,9 +45,9 @@
 # # Compile the local analysis:
 # # make
 # All of the above:
-# npcompilation
+npcompilation
 
-# npsimulation -D DetectorConfiguration/MUGAST_LISE.detector -E reaction/10Bepalpha.reaction -O test -B run.mac
+npsimulation -D DetectorConfiguration/MUGAST_LISE.detector -E reaction/10Bepalpha.reaction -O test -B run.mac
 
 npanalysis -D DetectorConfiguration/MUGAST_LISE.detector -E reaction/10Bepalpha.reaction -T $NPTOOL/Outputs/Simulation/test.root SimulatedTree -O test
 
