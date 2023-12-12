@@ -72,8 +72,8 @@ GaspardTracker Trapezoid
  X128_Y1= -138.519 48.717 -69.236 mm
  X1_Y1=  -138.518 -48.726 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 GaspardTracker Trapezoid
@@ -82,8 +82,8 @@ GaspardTracker Trapezoid
  X128_Y1= -132.395 -63.500 -69.236 mm
  X1_Y1=  -63.492 -132.401 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
 GaspardTracker Trapezoid
@@ -92,8 +92,8 @@ GaspardTracker Trapezoid
  X128_Y1= -48.717 -138.519 -69.236 mm
  X1_Y1=  48.726 -138.518 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
 GaspardTracker Trapezoid
@@ -102,8 +102,8 @@ GaspardTracker Trapezoid
  X128_Y1= 63.500 -132.395 -69.236 mm
  X1_Y1=  132.401 -63.492 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 Barrel
 GaspardTracker Square
@@ -132,8 +132,8 @@ GaspardTracker Square
  R= 143 mm
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 GaspardTracker Square
@@ -142,8 +142,8 @@ GaspardTracker Square
  R= 143 mm
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 GaspardTracker Square
@@ -152,8 +152,8 @@ GaspardTracker Square
  R= 143 mm
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 GaspardTracker Square
@@ -162,8 +162,8 @@ GaspardTracker Square
  R= 143 mm
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
 GaspardTracker Square
@@ -172,8 +172,8 @@ GaspardTracker Square
  R= 143 mm
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
 GaspardTracker Square
@@ -182,8 +182,8 @@ GaspardTracker Square
  R= 143 mm 
  BETA= 0 0 0 deg
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= 0
+ THIRDSTAGE= 0
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 Front-Cap Back
 GaspardTracker Trapezoid
@@ -266,4 +266,36 @@ GaspardTracker Trapezoid
  THIRDSTAGE= 1
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGATA
+%     THETA= 157.5 
+%     PHI= 45 
+%     R= 290
+%     Shape= Square 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGATA
+%     THETA= 157.5 
+%     PHI= 117 
+%     R= 290
+%     Shape= Square 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGATA
+%     THETA= 157.5 
+%     PHI= 189 
+%     R= 290
+%     Shape= Square 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGATA
+%     THETA= 157.5 
+%     PHI= 261
+%     R= 290
+%     Shape= Square 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGATA
+%     THETA= 157.5 
+%     PHI= 333 
+%     R= 290
+%     Shape= Square 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
