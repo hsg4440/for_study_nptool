@@ -358,7 +358,6 @@ bool CalibrationManager::ApplyThreshold(const std::string& ParameterPath, const 
     ThresholdValue = it->second[0];
   }
 
-
   if(RawValue > ThresholdValue)
     return true;
   else 

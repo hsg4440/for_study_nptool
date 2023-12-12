@@ -37,52 +37,53 @@ void Analysis::Init(){
   InitOutputBranch();
   CATS = (TCATSPhysics*)  m_DetectorManager -> GetDetector("CATSDetector");
   M2 = (TMust2Physics*)  m_DetectorManager -> GetDetector("M2Telescope");
-   
-  reaction->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
-  OriginalBeamEnergy = reaction->GetBeamEnergy();
+  // 
+  //reaction->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  //OriginalBeamEnergy = reaction->GetBeamEnergy();
 
 
-  string Path = "../../Inputs/EnergyLoss/";
-  string TargetMaterial = m_DetectorManager->GetTargetMaterial();
-  TargetThickness = m_DetectorManager->GetTargetThickness();
-  string beam=  NPL::ChangeNameToG4Standard(reaction->GetNucleus1()->GetName());
-  string heavy_ejectile=  NPL::ChangeNameToG4Standard(reaction->GetNucleus4()->GetName());
-  string light=NPL::ChangeNameToG4Standard(reaction->GetNucleus3()->GetName());
+  //string Path = "../../Inputs/EnergyLoss/";
+  //string TargetMaterial = m_DetectorManager->GetTargetMaterial();
+  //TargetThickness = m_DetectorManager->GetTargetThickness();
+  //string beam=  NPL::ChangeNameToG4Standard(reaction->GetNucleus1()->GetName());
+  //string heavy_ejectile=  NPL::ChangeNameToG4Standard(reaction->GetNucleus4()->GetName());
+  //string light=NPL::ChangeNameToG4Standard(reaction->GetNucleus3()->GetName());
 
-  string Reaction_pd_s = "48Cr(p,d)47Cr@1620";
-  string Reaction_pt_s = "48Cr(p,t)46Cr@1620";
-  string Reaction_p3He_s = "48Cr(p,3He)46V@1620";
-  Reaction_pd = new Reaction(Reaction_pd_s);
-  Reaction_pt = new Reaction(Reaction_pt_s);
-  Reaction_p3He = new Reaction(Reaction_p3He_s);
+  //string Reaction_pd_s = "48Cr(p,d)47Cr@1620";
+  //string Reaction_pt_s = "48Cr(p,t)46Cr@1620";
+  //string Reaction_p3He_s = "48Cr(p,3He)46V@1620";
+  //Reaction_pd = new Reaction(Reaction_pd_s);
+  //Reaction_pt = new Reaction(Reaction_pt_s);
+  //Reaction_p3He = new Reaction(Reaction_p3He_s);
 
-//
-  ProtonSi = NPL::EnergyLoss(Path+ "proton_Si.G4table", "G4Table", 100);
-  
-  for(unsigned int i = 0; i < ParticleType.size(); i++){
-    LightAl[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_Al.G4table","G4Table",100);
-    LightTarget[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_CH2.G4table","G4Table",100);
-  }
-  BeamTarget["48Cr"] = NPL::EnergyLoss(Path+"Cr48_CH2.G4table","G4Table",100);
+////
+  //ProtonSi = NPL::EnergyLoss(Path+ "proton_Si.G4table", "G4Table", 100);
+  //
+  //for(unsigned int i = 0; i < ParticleType.size(); i++){
+  //  LightAl[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_Al.G4table","G4Table",100);
+  //  LightTarget[ParticleType[i]] = NPL::EnergyLoss(Path+ParticleType[i]+"_CH2.G4table","G4Table",100);
+  //}
+  //BeamTarget["48Cr"] = NPL::EnergyLoss(Path+"Cr48_CH2.G4table","G4Table",100);
 
-  Reaction_pd->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pd->GetBeamEnergy(),TargetThickness*0.5,0));
-  Reaction_pt->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pt->GetBeamEnergy(),TargetThickness*0.5,0));
-  Reaction_p3He->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_p3He->GetBeamEnergy(),TargetThickness*0.5,0));
-  Cal = CalibrationManager::getInstance();  
+  //Reaction_pd->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pd->GetBeamEnergy(),TargetThickness*0.5,0));
+  //Reaction_pt->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pt->GetBeamEnergy(),TargetThickness*0.5,0));
+  //Reaction_p3He->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_p3He->GetBeamEnergy(),TargetThickness*0.5,0));
+  //Cal = CalibrationManager::getInstance();  
 }
   ///////////////////////////// Initialize some important parameters //////////////////////////////////
 
 
 bool Analysis::UnallocateBeforeBuild(){
-  // std::cout << "test unallocate" << std::endl;
-  //return true;
+  // return true;
   GATCONFMASTER = **GATCONFMASTER_;
-  return (GATCONFMASTER > 0); 
+  if(GATCONFMASTER.size() > 1)
+  std::cout << GATCONFMASTER.size() << std::endl;
+  return (GATCONFMASTER.size() == 1 && GATCONFMASTER[0] > 0); 
   //return true;
 }
 
 bool Analysis::UnallocateBeforeTreat(){
-  for(int i = 0; i < 10; i++){
+/*  for(int i = 0; i < 10; i++){
   PlasticRaw[i] = (*PlasticRaw_   )[i];
   PlasticRawTS[i] = (*PlasticRaw_TS_)[i];
   }
@@ -126,7 +127,7 @@ bool Analysis::UnallocateBeforeTreat(){
   TAC_PL_4TS = **TAC_PL_4_TS_;
   TAC_PL_5 = **TAC_PL_5_;
   TAC_PL_5TS = **TAC_PL_5_TS_;
-
+*/
   return true;
 }
 
@@ -139,7 +140,8 @@ bool Analysis::FillOutputCondition(){
 void Analysis::TreatEvent(){
 
     //  if(M2->CsI_E.size() > 0) 
-    //  std::cout << "Analysis test " << M2->CsI_E[0] << " " << M2->CsI_E.size() << " " << "\n \n";*
+    //  std::cout << "Analysis test " << M2->CsI_E[0] << " " << M2->CsI_E.size() << " " << "\n \n";
+/*
     ReInit();
     // std::cout << CATS->PositionX.size() << std::endl;
     //////////////////// MUST2 Part ////////////////////
@@ -214,7 +216,7 @@ void Analysis::TreatEvent(){
       // Part 3 : Excitation Energy Calculation
       M2_Ex_p.push_back(reaction->ReconstructRelativistic( Energy["proton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_d.push_back(Reaction_pd->ReconstructRelativistic( Energy["deuteron"] , M2_ThetaLab[countMust2] ));
-      //  std::cout << "oui " << M2_Ex_d[countMust2] << std::endl;
+       std::cout << "oui " << M2_Ex_d[countMust2] << std::endl;
       M2_Ex_t.push_back(Reaction_pt->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
       M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
       
@@ -232,8 +234,6 @@ void Analysis::TreatEvent(){
       //  std::cout << "Test :" << proton_cut[TelescopeNumber] << " \n";
       //  
     }//end loop MUST2
-    }
-/*
   }
   if(M2->Si_E.size() > 0){
     if(Inner6MVM > 0){
@@ -302,7 +302,8 @@ void Analysis::TreatEvent(){
 
 
 void Analysis::InitOutputBranch() {
-  
+  RootOutput::getInstance()->GetTree()->Branch("GATCONF",&GATCONFMASTER);
+  /*
   RootOutput::getInstance()->GetTree()->Branch("M2_TelescopeM",&M2_TelescopeM,"M2_TelescopeM/s");
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_p",&M2_CsI_E_p);
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_d",&M2_CsI_E_d);
@@ -323,7 +324,6 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("M2_dE",&M2_dE);
   RootOutput::getInstance()->GetTree()->Branch("CsI_E_M2",&CsI_E_M2);
   // RootOutput::getInstance()->GetTree()->Branch("M2_ECsI_from_deltaE",&M2_ECsI_from_deltaE);
-  RootOutput::getInstance()->GetTree()->Branch("GATCONF",&GATCONFMASTER);
   
   RootOutput:: getInstance()->GetTree()->Branch("TAC_CATS_PL",&TAC_CATS_PL,"TAC_CATS_PL/s");
   RootOutput:: getInstance()->GetTree()->Branch("TAC_CATS_PLTS",&TAC_CATS_PLTS,"TAC_CATS_PLTS/l");
@@ -364,7 +364,7 @@ void Analysis::InitOutputBranch() {
   
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRaw",IC_ZDDRaw,"IC_ZDDRaw[6]/s");
   RootOutput:: getInstance()->GetTree()->Branch("IC_ZDDRawTS",IC_ZDDRawTS,"IC_ZDDRawTS[6]/l");
- /* 
+  
   RootOutput:: getInstance()->GetTree()->Branch("EnergyDoppler",&EnergyDoppler,"EnergyDoppler/F");
   RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBack",&EnergyAddBack,"EnergyAddBack/F");
   RootOutput:: getInstance()->GetTree()->Branch("EnergyAddBackDoppler",&EnergyAddBackDoppler,"EnergyAddBackDoppler/F");
@@ -389,9 +389,9 @@ void Analysis::UnallocateVariables(){
 void Analysis::InitInputBranch(){
 
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
-   GATCONFMASTER_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"GATCONFMASTER");
+  GATCONFMASTER_ = new TTreeReaderValue<vector<unsigned int>>(*inputTreeReader,"GATCONF");
   //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
-  PlasticRaw_   = new TTreeReaderArray<UShort_t>(*inputTreeReader,"PlasticRaw");
+  /*PlasticRaw_   = new TTreeReaderArray<UShort_t>(*inputTreeReader,"PlasticRaw");
   PlasticRaw_TS_ = new TTreeReaderArray<ULong64_t>(*inputTreeReader,"PlasticRawTS");
   
   IC_ZDDRaw_ = new TTreeReaderArray<UShort_t>(*inputTreeReader,"IC_ZDDRaw");
@@ -431,7 +431,7 @@ void Analysis::InitInputBranch(){
   TAC_PL_4_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_4TS");
   TAC_PL_5_= new TTreeReaderValue<UShort_t>(*inputTreeReader,"TAC_PL_5");
   TAC_PL_5_TS_= new TTreeReaderValue<ULong64_t>(*inputTreeReader,"TAC_PL_5TS");
-  /*
+  
   Inner6MVM_ = new TTreeReaderValue<int>(*inputTreeReader,"Inner6MRawM");
   Inner6MV_ = new TTreeReaderArray<float>(*inputTreeReader,"Inner6MRaw");
   Inner6MVN_ = new TTreeReaderArray<unsigned short>(*inputTreeReader,"Inner6MRawNr");

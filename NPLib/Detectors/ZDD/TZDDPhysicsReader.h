@@ -1,5 +1,5 @@
-#ifndef TMUST2PHYSICSREADER_H
-#define TMUST2PHYSICSREADER_H
+#ifndef TZDDPHYSICSREADER_H
+#define TZDDPHYSICSREADER_H
 /*****************************************************************************
  * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    : 2023
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  TTreader class for Must2 Physics                                         *
+ *  TTreader class for ZDD Physics                                           *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -26,7 +26,7 @@
 #include <map>
 #include <vector>
 // NPL
-#include "TMust2Data.h"
+#include "TZDDData.h"
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
 #include "TTreeReaderArray.h"
@@ -38,20 +38,21 @@
 
 using namespace std;
 
-class TMust2PhysicsReader : public NPL::VTreeReader {
+
+class TZDDPhysicsReader : public NPL::VTreeReader {
 public:
-  TMust2PhysicsReader();
-  ~TMust2PhysicsReader(){};
+  TZDDPhysicsReader();
+  ~TZDDPhysicsReader(){};
   
 public:
   void r_SetTreeReader(TTreeReader* TreeReader);
 private:
   TTreeReader *dummy = new TTreeReader();
 public:
-  TTreeReaderValue<TMust2Data>* r_ReaderEventData = new TTreeReaderValue<TMust2Data>(*dummy,"");
+  TTreeReaderValue<TZDDData>* r_ReaderEventData = new TTreeReaderValue<TZDDData>(*dummy,"");
 
 public:
-  ClassDef(TMust2PhysicsReader,0);
+  ClassDef(TZDDPhysicsReader,0);
 
 };
 

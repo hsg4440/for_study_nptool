@@ -93,7 +93,7 @@ int main(int argc , char** argv){
     UserAnalysis->SetDetectorManager(myDetector);
     std::cout << "Salut ////////////////////" << std::endl; 
     UserAnalysis->Init();
-    //UserAnalysis->InitTreeReader(inputTreeReader);
+    // UserAnalysis->InitTreeReader(inputTreeReader);
   } 
   else{
     std::string str_error=error;
@@ -187,6 +187,7 @@ int main(int argc , char** argv){
       while(inputTreeReader->Next()){
         
         // Build the current event
+          // std::cout << "test" << std::endl;
         if(UserAnalysis->UnallocateBeforeBuild()){
           myDetector->BuildPhysicalEvent();
           // User Analysis;

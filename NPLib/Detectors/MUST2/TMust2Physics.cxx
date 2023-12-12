@@ -740,7 +740,6 @@ void TMust2Physics::ReadAnalysisConfig() {
 
       whatToDo = "";
       AnalysisConfigFile >> whatToDo;
-
       // Search for comment symbol (%)
       if (whatToDo.compare(0, 1, "%") == 0) {
         AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n');

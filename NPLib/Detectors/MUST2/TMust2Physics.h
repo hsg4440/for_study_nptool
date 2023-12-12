@@ -63,7 +63,6 @@ public:
   bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
   bool             Match_Si_SiLi(int X, int Y, int PadNbr);
   bool             ResolvePseudoEvent();
-  bool m_reader = true;//!
 
 public:
   //   Provide Physical Multiplicity

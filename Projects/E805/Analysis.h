@@ -147,8 +147,8 @@ class Analysis: public NPL::VAnalysis{
   unsigned short BGOVN[48];
   TTreeReaderArray<unsigned short>* BGOVN_;
   
-  unsigned short GATCONFMASTER;
-  TTreeReaderValue<unsigned short>* GATCONFMASTER_;
+  vector<unsigned int> GATCONFMASTER;
+  TTreeReaderValue<vector<unsigned int>>* GATCONFMASTER_;
   
   unsigned short DATATRIG_CATS;
   TTreeReaderValue<unsigned short>* DATATRIG_CATS_;

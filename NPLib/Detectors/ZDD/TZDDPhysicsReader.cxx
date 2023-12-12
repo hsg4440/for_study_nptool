@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -12,24 +12,22 @@
  * Last update    : July 2021
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold must2 treated data                                       *
+ *  This class hold must2 TreeReader                                        *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *                                                                           *
- *                                                                           *
- *                                                                           *
  *****************************************************************************/
-#include "TMust2PhysicsReader.h"
+#include "TZDDPhysicsReader.h"
 #include "NPDetectorFactory.h"
 ///////////////////////////////////////////////////////////////////////////
 
-ClassImp(TMust2PhysicsReader)
+ClassImp(TZDDPhysicsReader)
 
-TMust2PhysicsReader::TMust2PhysicsReader()
+TZDDPhysicsReader::TZDDPhysicsReader()
 {
 };
 
-void TMust2PhysicsReader::r_SetTreeReader(TTreeReader* TreeReader){
-r_ReaderEventData = new TTreeReaderValue<TMust2Data>(*TreeReader,"MUST2");
+void TZDDPhysicsReader::r_SetTreeReader(TTreeReader* TreeReader){
+r_ReaderEventData = new TTreeReaderValue<TZDDData>(*TreeReader,"ZDD");
 }; 

@@ -202,6 +202,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
     Double_t Mask1_Z = 0;//!
     Double_t Mask2_Z = 0;//!
 
+    int counter = 0;
     UShort_t StrX;//! 
     UShort_t NX;//! 
     UShort_t CATS_X_Q;//! 
@@ -215,7 +216,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
   std::map<UShort_t, std::vector<double>>	 QsumSample;//!
 
   //Debugging
-  unsigned long counter;//!
+  //unsigned long counter;//!
   unsigned long long time_elapsed1;//!
   unsigned long long time_elapsed2;//!
   unsigned long long time_elapsed3;//!
@@ -240,7 +241,7 @@ namespace CATS_LOCAL{
   // The reconstruction methods need to be outside the class for practical purpose
   // of dealing with the function pointer
   double AnalyticHyperbolicSecant(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t);
-  //double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
+  double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t);
   //double AnalyticGaussian(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
   //double Centroide(std::pair<UShort_t,UShort_t>&,std::vector<std::pair<UShort_t,UShort_t>>&,Double_t,  Double_t, UShort_t);
 

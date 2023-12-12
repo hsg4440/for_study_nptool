@@ -183,14 +183,10 @@ void TCATSPhysics::BuildPhysicalEvent(){
   // std::cout << "test 7" << std::endl;
      double PosY =  ReconstructionFunctionY[DetN](MaxQY[DetN],MapY[DetN], QSumY[DetN]);
     //std::cout << "test " << std::reduce(QsumSample[DetN].begin(),QsumSample[DetN].end()) /(QsumSample[DetN]).size() << std::endl;
-    StripNumberX.push_back(PosX);
-    StripNumberY.push_back(PosY);
-    DetNumber.push_back(DetN);   
-    ChargeX.push_back(QSumX[DetN]);   
-    ChargeY.push_back(QSumY[DetN]);
 
     // a shift - -1 is made to have PosX in between -0.5 and 27.5
     // for the following calculation of the position in the lab.
+    // std::cout << PosX << " " << PosY << std::endl;
     PosX = PosX;
     PosY = PosY;
 
@@ -199,9 +195,15 @@ void TCATSPhysics::BuildPhysicalEvent(){
     int sx1 = sx0+1; 
     int sy0 = (int) PosY;
     int sy1 = sy0+1; 
+    // std::cout << StripPositionX[1][1][0] << std::endl;
 
     if(PosX>-1000 && PosY>-1000 && sx0 > -1 && sx1 < 28 && sy0 > -1  && sy1 < 28){
       // px and py are the x and y coordinate of strip sx and sy 
+      StripNumberX.push_back(PosX);
+      StripNumberY.push_back(PosY);
+      DetNumber.push_back(DetN);   
+      ChargeX.push_back(QSumX[DetN]);   
+      ChargeY.push_back(QSumY[DetN]);
       double px0 = StripPositionX[DetN][sx0][sy0];
       double px1 = StripPositionX[DetN][sx1][sy1];
 
@@ -682,7 +684,7 @@ void TCATSPhysics::SetReconstructionMethod(unsigned int CATSNumber, string XorY,
   if(XorY=="X"){
 
     if(MethodName=="ASECH") ReconstructionFunctionX[CATSNumber] = &(AnalyticHyperbolicSecant);
-    //else if(MethodName=="FSECH") ReconstructionFunctionX[CATSNumber] = &(FittedHyperbolicSecant);
+    else if(MethodName=="FSECH") ReconstructionFunctionX[CATSNumber] = &(FittedHyperbolicSecant);
     //else if(MethodName=="AGAUSS") ReconstructionFunctionX[CATSNumber] = &(AnalyticGaussian);
     //else if(MethodName=="CENTROIDE")  ReconstructionFunctionX[CATSNumber] = &(Centroide); 
     else cout <<"WARNING: Wrong name for reconsctuction Method, using default AGAUSS" << endl;
@@ -691,7 +693,7 @@ void TCATSPhysics::SetReconstructionMethod(unsigned int CATSNumber, string XorY,
   if(XorY=="Y"){
 
     if(MethodName=="ASECH") ReconstructionFunctionY[CATSNumber] = &(AnalyticHyperbolicSecant);
-    //else if(MethodName=="FSECH") ReconstructionFunctionY[CATSNumber] = &(FittedHyperbolicSecant);
+    else if(MethodName=="FSECH") ReconstructionFunctionY[CATSNumber] = &(FittedHyperbolicSecant);
     //else if(MethodName=="AGAUSS") ReconstructionFunctionY[CATSNumber] = &(AnalyticGaussian);
     //else if(MethodName=="CENTROIDE")  ReconstructionFunctionY[CATSNumber] = &(Centroide); 
     else cout <<"WARNING: Wrong name for reconsctuction Method, using default AGAUSS" << endl;
@@ -864,27 +866,27 @@ namespace CATS_LOCAL{
   }
 
   /////////////////////////////////////////////////////////////////////
-  /*double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map, Double_t QSum){
+  double FittedHyperbolicSecant(std::pair<UShort_t,UShort_t>& MaxQ,std::vector<std::pair<UShort_t,UShort_t>>& Map, Double_t QSum){
     // Warning: should not delete static variable
     static TF1* f = new TF1("sechs","[0]/(cosh(TMath::Pi()*(x-[1])/[2])*cosh(TMath::Pi()*(x-[1])/[2]))",1,28);
 
     // Help the fit by computing the position of the maximum by analytic method
-    double StartingPoint = AnalyticHyperbolicSecant(Buffer_Q,MaxQ.first);
+    double StartingPoint = AnalyticHyperbolicSecant(MaxQ,Map,QSum);
     // if analytic method fails then the starting point in strip max
     if(StartingPoint==-1000) StartingPoint = MaxQ.first; 
 
     // Maximum is close to charge max, Mean value is close to Analytic one, typical width is 3.8 strip
-    f->SetParameters(Buffer_Q[MaxQ.first-1],StartingPoint,3.8);
+    f->SetParameters(MaxQ.second,StartingPoint,3.8);
 
     static vector<double> y ;
     static vector<double> q ; 
     y.clear(); q.clear();
     double final_size = 0 ;
-    unsigned int sizeQ = Buffer_Q.size(); 
+    unsigned int sizeQ = Map.size(); 
 
     for(unsigned int i = 0 ; i < sizeQ ; i++){
-      if(Buffer_Q[i] > Buffer_Q[MaxQ.first-1]*0.2){
-        q.push_back(Buffer_Q[i]);
+      if(Map[i].second > MaxQ.second*0.2){
+        q.push_back(Map[i].second);
         y.push_back(i+1);
         final_size++;
       }
@@ -902,8 +904,6 @@ namespace CATS_LOCAL{
 
   return 0;
   }
-
-*/
 
   ////////////////////////////////////////////////////////////////////////
   double fCATS_X_Q(const TCATSData* m_EventData , const int& i){
