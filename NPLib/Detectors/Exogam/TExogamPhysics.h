@@ -31,6 +31,7 @@
 #include "NPVDetector.h"
 #include "TExogamData.h"
 #include "TExogamSpectra.h"
+#include "TExogamPhysicsReader.h"
 #include "NPInputParser.h"
 // ROOT 
 #include "TVector2.h" 
@@ -42,7 +43,7 @@ using namespace std ;
 // Forward Declaration
 class TExogamSpectra;
 
-class TExogamPhysics : public TObject, public NPL::VDetector{
+class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhysicsReader{
  public:
   TExogamPhysics()	;
   ~TExogamPhysics() {};
@@ -131,8 +132,8 @@ class TExogamPhysics : public TObject, public NPL::VDetector{
 
   //	Those two method all to clear the Event Physics or Data
   void ClearEventPhysics()		{Clear();}		
-  void ClearEventData()			{EventData->Clear();}	
-  void ClearPreTreatedData()	        {PreTreatedData->Clear();}
+  void ClearEventData()			{m_EventData->Clear();}	
+  void ClearPreTreatedData()	        {m_PreTreatedData->Clear();}
 
     // Method related to the TSpectra classes, aimed at providing a framework for online applications
     // Instantiate the Spectra class and the histogramm throught it
@@ -147,9 +148,9 @@ class TExogamPhysics : public TObject, public NPL::VDetector{
  private:	//	Root Input and Output tree classes
 
  				
-  TExogamData* 	          EventData		;//!
-  TExogamData* 	          PreTreatedData	;//!
-  TExogamPhysics* 	  EventPhysics		;//!
+  TExogamData*         m_EventData;        //!
+  TExogamData*         m_PreTreatedData;   //!
+  TExogamPhysics*      m_EventPhysics;     //!
   
 
  public:		//	Specific to EXOGAM Array
@@ -165,10 +166,14 @@ class TExogamPhysics : public TObject, public NPL::VDetector{
   Double_t GetSegmentAngleTheta(int Clover, int Cristal, int Segment)  {return(Clover_Angles_Theta_Phi[Clover][Cristal][Segment][0]);};
  
   // Give and external TMustData object to TExogamPhysics. Needed for online analysis for example.
-  void SetRawDataPointer(TExogamData* rawDataPointer) {EventData = rawDataPointer;}
+  void SetRawDataPointer(TExogamData* rawDataPointer) {m_EventData = rawDataPointer;}
   // Retrieve raw and pre-treated data
-  TExogamData* GetRawData()        const {return EventData;}
-  TExogamData* GetPreTreatedData() const {return PreTreatedData;}
+  TExogamData* GetRawData()        const {return m_EventData;}
+  TExogamData* GetPreTreatedData() const {return m_PreTreatedData;}
+
+  private: // Variables for analysis
+
+  unsigned int m_EXO_Mult;
 
  
   private: // Spectra Class   

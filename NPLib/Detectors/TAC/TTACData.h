@@ -72,8 +72,9 @@ class TTACData : public TObject {
   //////////////////////    GETTERS    ////////////////////////
   // Energy
   inline unsigned int GetTAC_Mult() const { return fTAC_Time.size(); }
-  inline unsigned int GetTAC_Channel(const unsigned int& i) const { return fTAC_Time[i]; } //!
+  inline unsigned int GetTAC_Time(const unsigned int& i) const { return fTAC_Time[i]; } //!
   inline unsigned int GetTAC_N(const unsigned int& i) const { return fTAC_N[i]; }        //!
+  inline std::string GetTAC_Name(const unsigned int& i) const { return fTAC_Name[i]; }        //!
   inline unsigned long long GetTAC_TS(const unsigned long long& i) const { return fTAC_TS[i]; }    //!
 
   //////////////////////////////////////////////////////////////

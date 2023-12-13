@@ -80,7 +80,8 @@ void TZDDPhysics::BuildPhysicalEvent() {
 
   // match energy and time together
   Match_IC();
-  // Match_E_T("Plastic");
+  if(IC_Nbr.size() > 0)
+    Match_PL();
   // Treat_DC();
 }
 
@@ -115,6 +116,7 @@ void TZDDPhysics::Match_IC(){
     }
   }
 }
+
 void TZDDPhysics::Match_IC1(){
 //////////////////////////////// Currently Simply matching if mult = 5, could be improved to treat mult > 5
     // CHecking that each IC is only encountered once and then sorting them in the right order with the map
@@ -132,20 +134,17 @@ void TZDDPhysics::Match_IC1(){
     IC_TS.push_back((it->second).second);
     }
 }
-//// FIXME
-//bool TZDDPhysics::fSortIC(int i, int j){
-//  //bool res = i < j;
-//  //if(res){
-//  //  double tempE = IC_E[i];
-//  //  double tempTS = IC_TS[i];
-//  //  IC_E[i] = IC_E[j];
-//  //  IC_TS[i] = IC_TS[j];
-//  //  IC_E[j] = tempE;
-//  //  IC_TS[j] = tempTS;
-//  //}
-//  return i < j;
-//}
 
+void TZDDPhysics::Match_PL(){
+  for(unsigned int i = 0; i < m_PreTreatedData->GetZDD_PLMult(); i++){
+    SortPL[m_PreTreatedData->GetZDD_PLN(i)] = std::make_pair(m_PreTreatedData->GetZDD_PLE(i),m_PreTreatedData->GetZDD_PLTS(i));
+  }
+  for(auto it = SortPL.begin(); it != SortPL.end(); ++it){
+  PL_Nbr.push_back(it->first);
+  PL_E.push_back((it->second).first);
+  PL_TS.push_back((it->second).second);
+  }
+}
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::PreTreat() {
   // This method typically applies thresholds and calibrations
@@ -308,12 +307,13 @@ void TZDDPhysics::ReadAnalysisConfig() {
 void TZDDPhysics::Clear() {
   ICSum = 0;
   SortIC.clear();
+  SortPL.clear();
   IC_Nbr.clear();
   IC_E.clear();
   IC_TS.clear();
-  Plastic_DetectorNumber.clear();
-  Plastic_Energy.clear();
-  Plastic_Time.clear();
+  PL_Nbr.clear();
+  PL_E.clear();
+  PL_TS.clear();
   DC_DetectorNumber.clear();
   DC_DriftTime.clear();
 }

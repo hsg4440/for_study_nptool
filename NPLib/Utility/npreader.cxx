@@ -187,7 +187,6 @@ int main(int argc , char** argv){
       while(inputTreeReader->Next()){
         
         // Build the current event
-          // std::cout << "test" << std::endl;
         if(UserAnalysis->UnallocateBeforeBuild()){
           myDetector->BuildPhysicalEvent();
           // User Analysis;

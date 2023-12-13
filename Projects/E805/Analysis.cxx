@@ -35,7 +35,7 @@ Analysis::~Analysis(){
 void Analysis::Init(){
   InitInputBranch();
   InitOutputBranch();
-  CATS = (TCATSPhysics*)  m_DetectorManager -> GetDetector("CATSDetector");
+  // CATS = (TCATSPhysics*)  m_DetectorManager -> GetDetector("CATSDetector");
   M2 = (TMust2Physics*)  m_DetectorManager -> GetDetector("M2Telescope");
   // 
   //reaction->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
@@ -76,8 +76,6 @@ void Analysis::Init(){
 bool Analysis::UnallocateBeforeBuild(){
   // return true;
   GATCONFMASTER = **GATCONFMASTER_;
-  if(GATCONFMASTER.size() > 1)
-  std::cout << GATCONFMASTER.size() << std::endl;
   return (GATCONFMASTER.size() == 1 && GATCONFMASTER[0] > 0); 
   //return true;
 }

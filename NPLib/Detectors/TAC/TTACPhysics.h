@@ -35,6 +35,7 @@ using namespace std;
 // NPTool headers
 #include "TTACData.h"
 #include "TTACSpectra.h"
+#include "TTACPhysicsReader.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
@@ -43,7 +44,7 @@ class TTACSpectra;
 
 
 
-class TTACPhysics : public TObject, public NPL::VDetector {
+class TTACPhysics : public TObject, public NPL::VDetector, public TTACPhysicsReader {
   //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
@@ -62,9 +63,10 @@ class TTACPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Energy;
-    vector<double>   Time;
+    std::vector<unsigned int> TAC_Time;
+    std::vector<std::string> TAC_Name;
+    std::vector<unsigned long long> TAC_TS;
+
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS, string shape); 
@@ -124,6 +126,8 @@ class TTACPhysics : public TObject, public NPL::VDetector {
 
     // write spectra to ROOT output file
     void WriteSpectra();
+    
+    void SetTreeReader(TTreeReader* TreeReader);
 
 
   //////////////////////////////////////////////////////////////
@@ -131,6 +135,8 @@ class TTACPhysics : public TObject, public NPL::VDetector {
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
+
+    void Match_TAC();
 
     // clear the pre-treated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
@@ -156,8 +162,9 @@ class TTACPhysics : public TObject, public NPL::VDetector {
   // parameters used in the analysis
   private:
     // thresholds
-    double m_E_RAW_Threshold; //!
-    double m_E_Threshold;     //!
+    double m_TAC_Time_RAW_Threshold = 0; //!
+    unsigned int m_TAC_Mult; //!
+    std::map<std::string,std::pair<unsigned int, unsigned long long>> SortTAC;//!
 
   // number of detectors
   private:
@@ -174,6 +181,7 @@ class TTACPhysics : public TObject, public NPL::VDetector {
   // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
+    static NPL::VTreeReader* ConstructReader();
 
     ClassDef(TTACPhysics,1)  // TACPhysics structure
 };

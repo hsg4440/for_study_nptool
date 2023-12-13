@@ -165,10 +165,10 @@ void TTACSpectra::FillPhysicsSpectra(TTACPhysics* Physics) {
   family= "TAC/PHY";
 
   // Energy vs time
-  unsigned int sizeE = Physics->Energy.size();
-  for(unsigned int i = 0 ; i < sizeE ; i++){
-    name = "TAC_ENERGY_TIME";
-    FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]);
-  }
+  //unsigned int sizeE = Physics->.size();
+  //for(unsigned int i = 0 ; i < sizeE ; i++){
+  //  name = "TAC_ENERGY_TIME";
+  //  FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]);
+  //}
 }
 

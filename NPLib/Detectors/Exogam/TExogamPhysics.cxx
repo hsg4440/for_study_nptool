@@ -48,9 +48,9 @@ ClassImp(TExogamPhysics)
   m_Spectra = NULL;
   NumberOfClover = 0;
 
-  PreTreatedData = new TExogamData;
-  EventData = new TExogamData;
-  EventPhysics = this;
+  m_PreTreatedData = new TExogamData;
+  m_EventData = new TExogamData;
+  m_EventPhysics = this;
   NumberOfClover = 0;
   CloverMult = 0;
 }
@@ -161,8 +161,11 @@ void TExogamPhysics::PreTreat() {
 ///////////////////////////////////////////////////////////////////////////
 
 void TExogamPhysics::BuildPhysicalEvent() {
-  /*PreTreat();
-
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    m_EventData = &(**r_ReaderEventData);
+  }
+  PreTreat();
+/*
   if(PreTreatedData -> GetECCEMult() != PreTreatedData -> GetECCTMult()) cout << PreTreatedData -> GetECCEMult() << " "
   <<  PreTreatedData -> GetECCTMult() << endl;
 
@@ -479,9 +482,9 @@ void TExogamPhysics::InitSpectra() { m_Spectra = new TExogamSpectra(NumberOfClov
 
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::FillSpectra() {
-  m_Spectra->FillRawSpectra(EventData);
-  m_Spectra->FillPreTreatedSpectra(PreTreatedData);
-  m_Spectra->FillPhysicsSpectra(EventPhysics);
+  m_Spectra->FillRawSpectra(m_EventData);
+  m_Spectra->FillPreTreatedSpectra(m_PreTreatedData);
+  m_Spectra->FillPhysicsSpectra(m_EventPhysics);
 }
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::CheckSpectra() { m_Spectra->CheckSpectra(); }
@@ -587,7 +590,7 @@ void TExogamPhysics::InitializeRootInputRaw() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchStatus("EXOGAM", true);
   inputChain->SetBranchStatus("fEXO_*", true);
-  inputChain->SetBranchAddress("EXOGAM", &EventData);
+  inputChain->SetBranchAddress("EXOGAM", &m_EventData);
 
   /*
   TList* outputList = RootOutput::getInstance()->GetList();
@@ -623,7 +626,7 @@ void TExogamPhysics::InitializeRootInputPhysics() {
   inputChain->SetBranchStatus("DopplerCorrectedEnergy", true);
   inputChain->SetBranchStatus("Position", true);
   inputChain->SetBranchStatus("Theta", true);
-  inputChain->SetBranchAddress("EXOGAM", &EventPhysics);
+  inputChain->SetBranchAddress("EXOGAM", &m_EventPhysics);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -631,7 +634,7 @@ void TExogamPhysics::InitializeRootInputPhysics() {
 //	Create associated branches and associated private member DetectorPhysics address
 void TExogamPhysics::InitializeRootOutput() {
   TTree* outputTree = RootOutput::getInstance()->GetTree();
-  outputTree->Branch("EXOGAM", "TExogamPhysics", &EventPhysics);
+  outputTree->Branch("EXOGAM", "TExogamPhysics", &m_EventPhysics);
 
   // control histograms if needed
   /*

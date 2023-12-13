@@ -6,46 +6,28 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
+ * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
- * Creation Date  : march 2009                                               *
- * Last update    :                                                          *
+ * Creation Date  : febuary 2009                                             *
+ * Last update    : July 2021
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Exogam Raw data                                          *
+ *  This class hold must2 TreeReader                                        *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *                                                                           *
- *                                                                           *
  *****************************************************************************/
-#include <iostream>
-using namespace std;
+#include "TTACPhysicsReader.h"
+#include "NPDetectorFactory.h"
+///////////////////////////////////////////////////////////////////////////
 
-#include "TExogamData.h"
+ClassImp(TTACPhysicsReader)
 
-ClassImp(TExogamData)
+TTACPhysicsReader::TTACPhysicsReader()
+{
+};
 
-    TExogamData::TExogamData() {
-  // Default constructor
-  Clear();
-}
-
-TExogamData::~TExogamData() {}
-
-void TExogamData::Clear() {
-  fExo_Crystal.clear();
-  fExo_E.clear();
-  fExo_E_HG.clear(); // High gain x20
-  fExo_TS.clear();
-  fExo_TDC.clear();
-  fExo_BGO.clear();
-  fExo_CsI.clear();
-  fExo_Outer1.clear();
-  fExo_Outer2.clear();
-  fExo_Outer3.clear();
-  fExo_Outer4.clear();
-}
-
-void TExogamData::Dump() const {}
-
+void TTACPhysicsReader::r_SetTreeReader(TTreeReader* TreeReader){
+r_ReaderEventData = new TTreeReaderValue<TTACData>(*TreeReader,"TAC");
+}; 

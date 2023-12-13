@@ -38,7 +38,6 @@ class TExogamData : public TObject {
   void Dump() const;
 
  public:
-  std::vector<unsigned int> fExo_Flange;
   std::vector<unsigned int> fExo_Crystal;
   std::vector<unsigned int> fExo_E;
   std::vector<unsigned int> fExo_E_HG; // High gain x20
@@ -53,21 +52,24 @@ class TExogamData : public TObject {
 
 
   /////////////////////           SETTERS           ////////////////////////
-  inline void SetExoFlange(unsigned int& Flange) { fExo_Flange.push_back(Flange); }
-  inline void SetExoCrystal(unsigned int& Crystal) { fExo_Crystal.push_back(Crystal); }
-  inline void SetExoE(unsigned int& Energy) { fExo_E.push_back(Energy); }
-  inline void SetExoEHG(unsigned int& Energy) { fExo_E_HG.push_back(Energy); }
-  inline void SetExoTS(unsigned long long& TS) { fExo_TS.push_back(TS); }
-  inline void SetExoTDC(unsigned int& TDC) { fExo_TDC.push_back(TDC); }
-  inline void SetExoBGO(unsigned int& BGO) { fExo_BGO.push_back(BGO); }
-  inline void SetExoCsI(unsigned int& CsI) { fExo_CsI.push_back(CsI); }
-  inline void SetExoOuter1(unsigned int& Outer1) { fExo_Outer1.push_back(Outer1); }
-  inline void SetExoOuter2(unsigned int& Outer2) { fExo_Outer2.push_back(Outer2); }
-  inline void SetExoOuter3(unsigned int& Outer3) { fExo_Outer3.push_back(Outer3); }
-  inline void SetExoOuter4(unsigned int& Outer4) { fExo_Outer4.push_back(Outer4); }
-
+  inline void SetExo(unsigned int& Crystal, unsigned int& Energy,
+  unsigned int& Energy_HG, unsigned long long& TS, unsigned int& TDC,
+  unsigned int& BGO, unsigned int& CsI, unsigned int& Outer1,
+  unsigned int& Outer2, unsigned int& Outer3,unsigned int& Outer4) { 
+  fExo_Crystal.push_back(Crystal);
+  fExo_E.push_back(Energy);
+  fExo_E_HG.push_back(Energy_HG);
+  fExo_TS.push_back(TS);
+  fExo_TDC.push_back(TDC);
+  fExo_BGO.push_back(BGO);
+  fExo_CsI.push_back(CsI);
+  fExo_Outer1.push_back(Outer1);
+  fExo_Outer2.push_back(Outer2);
+  fExo_Outer3.push_back(Outer3);
+  fExo_Outer4.push_back(Outer4);
+  }
   /////////////////////           GETTERS           ////////////////////////
-  inline unsigned int GetExoFlange(unsigned int& i) { return fExo_Flange[i]; }
+  inline unsigned int GetExoMult(unsigned int& i) { return fExo_Crystal[i]; }
   inline unsigned int GetExoCrystal(unsigned int& i) { return fExo_Crystal[i]; }
   inline unsigned int GetExoE(unsigned int& i) { return fExo_E[i]; }
   inline unsigned int GetExoEHG(unsigned int& i) { return fExo_E_HG[i]; }

@@ -28,6 +28,7 @@
 #include <cmath>
 #include <stdlib.h>
 #include <limits>
+#include <chrono>
 using namespace std;
 
 //   NPL
@@ -48,8 +49,7 @@ TTACPhysics::TTACPhysics()
      m_PreTreatedData(new TTACData),
      m_EventPhysics(this),
      m_Spectra(0),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
+     m_TAC_Time_RAW_Threshold(0), // adc channels
      m_NumberOfDetectors(0) {
 }
 
@@ -72,17 +72,45 @@ void TTACPhysics::BuildSimplePhysicalEvent() {
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
+  // auto start = std::chrono::high_resolution_clock::now();
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    m_EventData = &(**r_ReaderEventData);
+  }
+  // auto stop = std::chrono::high_resolution_clock::now();
+  // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+ 
+  // cout << "Time taken by function: "
+      //  << duration.count() << " microseconds" << endl;
+ 
+ 
+ 
   PreTreat();
-
+  Match_TAC();
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::PreTreat() {
   ClearPreTreatedData();
+  m_TAC_Mult = m_EventData->GetTAC_Mult();
+  for (unsigned int i = 0; i < m_TAC_Mult; ++i) {
+    if (m_EventData->GetTAC_Time(i) > m_TAC_Time_RAW_Threshold) {
+        m_PreTreatedData->SetTAC(m_EventData->GetTAC_N(i), m_EventData->GetTAC_Time(i), m_EventData->GetTAC_TS(i), m_EventData->GetTAC_Name(i));
+    }
+  }
 
 }
 
 
+void TTACPhysics::Match_TAC(){
+  for(unsigned int i = 0; i < m_PreTreatedData->GetTAC_Mult(); i++){
+    SortTAC[m_PreTreatedData->GetTAC_Name(i)] = std::make_pair(m_PreTreatedData->GetTAC_Time(i),m_PreTreatedData->GetTAC_TS(i));
+  }
+  for(auto it = SortTAC.begin(); it != SortTAC.end(); ++it){
+  TAC_Name.push_back(it->first);
+  TAC_Time.push_back((it->second).first);
+  TAC_TS.push_back((it->second).second);
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::ReadAnalysisConfig() {
@@ -92,6 +120,10 @@ void TTACPhysics::ReadAnalysisConfig() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::Clear() {
+  SortTAC.clear();
+  TAC_Name.clear();
+  TAC_Time.clear();
+  TAC_TS.clear();
 }
 
 
@@ -156,8 +188,17 @@ void TTACPhysics::AddParameterToCalibrationManager() {
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::InitializeRootInputRaw() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
+  TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchStatus("TAC",  true );
   inputChain->SetBranchAddress("TAC", &m_EventData );
+  }
 }
 
 
@@ -165,7 +206,16 @@ void TTACPhysics::InitializeRootInputRaw() {
 ///////////////////////////////////////////////////////////////////////////
 void TTACPhysics::InitializeRootInputPhysics() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
+  TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchAddress("TAC", &m_EventPhysics);
+  }
 }
 
 
@@ -176,6 +226,9 @@ void TTACPhysics::InitializeRootOutput() {
   outputTree->Branch("TAC", "TTACPhysics", &m_EventPhysics);
 }
 
+void TTACPhysics::SetTreeReader(TTreeReader* TreeReader) {
+   TTACPhysicsReader::r_SetTreeReader(TreeReader);
+ }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +237,8 @@ void TTACPhysics::InitializeRootOutput() {
 NPL::VDetector* TTACPhysics::Construct() {
   return (NPL::VDetector*) new TTACPhysics();
 }
+
+NPL::VTreeReader* TTACPhysics::ConstructReader() { return (NPL::VTreeReader*)new TTACPhysicsReader(); }
 
 
 
@@ -196,6 +251,7 @@ class proxy_TAC{
     proxy_TAC(){
       NPL::DetectorFactory::getInstance()->AddToken("TAC","TAC");
       NPL::DetectorFactory::getInstance()->AddDetector("TAC",TTACPhysics::Construct);
+      NPL::DetectorFactory::getInstance()->AddDetectorReader("TAC", TTACPhysics::ConstructReader);
     }
 };
 

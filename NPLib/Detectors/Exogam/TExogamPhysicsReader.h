@@ -1,51 +1,60 @@
+#ifndef TEXOGAMPHYSICSREADER_H
+#define TEXOGAMPHYSICSREADER_H
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
+ * Original Author: Hugo Jacob  contact address: hjacob@ijclab.in2p3.fr      *
  *                                                                           *
- * Creation Date  : march 2009                                               *
- * Last update    :                                                          *
+ * Creation Date  : 2023                                                     *
+ * Last update    : 2023
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Exogam Raw data                                          *
+ *  TTreader class for Exogam Physics                                           *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *                                                                           *
  *                                                                           *
+ *                                                                           *
  *****************************************************************************/
-#include <iostream>
+// STL
+#include <map>
+#include <vector>
+// NPL
+#include "TExogamData.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TTreeReaderArray.h"
+#include "RootInput.h"
+#include "RootOutput.h"
+#include "TTree.h"
+#include "NPVTreeReader.h"
+
+
 using namespace std;
 
-#include "TExogamData.h"
 
-ClassImp(TExogamData)
+class TExogamPhysicsReader : public NPL::VTreeReader {
+public:
+  TExogamPhysicsReader();
+  ~TExogamPhysicsReader(){};
+  
+public:
+  void r_SetTreeReader(TTreeReader* TreeReader);
+private:
+  TTreeReader *dummy = new TTreeReader();
+public:
+  TTreeReaderValue<TExogamData>* r_ReaderEventData = new TTreeReaderValue<TExogamData>(*dummy,"");
 
-    TExogamData::TExogamData() {
-  // Default constructor
-  Clear();
-}
+public:
+  ClassDef(TExogamPhysicsReader,0);
 
-TExogamData::~TExogamData() {}
+};
 
-void TExogamData::Clear() {
-  fExo_Crystal.clear();
-  fExo_E.clear();
-  fExo_E_HG.clear(); // High gain x20
-  fExo_TS.clear();
-  fExo_TDC.clear();
-  fExo_BGO.clear();
-  fExo_CsI.clear();
-  fExo_Outer1.clear();
-  fExo_Outer2.clear();
-  fExo_Outer3.clear();
-  fExo_Outer4.clear();
-}
 
-void TExogamData::Dump() const {}
-
+#endif

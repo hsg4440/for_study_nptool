@@ -66,12 +66,12 @@ class TZDDPhysics : public TObject, public NPL::VDetector, public TZDDPhysicsRea
   public:
     vector<int>      IC_Nbr;
     vector<double>   IC_E;
-    vector<double>   IC_TS;
+    vector<unsigned long long>   IC_TS;
     double ICSum;
 
-    vector<int>      Plastic_DetectorNumber;
-    vector<double>   Plastic_Energy;
-    vector<double>   Plastic_Time;
+    vector<int>      PL_Nbr;
+    vector<double>   PL_E;
+    vector<unsigned long long>   PL_TS;
 
     vector<int>      DC_DetectorNumber;
     vector<double>   DC_DriftTime;
@@ -148,6 +148,8 @@ class TZDDPhysics : public TObject, public NPL::VDetector, public TZDDPhysicsRea
     // Matching IC
     void Match_IC();
     void Match_IC1();
+    
+    void Match_PL();
 
     // PreTreating Energy for IC and Plastic 
     void PreTreatEnergy(std::string Detector, CalibrationManager* Cal);
@@ -199,6 +201,7 @@ class TZDDPhysics : public TObject, public NPL::VDetector, public TZDDPhysicsRea
     unsigned int m_EXO_Mult; //!
     std::map<unsigned int, unsigned int> Map_IC;//!
     std::map<unsigned int,std::pair<unsigned int, unsigned long long>> SortIC;//!
+    std::map<unsigned int,std::pair<unsigned int, unsigned long long>> SortPL;//!
 
   private:
     int m_NumberOfDetectors;  //!

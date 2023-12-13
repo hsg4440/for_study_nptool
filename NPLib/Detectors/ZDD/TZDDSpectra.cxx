@@ -168,10 +168,10 @@ void TZDDSpectra::FillPhysicsSpectra(TZDDPhysics* Physics) {
   family= "ZDD/PHY";
 
   // Energy vs time
-  unsigned int sizeE = Physics->Plastic_Energy.size();
+  unsigned int sizeE = Physics->PL_E.size();
   for(unsigned int i = 0 ; i < sizeE ; i++){
     name = "ZDD_ENERGY_TIME";
-    FillSpectra(family,name,Physics->Plastic_Energy[i],Physics->Plastic_Time[i]);
+    FillSpectra(family,name,Physics->PL_E[i],Physics->PL_TS[i]);
   }
 }
 
