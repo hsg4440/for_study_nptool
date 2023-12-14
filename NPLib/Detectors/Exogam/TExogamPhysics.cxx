@@ -26,6 +26,7 @@ using namespace EXOGAM_LOCAL;
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
+#include <functional>
 
 //	NPL
 #include "NPDetectorFactory.h"
@@ -47,6 +48,11 @@ ClassImp(TExogamPhysics)
   NumberOfHitCristal = 0;
   m_Spectra = NULL;
   NumberOfClover = 0;
+  m_EXO_E_RAW_Threshold = 0;
+  m_EXO_E_Threshold = 0;
+  m_EXO_EHG_RAW_Threshold = 0;
+  m_EXO_TDC_RAW_Threshold = 0;
+  m_EXO_TDC_RAW_Threshold = 0;
 
   m_PreTreatedData = new TExogamData;
   m_EventData = new TExogamData;
@@ -59,112 +65,59 @@ ClassImp(TExogamPhysics)
 void TExogamPhysics::BuildSimplePhysicalEvent() { BuildPhysicalEvent(); }
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::PreTreat() {
-  /*ClearPreTreatedData();
+  // Clearing PreTreat TExogamData
+  ClearPreTreatedData();
+  // Clearing local variables for pretreat
+  ResetPreTreatVariable();
 
   //E
+  m_EXO_Mult = m_EventData->GetExoMult();
 
-  for(unsigned int i = 0 ; i < EventData -> GetECCEMult(); i++) {
-    UShort_t cristal_E = 10000 ; UShort_t cristal_T = 2000;
-    //if(IsValidChannel)
-    {
-      int clover  = EventData -> GetECCEClover(i);
-      int cristal = EventData -> GetECCECristal(i);
+  for (unsigned int i = 0; i < m_EXO_Mult; ++i) {
+    
+    if (m_EventData->GetExoE(i) > m_EXO_E_RAW_Threshold)
+      EXO_E = fEXO_E(m_EventData, i);
+    
+    if (m_EventData->GetExoEHG(i) > m_EXO_EHG_RAW_Threshold)
+      EXO_EHG = fEXO_EHG(m_EventData, i);
+    
+    if (m_EventData->GetExoTDC(i) > m_EXO_TDC_RAW_Threshold)
+      EXO_TDC = fEXO_T(m_EventData, i);
+    
+    EXO_Outer1 = fEXO_Outer(m_EventData, i, 1);
+    EXO_Outer2 = fEXO_Outer(m_EventData, i, 2);
+    EXO_Outer3 = fEXO_Outer(m_EventData, i, 3);
+    EXO_Outer4 = fEXO_Outer(m_EventData, i, 4);
 
-      if(EventData -> GetECCEEnergy(i) < 3000)  cristal_E = CalibrationManager::getInstance()->
-  ApplyCalibration("EXOGAM/Cl"+ NPL::itoa(clover)+"_Cr"+ NPL::itoa(cristal)+"_Elow", EventData -> GetECCEEnergy(i));
-      else                                      cristal_E = CalibrationManager::getInstance()->
-  ApplyCalibration("EXOGAM/Cl"+ NPL::itoa(clover)+"_Cr"+ NPL::itoa(cristal)+"_Ehigh", EventData -> GetECCEEnergy(i));
-
-
-      if(cristal_E > Threshold_ECC)
-  {
-
-  PreTreatedData->SetECCEClover ( clover )        ;
-  PreTreatedData->SetECCECristal( cristal )	;
-  PreTreatedData->SetECCEEnergy ( cristal_E )	;
-
-        bool checkT = false;
-        for(unsigned int k = 0; k < EventData -> GetECCTMult(); k++){
-      if(clover == EventData -> GetECCTClover(k) && cristal == EventData -> GetECCTCristal(k)){
-          // cout << EventData -> GetECCTTime(k) << endl;
-
-          if(EventData -> GetECCTTime(k) < 16383)  cristal_T = CalibrationManager::getInstance()->
-  ApplyCalibration("EXOGAM/Cl"+ NPL::itoa(clover)+"_Cr"+ NPL::itoa(cristal)+"_T", EventData -> GetECCTTime(k)); else
-  cristal_T = 2500;
-
-          //if(cristal_T >5000 && cristal_T !=25000 ) cout << "PreTreat " << cristal_T << " " << EventData ->
-  GetECCTTime(k) << " " << clover << " " << cristal << " " << EventData->GetECCTMult() << endl;
-
-         checkT=true;
-          PreTreatedData->SetECCTClover (clover )        ;
-          PreTreatedData->SetECCTCristal( cristal )	;
-          PreTreatedData->SetECCTTime   ( cristal_T )	;
-
-          ECC_Multiplicity ++;
-          GOCCE_Multiplicity++;
-        }
-
-    }
-
-    if(!checkT) {
-      PreTreatedData->SetECCTClover (clover )        ;
-            PreTreatedData->SetECCTCristal( cristal )	;
-            PreTreatedData->SetECCTTime   ( -1000 )	;
-    }
-
-
+    if(EXO_E > m_EXO_E_Threshold){
+      m_PreTreatedData->SetExo(m_EventData->GetExoCrystal(i), EXO_E,
+      EXO_EHG, m_EventData->GetExoTS(i), EXO_TDC, 
+      m_EventData->GetExoBGO(i), m_EventData->GetExoCsI(i), EXO_Outer1,
+      EXO_Outer2, EXO_Outer3, EXO_Outer4);
+    } 
   }
-    }
-  }
-
-  //cout << PreTreatedData-> GetECCTMult() << " " << PreTreatedData-> GetECCEMult() << endl;
-
-
-  //GOCCE
-
-  //E
-
-  for(unsigned int i = 0 ; i < EventData -> GetGOCCEEMult(); i++) {
-    UShort_t segment_E = 25000;
-
-    //if(IsValidChannel)
-    {
-      int clover  = EventData -> GetGOCCEEClover(i);
-      int cristal = EventData -> GetGOCCEECristal(i);
-      int segment = EventData -> GetGOCCEESegment(i);
-
-      if(EventData -> GetGOCCEEEnergy(i) > RawThreshold_GOCCE)
-  {
-    segment_E = CalibrationManager::getInstance()->ApplyCalibration("EXOGAM/Cl"+ NPL::itoa(clover)+"_Cr"+
-  NPL::itoa(cristal)+"_Seg"+ NPL::itoa(segment)+"_E", EventData -> GetGOCCEEEnergy(i));
-
-    if(segment_E > Threshold_GOCCE)
-      {
-        PreTreatedData->SetGOCCEEClover ( clover )        ;
-        PreTreatedData->SetGOCCEECristal( cristal )	;
-        PreTreatedData->SetGOCCEESegment( segment )	;
-        PreTreatedData->SetGOCCEEEnergy ( segment_E )	;
-
-      }
-  }
-      else
-  {
-
-  }
-    }
-  }
-
-  //cout << "EXOGAM pretreat ok!" << endl;
-  return;
-  */
 }
 ///////////////////////////////////////////////////////////////////////////
+void TExogamPhysics::ResetPreTreatVariable(){
+  EXO_E = -1000;
+  EXO_EHG = -1000;
+  EXO_TDC = -1000;
+  EXO_Outer1 = -1000;
+  EXO_Outer2 = -1000;
+  EXO_Outer3 = -1000;
+  EXO_Outer4 = -1000;
+}
 
 void TExogamPhysics::BuildPhysicalEvent() {
   if (NPOptionManager::getInstance()->IsReader() == true) {
     m_EventData = &(**r_ReaderEventData);
   }
-  PreTreat();
+  //PreTreat();
+
+  //for(unsigned int i = 0; i < m_PreTreatedData->GetExoMult(); i++){
+  //  mean_free_path = ComputeMeanFreePath(m_PreTreatedData->GetExoE(i));
+  //}
+  std::cout << ComputeMeanFreePath(7000) << std::endl;
 /*
   if(PreTreatedData -> GetECCEMult() != PreTreatedData -> GetECCTMult()) cout << PreTreatedData -> GetECCEMult() << " "
   <<  PreTreatedData -> GetECCTMult() << endl;
@@ -396,6 +349,24 @@ void TExogamPhysics::BuildPhysicalEvent() {
   */
 }
 
+double TExogamPhysics::ComputeMeanFreePath(double Energy){
+  auto b = Map_PhotonCS.lower_bound(Energy);
+  auto a = prev(b);
+  if(b == Map_PhotonCS.begin()){
+    a = b;
+    b++;
+  }
+  else if(b == Map_PhotonCS.end()){
+    b--;
+    a = prev(b);
+  }
+  std::cout << a->first << " " << b->first << " " << a->second << " " << b->second << std::endl;
+  double coeff = (Energy - a->first)/(b->first - a->first);
+
+  double PhotonCrossSection = a->second + coeff*(b->second - a->second); // mm2/g
+  return 1./(GeDensity*PhotonCrossSection);
+}
+
 double TExogamPhysics::DopplerCorrection(double E, double Theta) {
   double Pi = 3.141592654;
   TString filename = "configs/beta.txt";
@@ -475,8 +446,77 @@ void TExogamPhysics::ReadConfiguration(NPL::InputParser parser) {
       exit(1);
     }
   }
+  ReadAnalysisConfig();
 }
 
+void TExogamPhysics::ReadAnalysisConfig() {
+  bool ReadingStatus = false;
+
+
+  // path to photon cross section
+  string CSFilename = "../../Inputs/PhotonCrossSection/CoherentGe.xcom";
+  string LineBuffer;
+
+  ifstream CSFile;
+  CSFile.open(CSFilename.c_str());
+  
+  if (!CSFile.is_open()) {
+    cout << " No CS file found "
+         << CSFilename << endl;
+    return;
+  }
+  while(CSFile.good()){
+    double gammaE, CrossSection;
+    getline(CSFile, LineBuffer);
+    istringstream ss(LineBuffer);
+    ss >> gammaE >> CrossSection; // E in MeV, converted to keV, CrossSection in cm2/g  
+    gammaE *= 1000.; // Convertion to keV
+    CrossSection *= 100.;
+    Map_PhotonCS[gammaE] = CrossSection;
+  }
+  // path to file
+  string FileName = "./configs/ConfigExogam.dat";
+
+  // open analysis config file
+  ifstream AnalysisConfigFile;
+  AnalysisConfigFile.open(FileName.c_str());
+
+  if (!AnalysisConfigFile.is_open()) {
+    cout << " No ConfigExogam.dat found: Default parameters loaded for "
+            "Analysis "
+         << FileName << endl;
+    return;
+  }
+  
+  
+  string DataBuffer, whatToDo;
+  while (!AnalysisConfigFile.eof()) {
+    // Pick-up next line
+    getline(AnalysisConfigFile, LineBuffer);
+
+    // search for "header"
+    if (LineBuffer.compare(0, 11, "ConfigExogam") == 0)
+      ReadingStatus = true;
+
+    // loop on tokens and data
+    while (ReadingStatus) {
+
+      whatToDo = "";
+      AnalysisConfigFile >> whatToDo;
+      // Search for comment symbol (%)
+      if (whatToDo.compare(0, 1, "%") == 0) {
+        AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n');
+      }
+
+      else if (whatToDo == "EXO_Threshold") {
+        //AnalysisConfigFile >> DataBuffer;
+        //m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
+        //cout << "MAXIMUN STRIP MULTIPLICITY " << m_MaximumStripMultiplicityAllowed << endl;
+      }
+
+    }
+  }
+}
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::InitSpectra() { m_Spectra = new TExogamSpectra(NumberOfClover); }
 
@@ -588,6 +628,14 @@ void TExogamPhysics::AddParameterToCalibrationManager() {
 //	In this method mother Branches (Detector) AND daughter leaf (fDetector_parameter) have to be activated
 void TExogamPhysics::InitializeRootInputRaw() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
+  TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchStatus("EXOGAM", true);
   inputChain->SetBranchStatus("fEXO_*", true);
   inputChain->SetBranchAddress("EXOGAM", &m_EventData);
@@ -599,12 +647,21 @@ void TExogamPhysics::InitializeRootInputRaw() {
   cristal_mult = new TH1F("cristal_mult","cristal_mult",20,0,20);
   outputList->Add(cristal_mult);
   */
+  }
 }
 
 /////////////////////////////////////////////////////////////////////
 //   Activated associated Branches and link it to the private member DetectorPhysics address
 //   In this method mother Branches (Detector) AND daughter leaf (parameter) have to be activated
 void TExogamPhysics::InitializeRootInputPhysics() {
+  TChain* inputChain = RootInput::getInstance()->GetChain();
+  // Option to use the nptreereader anaysis
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    inputTreeReader->SetTree(inputChain);
+  }
+  // Option to use the standard npanalysis
+  else{
   TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchStatus("EventMultiplicty", true);
   inputChain->SetBranchStatus("ECC_Multiplicity", true);
@@ -627,6 +684,7 @@ void TExogamPhysics::InitializeRootInputPhysics() {
   inputChain->SetBranchStatus("Position", true);
   inputChain->SetBranchStatus("Theta", true);
   inputChain->SetBranchAddress("EXOGAM", &m_EventPhysics);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -644,9 +702,58 @@ void TExogamPhysics::InitializeRootOutput() {
   */
 }
 
+void TExogamPhysics::SetTreeReader(TTreeReader* TreeReader) {
+   TExogamPhysicsReader::r_SetTreeReader(TreeReader);
+ }
+
 ///////////////////////////////////////////////////////////////////////////
 namespace EXOGAM_LOCAL {
   //	tranform an integer to a string
+  double fEXO_E(const TExogamData* m_EventData, const unsigned int& i) {
+    static string name;
+    name = "EXOGAM/Cr_";
+    name += NPL::itoa(m_EventData->GetExoE(i));
+    name += "_E";
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoE(i));
+  }
+  
+  double fEXO_EHG(const TExogamData* m_EventData, const unsigned int& i) {
+    static string name;
+    name = "EXOGAM/Cr_";
+    name += NPL::itoa(m_EventData->GetExoEHG(i));
+    name += "_EHG";
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoEHG(i));
+  }
+  
+  double fEXO_T(const TExogamData* m_EventData, const unsigned int& i) {
+    static string name;
+    name = "EXOGAM/Cr_";
+    name += NPL::itoa(m_EventData->GetExoTDC(i));
+    name += "_TDC";
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoTDC(i));
+  }
+  
+  double fEXO_Outer(const TExogamData* m_EventData, const unsigned int& i, const unsigned int OuterNumber) {
+    static string name;
+    name = "EXOGAM/Cr_";
+    name += NPL::itoa(m_EventData->GetExoE(i));
+    name += "_Outer";
+    name += NPL::itoa(OuterNumber);
+    name += "_E";
+    if(OuterNumber == 1)
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter1(i));
+    else if(OuterNumber == 2)
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter2(i));
+    else if(OuterNumber == 3)
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter3(i));
+    else if(OuterNumber == 4)
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter4(i));
+    else{
+      std::cout << "WARNING: Outer number != 1-4, something is wrong\n";
+      return 0;
+    };
+  }
+  
   string itoa(int value) {
     std::ostringstream o;
 
@@ -663,6 +770,8 @@ namespace EXOGAM_LOCAL {
 ////////////////////////////////////////////////////////////////////////////////
 NPL::VDetector* TExogamPhysics::Construct() { return (NPL::VDetector*)new TExogamPhysics(); }
 
+NPL::VTreeReader* TExogamPhysics::ConstructReader() { return (NPL::VTreeReader*)new TExogamPhysicsReader(); }
+
 ////////////////////////////////////////////////////////////////////////////////
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -672,6 +781,7 @@ class proxy_exogam {
   proxy_exogam() {
     NPL::DetectorFactory::getInstance()->AddToken("Exogam", "Exogam");
     NPL::DetectorFactory::getInstance()->AddDetector("Exogam", TExogamPhysics::Construct);
+    NPL::DetectorFactory::getInstance()->AddDetectorReader("Exogam", TExogamPhysics::ConstructReader);
   }
 };
 

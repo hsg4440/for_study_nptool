@@ -29,6 +29,7 @@
 // NPL
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
+#include "NPVTreeReader.h"
 #include "TExogamData.h"
 #include "TExogamSpectra.h"
 #include "TExogamPhysicsReader.h"
@@ -144,6 +145,8 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
     void CheckSpectra();
     // Used for Online only, clear all the spectra hold by the Spectra class
     void ClearSpectra();
+    
+    void SetTreeReader(TTreeReader* TreeReader);
 
  private:	//	Root Input and Output tree classes
 
@@ -170,11 +173,32 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   // Retrieve raw and pre-treated data
   TExogamData* GetRawData()        const {return m_EventData;}
   TExogamData* GetPreTreatedData() const {return m_PreTreatedData;}
+  
+  void ResetPreTreatVariable();
+
+  void ReadAnalysisConfig();
+
+  double ComputeMeanFreePath(double GammaEnergy);
 
   private: // Variables for analysis
 
   unsigned int m_EXO_Mult;
+  double m_EXO_E_RAW_Threshold;
+  double m_EXO_E_Threshold;
+  double m_EXO_EHG_RAW_Threshold;
+  double m_EXO_TDC_RAW_Threshold;
+  double EXO_E;
+  double EXO_EHG;
+  double EXO_TDC;
+  double EXO_Outer1;
+  double EXO_Outer2;
+  double EXO_Outer3;
+  double EXO_Outer4;
 
+  double mean_free_path;
+
+  const double GeDensity = 0.005323; //! g/mm3
+  std::map<double, double> Map_PhotonCS;
  
   private: // Spectra Class   
     TExogamSpectra*      m_Spectra;//! 
@@ -184,11 +208,17 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
 
   public: // Static constructor to be passed to the Detector Factory
      static NPL::VDetector* Construct();
+     static NPL::VTreeReader* ConstructReader();
+     
      ClassDef(TExogamPhysics,1)  // ExogamPhysics structure
     };
 
 namespace EXOGAM_LOCAL
 {
+  double fEXO_E(const TExogamData* m_EventData, const unsigned int& i);
+  double fEXO_EHG(const TExogamData* m_EventData, const unsigned int& i);
+  double fEXO_T(const TExogamData* m_EventData, const unsigned int& i);
+  double fEXO_Outer(const TExogamData* m_EventData, const unsigned int& i, const unsigned int OuterNumber);
    const double Threshold_ECC   = 50;
    const double Threshold_GOCCE = 0;
    const double RawThreshold_ECC   = 0;

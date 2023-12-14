@@ -52,10 +52,10 @@ class TExogamData : public TObject {
 
 
   /////////////////////           SETTERS           ////////////////////////
-  inline void SetExo(unsigned int& Crystal, unsigned int& Energy,
-  unsigned int& Energy_HG, unsigned long long& TS, unsigned int& TDC,
-  unsigned int& BGO, unsigned int& CsI, unsigned int& Outer1,
-  unsigned int& Outer2, unsigned int& Outer3,unsigned int& Outer4) { 
+  inline void SetExo(const unsigned int& Crystal,const unsigned int& Energy,
+  const unsigned int& Energy_HG,const unsigned long long& TS,const unsigned int& TDC,
+  const unsigned int& BGO,const unsigned int& CsI,const unsigned int& Outer1,
+  const unsigned int& Outer2,const unsigned int& Outer3,const unsigned int& Outer4) { 
   fExo_Crystal.push_back(Crystal);
   fExo_E.push_back(Energy);
   fExo_E_HG.push_back(Energy_HG);
@@ -69,18 +69,18 @@ class TExogamData : public TObject {
   fExo_Outer4.push_back(Outer4);
   }
   /////////////////////           GETTERS           ////////////////////////
-  inline unsigned int GetExoMult(unsigned int& i) { return fExo_Crystal[i]; }
-  inline unsigned int GetExoCrystal(unsigned int& i) { return fExo_Crystal[i]; }
-  inline unsigned int GetExoE(unsigned int& i) { return fExo_E[i]; }
-  inline unsigned int GetExoEHG(unsigned int& i) { return fExo_E_HG[i]; }
-  inline unsigned long long GetExoTS(unsigned int& i) { return fExo_TS[i]; }
-  inline unsigned int GetExoTDC(unsigned int& i) { return fExo_TDC[i]; }
-  inline unsigned int GetExoBGO(unsigned int& i) { return fExo_BGO[i]; }
-  inline unsigned int GetExoCsI(unsigned int& i) { return fExo_CsI[i]; }
-  inline unsigned int GetExoOuter1(unsigned int& i) { return fExo_Outer1[i]; }
-  inline unsigned int GetExoOuter2(unsigned int& i) { return fExo_Outer2[i]; }
-  inline unsigned int GetExoOuter3(unsigned int& i) { return fExo_Outer3[i]; }
-  inline unsigned int GetExoOuter4(unsigned int& i) { return fExo_Outer4[i]; }
+  inline unsigned int GetExoMult() { return fExo_Crystal.size(); }
+  inline unsigned int GetExoCrystal(const unsigned int& i) const  { return fExo_Crystal[i]; }
+  inline unsigned int GetExoE(const unsigned int& i) const  { return fExo_E[i]; }
+  inline unsigned int GetExoEHG(const unsigned int& i) const  { return fExo_E_HG[i]; }
+  inline unsigned long long GetExoTS(const unsigned int& i) const  { return fExo_TS[i]; }
+  inline unsigned int GetExoTDC(const unsigned int& i) const  { return fExo_TDC[i]; }
+  inline unsigned int GetExoBGO(const unsigned int& i) const  { return fExo_BGO[i]; }
+  inline unsigned int GetExoCsI(const unsigned int& i) const  { return fExo_CsI[i]; }
+  inline unsigned int GetExoOuter1(const unsigned int& i) const { return fExo_Outer1[i]; }
+  inline unsigned int GetExoOuter2(const unsigned int& i) const  { return fExo_Outer2[i]; }
+  inline unsigned int GetExoOuter3(const unsigned int& i) const  { return fExo_Outer3[i]; }
+  inline unsigned int GetExoOuter4(const unsigned int& i) const  { return fExo_Outer4[i]; }
 
   ClassDef(TExogamData, 1) // ExogamData structure
 };
