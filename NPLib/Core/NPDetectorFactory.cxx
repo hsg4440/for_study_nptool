@@ -108,7 +108,7 @@ NPL::VDetector* NPL::DetectorFactory::Construct(std::string Token) {
 NPL::VTreeReader* NPL::DetectorFactory::ConstructReader(std::string Token) {
   std::map<std::string, ClassDetectorFactoryFn>::iterator it;
   if (m_ConstructReader.find(Token) != m_ConstructReader.end()) {
-    std::cout << "In constructReader" << std::endl;
+    std::cout << "In constructReader for " << Token << std::endl;
     return m_ConstructReader[Token]();
   }
   else if (m_TokenLib.find(Token) != m_TokenLib.end()) {

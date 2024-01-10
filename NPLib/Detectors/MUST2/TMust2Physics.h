@@ -98,6 +98,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
 
   //   CsI
   vector<double> CsI_E;
+  vector<double> CsI_E_Raw;
   vector<double> CsI_T;
   vector<int> CsI_N;
 

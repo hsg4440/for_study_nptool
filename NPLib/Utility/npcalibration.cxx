@@ -73,7 +73,7 @@ int main(int argc , char** argv){
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
-  myDetector->ReadConfigurationFile(detectorfileName);
+  myDetector->ReadConfigurationFile(docalibrationfileName);
   myDetector->InitializeRootInput();
   // Attempt to load an analysis
   // NPL::VAnalysis* UserAnalysis = NULL;
@@ -133,6 +133,7 @@ int main(int argc , char** argv){
   if(IsCalibration){
     myDetector->ReadDoCalibrationFile(docalibrationfileName);
     myDetector->InitializeRootHistogramsCalib(); 
+  std::cout << "coucou" << "\n";
     while(inputTreeReader->Next() && treated < entry_max){
       myDetector->FillHistogramsCalib();
       current_tree = Chain->GetTreeNumber()+1;

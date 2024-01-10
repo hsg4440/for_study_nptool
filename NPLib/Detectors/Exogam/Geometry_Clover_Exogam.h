@@ -1,3 +1,5 @@
+#ifndef EXOGAMGEO_H
+#define EXOGAMGEO_H
 /************************************************************************************************
 
 
@@ -111,7 +113,7 @@ struct Clover_struc {
 #define D_CloveFlange_Targ13	(140.0 +7.0)  //mm
 #define D_CloveFlange_Targ14	(140.0 +7.0)  //mm
 #define D_CloveFlange_Targ15	(140.0 +7.0)  //mm
-#define D_CloveFlange_Targ16	(140.0 +7.0)  //mm
+#define D_CloveFlange_Targ16	(140.0 +7.0)  //mm 7mm distance capot cryostat
 #define D_CloveFlange_Targ17	(140.0 +7.0)  //mm
 
 #define	TARGET_POSITION_X	0.	// mm
@@ -119,7 +121,7 @@ struct Clover_struc {
 #define	TARGET_POSITION_Z	0.	// mm
 #define InteractionDepth	20.	// mm
 
-struct Clover_struc Ask_For_Angles(int flange, double InterDepth){	
+inline struct Clover_struc Ask_For_Angles(int flange, double InterDepth){	
 
 struct Clover_struc Result;
 int i,j;
@@ -165,9 +167,9 @@ TVector3 v3(0,0,1);
 
 //segment mean angle depends on the interaction depth due to the crystal shape; this creates a linear function with InteractionDepth as input
 // see plan np18-22-05 && np18-22-04
-TF1 *ShapeC = new TF1("ShapeC","0.132*x+20.54");
+TF1 *ShapeC = new TF1("ShapeC","0.132*x+20.54");  // Provient du bizautage des clobvers EXOGAM dans la directoon de la cible
 TF1 *ShapeS1 = new TF1("ShapeS1","0.273*x+30.81");  //gd
-TF1 *ShapeS2 = new TF1("ShapeS2","0.066*x+10.27"); //pt
+TF1 *ShapeS2 = new TF1("ShapeS2","0.066*x+10.27"); //pt Ancien clover EXOGAM, n'existe pas dans les nouveaux EXOGAM
 
 
 float EXOGAM_Crystal_Center; 
@@ -179,7 +181,7 @@ float EXOGAM_Segment_Pos1,EXOGAM_Segment_Pos2 ;
 	//     EXOGAM_Segment_Pos1=ShapeS1->Eval(InteractionDepth); //gd
 	//     EXOGAM_Segment_Pos2=ShapeS2->Eval(InteractionDepth); //pt
 	//}
-	// Modified code by H. Jacob using input interaction depth 
+	// Modified code by H. Jacob using input interaction depth 30 mm sortie du bizautage après 30 mm 
 	if(InterDepth>=30){EXOGAM_Crystal_Center= 24.5;EXOGAM_Segment_Pos1=39.; EXOGAM_Segment_Pos2=12.25; }
 	else{EXOGAM_Crystal_Center=ShapeC->Eval(InterDepth);
 	     EXOGAM_Segment_Pos1=ShapeS1->Eval(InterDepth); //gd
@@ -564,7 +566,7 @@ float EXOGAM_Segment_Pos1,EXOGAM_Segment_Pos2 ;
 
 
 // Routine of doppler correction
-float Doppler_Correction(float Theta_Gamma, float Phi_Gamma, float Theta_Part, float Phi_Part, float Beta_Part, float energie_Mes){  //rad, v/c
+inline float Doppler_Correction(float Theta_Gamma, float Phi_Gamma, float Theta_Part, float Phi_Part, float Beta_Part, float energie_Mes){  //rad, v/c
 float energievraie,cosinusPSI;
 			  
 		  cosinusPSI =TMath::Sin(Theta_Part)*TMath::Cos(Phi_Part)*TMath::Sin(Theta_Gamma)*TMath::Cos(Phi_Gamma)+
@@ -575,3 +577,5 @@ float energievraie,cosinusPSI;
 	
 	return energievraie;
 }
+
+#endif

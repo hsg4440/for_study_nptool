@@ -109,10 +109,10 @@ void TZDDPhysics::Match_IC(){
     // Adding the IC info to the std::vectors
     ICSum = 0;
     for(auto it = SortIC.begin(); it != SortIC.end(); ++it){
-    ICSum+= (it->second).first;
-    IC_Nbr.push_back(it->first);
-    IC_E.push_back((it->second).first);
-    IC_TS.push_back((it->second).second);
+      ICSum+= (it->second).first;
+      IC_Nbr.push_back(it->first);
+      IC_E.push_back((it->second).first);
+      IC_TS.push_back((it->second).second);
     }
   }
 }

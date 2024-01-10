@@ -29,7 +29,7 @@
 #include "TExogamPhysics.h"
 
 // ForwardDeclaration
-class TExogamPhysics ;
+ class TExogamPhysics ;
 
 class TExogamSpectra:public VSpectra {
   public:

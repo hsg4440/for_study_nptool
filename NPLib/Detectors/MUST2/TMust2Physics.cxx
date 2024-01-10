@@ -415,7 +415,8 @@ void TMust2Physics::BuildPhysicalEvent() {
         if (m_PreTreatedData->GetMMCsIEDetectorNbr(j) == N) {
           if (Match_Si_CsI(X, Y, m_PreTreatedData->GetMMCsIECristalNbr(j), m_PreTreatedData->GetMMCsIEDetectorNbr(j))) {
             CsI_N.push_back(m_PreTreatedData->GetMMCsIECristalNbr(j));
-            CsI_E.push_back(m_PreTreatedData->GetMMCsIEEnergy(j));
+            CsI_E_Raw.push_back(m_PreTreatedData->GetMMCsIEEnergy(j));
+            CsI_E.push_back(fCsI_E(m_PreTreatedData,j));
             CsI_T.push_back(-1000);
             // Look for associate Time
             for (unsigned int k = 0; k < m_CsITMult; ++k) {
@@ -462,6 +463,7 @@ void TMust2Physics::BuildPhysicalEvent() {
       if (!check_CSI) {
         CsI_N.push_back(0);
         CsI_E.push_back(-1000);
+        CsI_E_Raw.push_back(-1000);
         CsI_T.push_back(-1000);
       }
 
@@ -528,10 +530,11 @@ void TMust2Physics::PreTreat() {
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
     if (m_EventData->GetMMCsIEEnergy(i) > m_CsI_E_RAW_Threshold &&
         IsValidChannel(3, m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i))) {
+      // Implementing special CSI E treatment: to get a calibrated and non calibrated branch in the analysis, the calibration is applied later,
+      // but the threshold is still checked here
       double ECsI = fCsI_E(m_EventData, i);
-      // double ECsI = m_EventData->GetMMCsIEEnergy(i);
       if (ECsI > m_CsI_E_RAW_Threshold) {
-      m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), ECsI);
+      m_PreTreatedData->SetCsIE(m_EventData->GetMMCsIEDetectorNbr(i), m_EventData->GetMMCsIECristalNbr(i), m_EventData->GetMMCsIEEnergy(i));
       }
     }
   }
@@ -974,6 +977,7 @@ void TMust2Physics::Clear() {
 
   // CsI
   CsI_E.clear();
+  CsI_E_Raw.clear();
   CsI_T.clear();
   CsI_N.clear();
 
@@ -1327,6 +1331,7 @@ void TMust2Physics::InitializeRootInputPhysics() {
     inputChain->SetBranchStatus("SiLi_T", true);
     inputChain->SetBranchStatus("SiLi_N", true);
     inputChain->SetBranchStatus("CsI_E", true);
+    inputChain->SetBranchStatus("CsI_E_Raw", true);
     inputChain->SetBranchStatus("CsI_T", true);
     inputChain->SetBranchStatus("CsI_N", true);
     inputChain->SetBranchStatus("TotalEnergy", true);
@@ -2329,11 +2334,11 @@ void TMust2Physics::MakeEnergyCalibFolders() {
   TString test_folder = "test -f " + Path + OutputName;
   TString make_folder = "mkdir " + Path + OutputName;
 
-  system(make_folder);
-  system(make_folder + "/peaks");
-  system(make_folder + "/dispersion");
-  system(make_folder + "/latex");
-  system(make_folder + "/latex/pictures");
+  int sys =system(make_folder);
+  sys =system(make_folder + "/peaks");
+  sys =system(make_folder + "/dispersion");
+  sys =system(make_folder + "/latex");
+  sys =system(make_folder + "/latex/pictures");
 }
 
 void TMust2Physics::MakeCSICalibFolders() {
@@ -2347,7 +2352,7 @@ void TMust2Physics::MakeCSICalibFolders() {
   TString test_folder = "test -f " + Path + OutputName;
   TString make_folder = "mkdir " + Path + OutputName;
 
-  system(make_folder);
+  int sys =system(make_folder);
 }
 
 void TMust2Physics::CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream* calib_file,
