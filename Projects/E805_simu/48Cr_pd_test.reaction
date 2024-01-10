@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% Reaction file for 48Cr(p,d)46V reaction %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 48Cr 
+  Energy= 1511 MeV
+  SigmaEnergy= 42 MeV
+  ExcitationEnergy= 0 MeV
+  SigmaThetaX= 0.1 mrad
+  SigmaPhiY= 0.1 mrad
+  SigmaX= 5 mm
+  SigmaY= 5 mm
+  MeanThetaX= 0 mrad
+  MeanPhiY= 0 mrad
+  MeanX= 0 mm
+  MeanY= 0 mm
+  %EnergyProfilePath= eLise.txt EL
+  %XThetaXProfilePath=
+  %YPhiYProfilePath=
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 48Cr
+ Target= 1H
+ Light= 2H
+ Heavy= 47Cr
+ ExcitationEnergyLight= 0.47 MeV
+ ExcitationEnergyHeavy= 0.0 MeV
+%CrossSectionPath= CrossSections/48Cr_tot_0.txt CS48Cr
+ CrossSectionPath= flat.txt CS
+ ShootLight= 1
+ ShootHeavy= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
