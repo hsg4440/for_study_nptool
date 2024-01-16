@@ -38,7 +38,8 @@ if [ $is_root != "" ];
 fi
 
 # Get the Major version
-version_major="${version%.*}"
+version_major_string="${version%.*}"
+version_major=$(($version_major_string))
 
 # if before version 4, exit
 if [ $version_major -lt 5 ]
