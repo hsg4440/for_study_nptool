@@ -36,6 +36,8 @@ M2Telescope
  SILI= 0		
  CSI= 1		
  VIS= all  
+ CsIOffset= 1
+
 %%%%%%% Telescope 2 %%%%%%% 		
 M2Telescope  		
  X1_Y1= -114.9	9.68	291.84 mm
@@ -46,6 +48,7 @@ M2Telescope
  SILI= 0		
  CSI= 1		
  VIS= all  
+ CsIOffset= 1
 
 %%%%%%% Telescope 3 %%%%%%% 		
 M2Telescope  		
@@ -57,18 +60,21 @@ M2Telescope
  SILI= 0		
  CSI= 1		
  VIS= all  
+ CsIOffset= 1
 
 
-% %%%%%%% Telescope 4 %%%%%%% 		
-% M2Telescope  		
-%  X1_Y1= 113.56	-13.18	292.11 mm
-%  X1_Y128= 23.23	-13.37	328.15 mm
-%  X128_Y1= 102.39	-105.49	263.59 mm
-%  X128_Y128= 	12.04	-105.69	299.63 mm
-%  SI= 1		
-%  SILI= 0		
-%  CSI= 1		
-%  VIS= all  
+%%%%%%% Telescope 4 %%%%%%% 		
+M2Telescope  		
+ X1_Y1= 113.56	-13.18	292.11 mm
+ X1_Y128= 23.23	-13.37	328.15 mm
+ X128_Y1= 102.39	-105.49	263.59 mm
+ X128_Y128= 	12.04	-105.69	299.63 mm
+ SI= 1		
+ SILI= 0		
+ CSI= 1		
+ VIS= all  
+ CsIOffset= 1
+
 % 
 % %%%%%%% Telescope 1 %%%%%%%
 % M2Telescope

@@ -50,17 +50,18 @@ void Analysis::Init() {
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions();
   }
-
+  // ExogamData = new TExogamData();
   InitOutputBranch();
   InitInputBranch();
   // get MUST2 and Gaspard objects
   M2 = (TMust2Physics*)m_DetectorManager->GetDetector("M2Telescope");
-  if (!simulation)
-    CATS = (TCATSPhysics*)m_DetectorManager->GetDetector("CATSDetector");
+  // if (!simulation)
+  // CATS = (TCATSPhysics*)m_DetectorManager->GetDetector("CATSDetector");
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
   OriginalBeamEnergy = reaction.GetBeamEnergy();
+  std::cout << OriginalBeamEnergy << std::endl;
   // target thickness
   TargetThickness = m_DetectorManager->GetTargetThickness();
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
@@ -70,6 +71,7 @@ void Analysis::Init() {
   string beam = NPL::ChangeNameToG4Standard(reaction.GetNucleus1()->GetName());
   cout << light << " " << beam << " " << TargetMaterial << " " << TargetThickness << endl;
   LightTarget = NPL::EnergyLoss(light + "_" + TargetMaterial + ".G4table", "G4Table", 100);
+  LightMyl = NPL::EnergyLoss(light + "_Mylar.G4table", "G4Table", 100);
   LightAl = NPL::EnergyLoss(light + "_Al.G4table", "G4Table", 100);
   LightSi = NPL::EnergyLoss(light + "_Si.G4table", "G4Table", 100);
   BeamTarget = NPL::EnergyLoss(beam + "_" + TargetMaterial + ".G4table", "G4Table", 100);
@@ -79,17 +81,6 @@ void Analysis::Init() {
   cout << "Original beam energy: " << OriginalBeamEnergy << " MeV      Mid-target beam energy: " << FinalBeamEnergy
        << "MeV " << endl;
   reaction.SetBeamEnergy(FinalBeamEnergy);
-
-  if (WindowsThickness) {
-    cout << "Cryogenic target with windows" << endl;
-    // BeamWindow = new NPL::EnergyLoss(beam + "_" + WindowsMaterial + ".G4table", "G4Table", 100);
-    // LightWindow = new NPL::EnergyLoss(light + "_" + WindowsMaterial + ".G4table", "G4Table", 100);
-  }
-
-  else {
-    BeamWindow = NULL;
-    LightWindow = NULL;
-  }
 
   // initialize various parameters
   Rand = TRandom3();
@@ -114,19 +105,12 @@ void Analysis::TreatEvent() {
   ReInitValue();
   double XTarget, YTarget;
   TVector3 BeamDirection;
-  if (!simulation) {
-    XTarget = CATS->GetPositionOnTarget().X();
-    YTarget = CATS->GetPositionOnTarget().Y();
-    BeamDirection = CATS->GetBeamDirection();
-  }
-  else {
-    XTarget = 0;
-    YTarget = 0;
-    BeamDirection = TVector3(0, 0, 1);
-    // OriginalELab = ReactionConditions->GetKineticEnergy(0);
-    // OriginalThetaLab = ReactionConditions->GetTheta(0);
-    // BeamEnergy = ReactionConditions->GetBeamEnergy();
-  }
+
+  // For simulation
+  XTarget = 0;
+  YTarget = 0;
+  BeamDirection = TVector3(0, 0, 1);
+
   BeamImpact = TVector3(XTarget, YTarget, 0);
   // determine beam energy for a randomized interaction point in target
   // 1% FWHM randominastion (E/100)/2.35
@@ -136,7 +120,8 @@ void Analysis::TreatEvent() {
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
-  for (unsigned int countMust2 = 0; countMust2 < M2->Si_E.size(); countMust2++) {
+  int M2_size = M2->Si_E.size();
+  for (unsigned int countMust2 = 0; countMust2 < M2_size; countMust2++) {
     /************************************************/
     // Part 0 : Get the usefull Data
     //  MUST2
@@ -168,9 +153,8 @@ void Analysis::TreatEvent() {
     if (CsI_E_M2 > 0) {
       // The energy in CsI is calculate form dE/dx Table because
       Energy = CsI_E_M2;
-      if (simulation) {
-        Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
-      }
+      Energy = LightMyl.EvaluateInitialEnergy(Energy, 3 * micrometer, ThetaM2Surface);
+      Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
       Energy += Si_E_M2;
     }
     else {
@@ -180,7 +164,7 @@ void Analysis::TreatEvent() {
     Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4 * micrometer, ThetaM2Surface);
     // Evaluate energy using the thickness
     // Target Correction
-    Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, ThetaNormalTarget);
+    Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, Theta);
 
     // What is written in the tree
     ThetaLab.push_back(Theta / deg);
@@ -195,6 +179,7 @@ void Analysis::TreatEvent() {
 void Analysis::End() {}
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
+  // RootOutput::getInstance()->GetTree()->Branch("Exogam", &ExogamData);
   RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex);
   RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab);
@@ -226,6 +211,10 @@ void Analysis::InitInputBranch() {
     RootInput::getInstance()->GetChain()->SetBranchStatus("fRC_*", true);
     RootInput::getInstance()->GetChain()->SetBranchAddress("ReactionConditions", &ReactionConditions);
   }
+  // RootInput::getInstance()->GetChain()->SetBranchStatus("Exogam", true);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("fExo*", true);
+  // RootInput::getInstance()->GetChain()->SetBranchAddress("Exogam", &ExogamData);
+  // RootInput::getInstance()->GetChain()->SetBranchStatus("ZDD", true);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue() {
