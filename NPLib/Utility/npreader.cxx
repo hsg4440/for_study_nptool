@@ -93,7 +93,7 @@ int main(int argc , char** argv){
     UserAnalysis->SetDetectorManager(myDetector);
     std::cout << "Salut ////////////////////" << std::endl; 
     UserAnalysis->Init();
-    // UserAnalysis->InitTreeReader(inputTreeReader);
+    UserAnalysis->InitTreeReader(inputTreeReader);
   } 
   else{
     std::string str_error=error;
@@ -135,6 +135,7 @@ int main(int argc , char** argv){
   unsigned long new_nentries = 0 ;
   int current_tree = 0 ;
   int total_tree = Chain->GetNtrees();
+  int entry_max = NPOptionManager::getInstance()->GetNumberOfEntryToAnalyse();
 
   bool IsPhysics = myOptionManager->GetInputPhysicalTreeOption();
 
@@ -184,17 +185,18 @@ int main(int argc , char** argv){
 
   else{
     if(!IsPhysics){ 
-      while(inputTreeReader->Next()){
+      while(inputTreeReader->Next()&& treated < entry_max){
         
         // Build the current event
         if(UserAnalysis->UnallocateBeforeBuild()){
           myDetector->BuildPhysicalEvent();
           // User Analysis;
           if(UserAnalysis->UnallocateBeforeTreat()){
-          UserAnalysis->TreatEvent();
+            UserAnalysis->TreatEvent();
+              
             //Fill the tree     
             if(UserAnalysis->FillOutputCondition()) 
-              myDetector->FillOutputTree();
+            myDetector->FillOutputTree();
           } 
         }
         current_tree = Chain->GetTreeNumber()+1;
@@ -202,7 +204,7 @@ int main(int argc , char** argv){
       }
     }
 
-    else{
+    /*else{
       std::cout << "test npa branch 3" << std::endl;
       while(inputTreeReader->Next()){
 			//for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
@@ -238,6 +240,7 @@ int main(int argc , char** argv){
         //}      
       }
     }
+*/
     UserAnalysis->End();
   }
 

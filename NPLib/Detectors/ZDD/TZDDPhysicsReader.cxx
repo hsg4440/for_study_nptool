@@ -29,5 +29,6 @@ TZDDPhysicsReader::TZDDPhysicsReader()
 };
 
 void TZDDPhysicsReader::r_SetTreeReader(TTreeReader* TreeReader){
+    std::cout << "TEST " << TreeReader << std::endl;
 r_ReaderEventData = new TTreeReaderValue<TZDDData>(*TreeReader,"ZDD");
 }; 

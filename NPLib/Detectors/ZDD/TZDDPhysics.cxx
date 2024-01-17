@@ -110,6 +110,7 @@ void TZDDPhysics::Match_IC(){
     ICSum = 0;
     for(auto it = SortIC.begin(); it != SortIC.end(); ++it){
       ICSum+= (it->second).first;
+      // std::cout << "Test " << it->first << " " << it->second.first << std::endl;
       IC_Nbr.push_back(it->first);
       IC_E.push_back((it->second).first);
       IC_TS.push_back((it->second).second);
@@ -145,6 +146,13 @@ void TZDDPhysics::Match_PL(){
   PL_TS.push_back((it->second).second);
   }
 }
+
+// bool TZDDPhysics::CheckGoodEvent(){
+//   if (NPOptionManager::getInstance()->IsReader() == true) {
+//     m_EventData = &(**r_ReaderEventData);
+//   }
+//   return abs(ZDD->)
+// }
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::PreTreat() {
   // This method typically applies thresholds and calibrations

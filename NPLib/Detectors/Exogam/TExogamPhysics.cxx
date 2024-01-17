@@ -48,6 +48,7 @@ ClassImp(TExogamPhysics)
   NumberOfHitCristal = 0;
   m_Spectra = NULL;
   NumberOfClover = 0;
+  m_EXO_OuterUp_RAW_Threshold = 4294966296;
   m_EXO_E_RAW_Threshold = 0;
   m_EXO_E_Threshold = 0;
   m_EXO_EHG_RAW_Threshold = 0;
@@ -67,34 +68,54 @@ void TExogamPhysics::BuildSimplePhysicalEvent() { BuildPhysicalEvent(); }
 void TExogamPhysics::PreTreat() {
   // Clearing PreTreat TExogamData
   ClearPreTreatedData();
-  // Clearing local variables for pretreat
 
   //E
   m_EXO_Mult = m_EventData->GetExoMult();
 
   for (unsigned int i = 0; i < m_EXO_Mult; ++i) {
-  ResetPreTreatVariable();
-    // std::cout << "test1 " << EXO_E << std::endl;
+    
+    ResetPreTreatVariable();
+    
     if (m_EventData->GetExoE(i) > m_EXO_E_RAW_Threshold)
       EXO_E = fEXO_E(m_EventData, i);
-    // std::cout << "test2 " << EXO_E << std::endl;
 
     if (m_EventData->GetExoEHG(i) > m_EXO_EHG_RAW_Threshold)
       EXO_EHG = fEXO_EHG(m_EventData, i);
     
     if (m_EventData->GetExoTDC(i) > m_EXO_TDC_RAW_Threshold)
       EXO_TDC = fEXO_T(m_EventData, i);
+ 
+    if (m_EventData->GetExoOuter1(i) < m_EXO_OuterUp_RAW_Threshold)
+      EXO_Outer1 = fEXO_Outer(m_EventData, i, 0);
+    else
+      EXO_Outer1 = 0;
     
-    EXO_Outer1 = fEXO_Outer(m_EventData, i, 0);
-    EXO_Outer2 = fEXO_Outer(m_EventData, i, 1);
-    EXO_Outer3 = fEXO_Outer(m_EventData, i, 2);
-    EXO_Outer4 = fEXO_Outer(m_EventData, i, 3);
-
+    if (m_EventData->GetExoOuter2(i) < m_EXO_OuterUp_RAW_Threshold)
+      EXO_Outer2 = fEXO_Outer(m_EventData, i, 1);
+    else
+      EXO_Outer2 = 0;
+    
+    if (m_EventData->GetExoOuter3(i) < m_EXO_OuterUp_RAW_Threshold)
+      EXO_Outer3 = fEXO_Outer(m_EventData, i, 2);
+    else
+      EXO_Outer3 = 0;
+    
+    if (m_EventData->GetExoOuter4(i) < m_EXO_OuterUp_RAW_Threshold)
+      EXO_Outer4 = fEXO_Outer(m_EventData, i, 3);
+    else
+      EXO_Outer4 = 0;
+    // std::cout << m_EventData->GetExoOuter4(i) << std::endl;
+    // std::cout << EXO_E << " " << EXO_EHG << " " << EXO_Outer1 << " " << EXO_Outer2 << " " << EXO_Outer3 << " " << EXO_Outer4 << std::endl;
+    //EXO_Outer2 = fEXO_Outer(m_EventData, i, 1);
+    //EXO_Outer3 = fEXO_Outer(m_EventData, i, 2);
+    //EXO_Outer4 = fEXO_Outer(m_EventData, i, 3);
+    
+    // *1000 to convert MeV into keV
     if(EXO_E > m_EXO_E_Threshold){
       m_PreTreatedData->SetExo(m_EventData->GetExoCrystal(i), EXO_E*1000,
       EXO_EHG*1000, m_EventData->GetExoTS(i), EXO_TDC, 
-      m_EventData->GetExoBGO(i), m_EventData->GetExoCsI(i), EXO_Outer1,
-      EXO_Outer2, EXO_Outer3, EXO_Outer4);
+      m_EventData->GetExoBGO(i), m_EventData->GetExoCsI(i), EXO_Outer1*1000,
+      EXO_Outer2*1000, EXO_Outer3*1000, EXO_Outer4*1000);
     } 
   }
 }
@@ -113,274 +134,96 @@ void TExogamPhysics::BuildPhysicalEvent() {
   if (NPOptionManager::getInstance()->IsReader() == true) {
     m_EventData = &(**r_ReaderEventData);
   }
+  // std::cout << m_EventData << std::endl;
   PreTreat();
 
+  // This maps stores ID of events sorted by flange number. Map key is flange nbr, vector should contain ID of events
+  std::map<unsigned int,std::vector<unsigned int>> HitsID;
+
   for(unsigned int i = 0; i < m_PreTreatedData->GetExoMult(); i++){
-    
-    mean_free_path = ComputeMeanFreePath(m_PreTreatedData->GetExoE(i));
+
+    // Doing flange and crystal matching
     flange_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].first;
     crystal_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].second;
-
-    EnergyDoppler = 0; 
-    double MaxOuter = 0;
-    unsigned int MaxOuter_Id;
-    if(m_PreTreatedData->GetExoOuter1(i) > MaxOuter){
-      MaxOuter = m_PreTreatedData->GetExoOuter1(i);
-      MaxOuter_Id = 0;
-    }
-    if(m_PreTreatedData->GetExoOuter2(i) > MaxOuter){
-      MaxOuter = m_PreTreatedData->GetExoOuter2(i);
-      MaxOuter_Id = 1;
-    }
-    if(m_PreTreatedData->GetExoOuter3(i) > MaxOuter){
-      MaxOuter = m_PreTreatedData->GetExoOuter3(i);
-      MaxOuter_Id = 2;
-    }
-    if(m_PreTreatedData->GetExoOuter4(i) > MaxOuter){
-      MaxOuter = m_PreTreatedData->GetExoOuter4(i);
-      MaxOuter_Id = 3;
-    }
     
-    if(MaxOuter > 0){
-      Exogam_struc = Ask_For_Angles(flange_nbr, mean_free_path);
-      double Theta_seg = Exogam_struc.Theta_Crystal_Seg[crystal_nbr][MaxOuter_Id];
-      double Phi_seg = Exogam_struc.Phi_Crystal_Seg[crystal_nbr][MaxOuter_Id];
-      EnergyDoppler = Doppler_Correction(Theta_seg,Phi_seg,0,0,Beta,m_PreTreatedData->GetExoE(i));
-    }
     E_Cal.push_back(m_PreTreatedData->GetExoE(i));
-    Flange_N.push_back(flange_nbr);
-    Crystal_N.push_back(crystal_nbr);
-    E_Doppler.push_back(EnergyDoppler);
-  }
-/*
-  if(PreTreatedData -> GetECCEMult() != PreTreatedData -> GetECCTMult()) cout << PreTreatedData -> GetECCEMult() << " "
-  <<  PreTreatedData -> GetECCTMult() << endl;
-
-
-  for(unsigned int i = 0 ; i < PreTreatedData -> GetECCEMult(); i++) {
-
-    // cout << i << " " << cristal_E << endl;
-    // if(PreTreatedData->GetECCTTime(i) > 0)
-      {
-    ECC_E.push_back(PreTreatedData->GetECCEEnergy(i));
-    ECC_T.push_back(PreTreatedData->GetECCTTime(i));
-    ECC_CloverNumber.push_back(PreTreatedData->GetECCEClover(i));
-    ECC_CristalNumber.push_back(PreTreatedData->GetECCECristal(i));
-
-    //    cout << "BuildPhys " << PreTreatedData->GetECCEClover(i) << " " <<  PreTreatedData->GetECCECristal(i)<< " " <<
-  PreTreatedData->GetECCTTime(i) << " " << endl;
-      }
+    EHG_Cal.push_back(m_PreTreatedData->GetExoEHG(i));
+    Outer1_Cal.push_back(m_PreTreatedData->GetExoOuter1(i));
+    Outer2_Cal.push_back(m_PreTreatedData->GetExoOuter2(i));
+    Outer3_Cal.push_back(m_PreTreatedData->GetExoOuter3(i));
+    Outer4_Cal.push_back(m_PreTreatedData->GetExoOuter4(i));
+    FlangeN.push_back(flange_nbr);
+    CrystalN.push_back(crystal_nbr);
+    
+    // Filling HitsID
+    // std::cout << i << " " << flange_nbr << " " << crystal_nbr << std::endl; 
+    
+    HitsID[flange_nbr].push_back(i);
   }
 
+  // Now that HitsID is full, we use it to process simple AddBack of events in the same flange
+  // Basically looping on all flanges, then on al events ID in each flange
+  for(auto it = HitsID.begin(); it != HitsID.end(); it++){
+    double E_AddBack = 0;
+    double E_Max = 0;
+    unsigned int Id_Max = 0;
+    for(auto itvec = (*it).second.begin(); itvec !=(*it).second.end(); itvec++){
+      E_AddBack+= m_PreTreatedData->GetExoE(*itvec);
+      if(E_Max < m_PreTreatedData->GetExoE(*itvec)){
+        E_Max = m_PreTreatedData->GetExoE(*itvec);
+        Id_Max = *itvec;
+      }
+    }
+    // Doing it again for this loop, it's a bit unhappy but didnt find a better way to do it yet
+    flange_nbr = (*it).first;
+    crystal_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(Id_Max)].second;
+    
+    // Adding all AddBack (AB) related stuff
+    E_AB.push_back(E_AddBack);
+    FlangeN_AB.push_back(flange_nbr);
+    Size_AB.push_back((*it).second.size());
 
-  for(unsigned int j = 0 ; j < PreTreatedData -> GetGOCCEEMult(); j++) {
-    GOCCE_E.push_back(PreTreatedData->GetGOCCEEEnergy(j));
-    GOCCE_CloverNumber.push_back(PreTreatedData->GetGOCCEEClover(j));
-    GOCCE_CristalNumber.push_back(PreTreatedData->GetGOCCEECristal(j));
-    GOCCE_SegmentNumber.push_back(PreTreatedData->GetGOCCEESegment(j));
+    // Adding these parameters for Doppler correction purposes (D)
+    CrystalN_ABD.push_back(crystal_nbr);
+    int MaxOuterId = GetMaxOuter(Id_Max);
+    OuterN_ABD.push_back(GetMaxOuter(Id_Max));
+
+    // If a max Outer is found, Do doppler correction, else push_back -1000;
+    double EnergyDoppler = -1000;
+    if(MaxOuterId > -1){
+      EnergyDoppler= GetDoppler(E_AddBack, flange_nbr, crystal_nbr, MaxOuterId);
+    }
+    E_ABD.push_back(EnergyDoppler);
   }
+}
 
-
-  //int NumberOfHitClover = 0;
-
-  int DetectorID = -1;
-
-  for( unsigned short i = 0 ; i < PreTreatedData->GetECCEMult() ; i++ )
-    {
-      // cout << PreTreatedData->GetECCEClover(i) << endl;
-      if( PreTreatedData->GetECCEClover(i) != DetectorID)
-  {
-    if(i==0)
-      {
-        NumberOfHitClover++;
-      }
-    else if(PreTreatedData->GetECCEClover(i)!= PreTreatedData->GetECCEClover(i-1) )
-      {
-        NumberOfHitClover++;
-      }
+int TExogamPhysics::GetMaxOuter(unsigned int EventId){
+  double OuterMax = 0;
+  int OuterId = -1;
+  if(m_EventData->GetExoOuter1(EventId) > OuterMax){
+    OuterMax =  m_EventData->GetExoOuter1(EventId);
+    OuterId = 0;
   }
-      if(NumberOfHitClover == 4) break;
-      //clover_mult -> Fill(NumberOfHitClover);
-
-    }
-
-  //cout << "NumberOfHitClover " << NumberOfHitClover << endl;
-
-  map<int, vector<int> > MapCristal;
-  map<int, vector<int> > MapSegment;
-
-  map<int, vector<int> > :: iterator it;    // iterator used with MapCristal
-  map<int, vector<int> > :: iterator at;    // iterator used with MapSegment
-
-  vector<int> PositionOfCristal_Buffer_ECC;
-  vector<int> PositionOfSegment_Buffer_GOCCE;
-
-
-  //Fill map Cristal
-  for(int clo = 0; clo < NumberOfClover; clo++)
-    {
-      for(unsigned int k = 0; k < ECC_CloverNumber.size(); k++)
-  {
-    if(ECC_CloverNumber.at(k) == clo) // && ECC_CristalNumber.at(k)== cri )
-      PositionOfCristal_Buffer_ECC.push_back(k);
+  if(m_EventData->GetExoOuter2(EventId) > OuterMax){
+    OuterMax =  m_EventData->GetExoOuter2(EventId);
+    OuterId = 1;
   }
-      if(PositionOfCristal_Buffer_ECC.size() != 0) MapCristal[clo] = PositionOfCristal_Buffer_ECC;
-
-      PositionOfCristal_Buffer_ECC.clear();
-
-    }
-
-
-  //Fill map Segment
-  for(int clo = 0; clo < NumberOfClover; clo++)
-    {
-      for(int cri = 0; cri < 4 ; cri++)
-  {
-    //  for(int seg = 0; seg < 4 ; seg++)
-      {
-        for(unsigned int m = 0; m < GOCCE_CloverNumber.size(); m++)
-    {
-      if(GOCCE_CloverNumber.at(m) == clo && GOCCE_CristalNumber.at(m) == cri)// && GOCCE_SegmentNumber.at(m) == seg)
-        {
-          // PositionOfSegment_Buffer_GOCCE.push_back(4*clo+cri);
-          PositionOfSegment_Buffer_GOCCE.push_back(m);
-        }
-    }
-      }
-      if(PositionOfSegment_Buffer_GOCCE.size() != 0) MapSegment[4*clo+cri] = PositionOfSegment_Buffer_GOCCE;
-
-      PositionOfSegment_Buffer_GOCCE.clear();
+  if(m_EventData->GetExoOuter3(EventId) > OuterMax){
+    OuterMax =  m_EventData->GetExoOuter3(EventId);
+    OuterId = 2;
   }
-    }
+  if(m_EventData->GetExoOuter4(EventId) > OuterMax){
+    OuterMax =  m_EventData->GetExoOuter4(EventId);
+    OuterId = 3;
+  }
+  return OuterId;
+}
 
-  // Treatment
-  for(int clo = 0; clo < NumberOfClover ; clo++)
-    {
-      double E = 0; double T = 0;
-      int mult_cristal = 0;
-      int cristal = -1 , segment;
-
-      int cristal_Emax = 0; int cristal_Emin = 0;
-      int Emax = 0, Emin = 1000000;
-      int Tmin = 0, Tmax = 0;
-
-      //ADD-BACK
-      it = MapCristal.find(clo);
-
-      int cristal_cond = 0;
-
-      if(it != MapCristal.end())
-  {
-    vector<int> PositionOfCristal = it -> second;
-
-    mult_cristal = PositionOfCristal.size();
-    //if(mult_cristal!=0) cristal_mult -> Fill(mult_cristal);
-
-    // ADD-BACK
-    //cout << "boucle" << endl;
-
-    for(unsigned int k = 0; k < PositionOfCristal.size(); k++)
-      {
-        int indice = PositionOfCristal.at(k);
-
-        cristal_cond += ECC_CristalNumber.at(indice);
-        // cout <<  ECC_CristalNumber.at(k) << " " ECC_E.at(k) << endl;
-
-        if(mult_cristal < 3)
-    {
-      E+= ECC_E.at(indice);
-
-      if(ECC_E.at(indice) < Emin) {
-        cristal_Emin = ECC_CristalNumber.at(indice);
-        Emin = ECC_E.at(indice);
-        Tmin = ECC_T.at(indice);
-      }
-
-      if(ECC_E.at(indice) > Emax) {
-        cristal_Emax = ECC_CristalNumber.at(indice);
-        Emax = ECC_E.at(indice);
-        Tmax = ECC_T.at(indice);
-      }
-    }
-
-        else // case of multiplicity = 3 or 4
-    {
-      E = -1; cristal_Emax = -1; cristal_Emin = -1; Tmax = -1; Tmin = -1;
-    }
-
-        // cout << ECC_E.at(indice) << " " << Emax << " " << cristal_Emax << " " << Emin << " " << cristal_Emin << endl;
-
-      }
-
-    if( (mult_cristal==1) || (mult_cristal ==2  && cristal_cond %2 == 1) )
-      {
-        // cout << cristal_cond << endl;
-
-        //cristal = cristal_Emax; T = Tmax;
-        //cout << Emax << " " << cristal_Emax << " " << Emin << " " << cristal_Emin << endl;
-
-        if(E > 500) { cristal = cristal_Emax; T = Tmax; }
-        else        { cristal = cristal_Emin; T = Tmin; }
-
-
-        // DOPPLER CORRECTION
-
-        at = MapSegment.find(4*clo+cristal);
-        segment = -1;
-
-        if(at != MapSegment.end())
-    {
-      vector<int> PositionOfSegment = at -> second;     // position of segment k in the vector
-
-      int segment_max = -1, E_temp = -1;
-
-      for(unsigned int m = 0; m < PositionOfSegment.size(); m++)             // loop on hit segments of cristal cri of
-  clover clo
-        {
-          int indice = PositionOfSegment.at(m);
-
-          if(GOCCE_E.at(indice) > 0 && GOCCE_CristalNumber.at(indice) == cristal)
-      {
-        if( GOCCE_E.at(indice) > E_temp )
-          {
-            segment_max = GOCCE_SegmentNumber.at(indice) ;
-            E_temp = GOCCE_E.at(indice);
-          }
-      }
-        }
-      segment = segment_max;
-    }
-
-      }
-
-
-    if(E > 0 && cristal != -1 && segment != -1)
-      {
-        TotalEnergy_lab.push_back(E);
-        Time.push_back(T);
-        CloverNumber.push_back(clo);
-        CristalNumber.push_back(cristal);
-        SegmentNumber.push_back(segment);
-
-        double theta = GetSegmentAngleTheta(clo, cristal, segment);
-
-        Theta.push_back(theta);
-
-        double doppler_E = DopplerCorrection(E, theta);
-        DopplerCorrectedEnergy.push_back(doppler_E);
-
-        //  cout << E  << " " << clo << " " << cristal << " " << segment << " " << theta << " " << doppler_E << endl;
-
-      }
-
-  }  // end of condition over CristalMap
-
-    } // loop over NumberOfClover
-
-  CloverMult = GetClover_Mult();
-
-  //cout << "Exogam fine" << endl;
-  */
+double TExogamPhysics::GetDoppler(double Energy, unsigned int Flange, unsigned int Crystal, unsigned int Outer){
+  Exogam_struc = Ask_For_Angles(Flange, ComputeMeanFreePath(Energy));
+  double Theta_seg = Exogam_struc.Theta_Crystal_Seg[Crystal][Outer];
+  double Phi_seg = Exogam_struc.Phi_Crystal_Seg[Crystal][Outer];
+  return Doppler_Correction(Theta_seg,Phi_seg,0,0,Beta,Energy);
 }
 
 double TExogamPhysics::ComputeMeanFreePath(double Energy){
@@ -434,9 +277,21 @@ void TExogamPhysics::Clear() {
   NumberOfHitCristal = 0;
 
   E_Cal.clear();
-  E_Doppler.clear();
-  Flange_N.clear();
-  Crystal_N.clear();
+  EHG_Cal.clear();
+  Outer1_Cal.clear();
+  Outer2_Cal.clear();
+  Outer3_Cal.clear();
+  Outer4_Cal.clear();
+  FlangeN.clear();
+  CrystalN.clear();
+  // E_Doppler.clear();
+  E_AB.clear();
+  FlangeN_AB.clear();
+  Size_AB.clear();
+  CrystalN_ABD.clear();
+  OuterN_ABD.clear();
+  E_ABD.clear();
+
 //
 //  ECC_CloverNumber.clear();
 //  ECC_CristalNumber.clear();
@@ -887,7 +742,7 @@ void TExogamPhysics::DoCalibration() {
   }
   for (it = DoCalibrationE.begin(); it != DoCalibrationE.end(); it++) {
     if (it->second) {
-      DoCalibrationE_F(it->first,"E", calib_file, dispersion_file);
+      DoCalibrationE_F(it->first,"E", calib_file, dispersion_file, Threshold_E_Cal);
     }
   }
   calib_file->close();
@@ -899,7 +754,7 @@ void TExogamPhysics::DoCalibration() {
   }
   for (it = DoCalibrationEHG.begin(); it != DoCalibrationEHG.end(); it++) {
     if (it->second) {
-      DoCalibrationE_F(it->first,"EHG", calib_file, dispersion_file);
+      DoCalibrationE_F(it->first,"EHG", calib_file, dispersion_file, Threshold_EHG_Cal);
     }
   }
   calib_file->close();
@@ -912,7 +767,7 @@ void TExogamPhysics::DoCalibration() {
   for (it2 = DoCalibrationOuter.begin(); it2 != DoCalibrationOuter.end(); it2++) {
     for (it = (it2->second).begin(); it != (it2->second).end(); it++) {
       if (it->second) {
-        DoCalibrationE_F(it->first,Form("Outer%d_",it2->first), calib_file, dispersion_file);
+        DoCalibrationE_F(it->first,Form("Outer%d_",it2->first), calib_file, dispersion_file, Threshold_Outers_Cal);
       }
     }
   }
@@ -935,7 +790,7 @@ void TExogamPhysics::MakeOuterCalibFolders(std::string make_folder) {
   int sys =system((make_folder+"/Exogam_Outer").c_str());
 }
 
-void TExogamPhysics::DoCalibrationE_F(unsigned int DetectorNumber,std::string CalibType, ofstream* calib_file, ofstream* dispersion_file) {
+void TExogamPhysics::DoCalibrationE_F(unsigned int DetectorNumber,std::string CalibType, ofstream* calib_file, ofstream* dispersion_file, unsigned int Threshold) {
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
 
@@ -961,7 +816,7 @@ void TExogamPhysics::DoCalibrationE_F(unsigned int DetectorNumber,std::string Ca
 
   CubixEnergyCal->UseFirstDerivativeSearch();
   
-  CubixEnergyCal->SetGlobalChannelLimits(hist->GetXaxis()->GetBinLowEdge(1),hist->GetXaxis()->GetBinLowEdge(hist->GetXaxis()->GetNbins()));      // limit the search to this range in channels
+  CubixEnergyCal->SetGlobalChannelLimits(hist->GetXaxis()->GetBinLowEdge(1)+Threshold,hist->GetXaxis()->GetBinLowEdge(hist->GetXaxis()->GetNbins()));      // limit the search to this range in channels
   CubixEnergyCal->SetGlobalPeaksLimits(15,5);   // default fwhm and minmum amplitude for the peaksearch [15 5]
 
   CubixEnergyCal->StartCalib();
@@ -1160,7 +1015,7 @@ void TExogamPhysics::CreateCalibrationOuterFiles(ofstream* calib_file,
 void TExogamPhysics::ReadDoCalibration(NPL::InputParser parser) {
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Exogam");
 
-  vector<string> calibs = {"FirstCr","LastCr","FirstOuter","LastOuter","FitOrder","Source"};
+  vector<string> calibs = {"Threshold_E","Threshold_EHG","Threshold_Outers","FirstCr","LastCr","FirstOuter","LastOuter","FitOrder","Source"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(calibs)) {
@@ -1172,6 +1027,9 @@ void TExogamPhysics::ReadDoCalibration(NPL::InputParser parser) {
       unsigned int LastOuter = blocks[i]->GetInt("LastOuter");
       FitPolOrder = blocks[i]->GetInt("FitOrder");
       Source_name = blocks[i]->GetString("Source");
+      Threshold_E_Cal = blocks[i]->GetInt("Threshold_E");
+      Threshold_EHG_Cal = blocks[i]->GetInt("Threshold_EHG");
+      Threshold_Outers_Cal = blocks[i]->GetInt("Threshold_Outers");
       for(unsigned int k = FirstCr; k <= LastCr; k++){
         DoCalibrationE[k] = true;
         DoCalibrationEHG[k] = true; 
@@ -1272,14 +1130,14 @@ namespace EXOGAM_LOCAL {
     static string name;
     name = "EXO/E";
     name += NPL::itoa(m_EventData->GetExoCrystal(i));
-    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoE(i));
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoE(i),1);
   }
   
   double fEXO_EHG(const TExogamData* m_EventData, const unsigned int& i) {
     static string name;
     name = "EXO/EHG";
     name += NPL::itoa(m_EventData->GetExoCrystal(i));
-    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoEHG(i));
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoEHG(i),1);
   }
   
   double fEXO_T(const TExogamData* m_EventData, const unsigned int& i) {
@@ -1287,7 +1145,7 @@ namespace EXOGAM_LOCAL {
     name = "EXOGAM/Cr_";
     name += NPL::itoa(m_EventData->GetExoCrystal(i));
     name += "_TDC";
-    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoTDC(i));
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoTDC(i),1);
   }
   
   double fEXO_Outer(const TExogamData* m_EventData, const unsigned int& i, const unsigned int OuterNumber) {
@@ -1297,13 +1155,13 @@ namespace EXOGAM_LOCAL {
     name += "_";
     name += NPL::itoa(OuterNumber);
     if(OuterNumber == 0)
-      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter1(i));
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter1(i),1);
     else if(OuterNumber == 1)
-      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter2(i));
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter2(i),1);
     else if(OuterNumber == 2)
-      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter3(i));
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter3(i),1);
     else if(OuterNumber == 3)
-      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter4(i));
+      return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetExoOuter4(i),1);
     else{
       std::cout << "WARNING: Outer number != 0-3, something is wrong\n";
       return 0;

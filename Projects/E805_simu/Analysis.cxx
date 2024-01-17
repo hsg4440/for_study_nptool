@@ -43,6 +43,7 @@ void Analysis::Init(){
   string beam=  NPL::ChangeNameToG4Standard(reaction->GetNucleus1()->GetName());
   string heavy_ejectile=  NPL::ChangeNameToG4Standard(reaction->GetNucleus4()->GetName());
   string light=NPL::ChangeNameToG4Standard(reaction->GetNucleus3()->GetName());
+  std::cout << light << " " << heavy_ejectile << std::endl;
 
   string Reaction_pd_s = "48Cr(p,d)47Cr@1620";
   string Reaction_pt_s = "48Cr(p,t)46Cr@1620";
@@ -132,8 +133,11 @@ void Analysis::TreatEvent(){
         }
       else
         Energy = -1000;
-      if(Energy > 0)
-        Energy = LightTarget["deuteron"].EvaluateInitialEnergy(Energy,TargetThickness*0.5, ThetaNormalTarget);
+      if(Energy > 0){
+        // Energy = LightTarget["deuteron"].EvaluateInitialEnergy(Energy,TargetThickness*0.5, ThetaNormalTarget);
+        Energy = LightTarget["alpha"].EvaluateInitialEnergy(Energy,TargetThickness*0.5, ThetaNormalTarget);
+      }
+        
 
 
       // Evaluate energy using the thickness

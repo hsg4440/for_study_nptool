@@ -62,10 +62,24 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   void Clear()	              ;	
   void Clear(const Option_t*) {};
 
+  // Only threshold and cal applied to exogam
   std::vector<double> E_Cal;
-  std::vector<double> E_Doppler;
-  std::vector<unsigned int> Flange_N;
-  std::vector<unsigned int> Crystal_N;
+  std::vector<double> EHG_Cal;
+  std::vector<double> Outer1_Cal;
+  std::vector<double> Outer2_Cal;
+  std::vector<double> Outer3_Cal;
+  std::vector<double> Outer4_Cal;
+  // std::vector<double> E_Doppler;
+  std::vector<unsigned int> FlangeN;
+  std::vector<unsigned int> CrystalN;
+  
+  // Previous treatment + Add_Back (size of vectors are not the same because of AB !)
+  std::vector<double> E_AB;
+  std::vector<unsigned int> FlangeN_AB;
+  std::vector<unsigned int> Size_AB;
+  std::vector<unsigned int> CrystalN_ABD;
+  std::vector<int> OuterN_ABD;
+  std::vector<double> E_ABD;
 
 
 
@@ -180,7 +194,7 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
     
     void FillRootHistogramsCalib_F(); //!
   
-    void DoCalibrationE_F(unsigned int  Detector_Nbr,std::string CalibType, ofstream* calib_file, ofstream* dispersion_file); //!
+    void DoCalibrationE_F(unsigned int  Detector_Nbr,std::string CalibType, ofstream* calib_file, ofstream* dispersion_file, unsigned int Threshold); //!
     
     void DoCalibrationEHG_F(unsigned int  Detector_Nbr, ofstream* calib_file, ofstream* dispersion_file){}; //!
     
@@ -244,9 +258,14 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
 
   unsigned int GetFlangeNbr(unsigned int crystal_nbr); //!
 
+  int GetMaxOuter(unsigned int EventId); //!
+  
+  double GetDoppler(double Energy, unsigned int Flange, unsigned int Crystal, unsigned int Outer); //!
+
   private: // Variables for analysis
 
   unsigned int m_EXO_Mult;//!
+  double m_EXO_OuterUp_RAW_Threshold;//!
   double m_EXO_E_RAW_Threshold;//!
   double m_EXO_E_Threshold;//!
   double m_EXO_EHG_RAW_Threshold;//!
@@ -260,21 +279,23 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   double EXO_Outer4;//!
   unsigned int flange_nbr;//!
   unsigned int crystal_nbr;//!
-  double EnergyDoppler; //!
   double Beta = 0.257;//!
 
-  double mean_free_path;//!
   Clover_struc Exogam_struc;//!
   
   std::map<unsigned int,std::pair<unsigned int,unsigned int>> MapCrystalFlangeCLover;//! Map key is raw crystal nbr, pair associated is flange nbr and crystal nbr in the flange
 
-  const double GeDensity = 0.005323; //! g/mm3
+  double GeDensity = 0.005323; //! g/mm3
   std::map<double, double> Map_PhotonCS;//!
  
   map<int, bool> DoCalibrationE;                                    //!
   map<int, bool> DoCalibrationEHG;                                  //!
   map<int, bool> DoCalibrationT;                                    //!
   map<int, map<int,bool>> DoCalibrationOuter;                       //!
+
+  unsigned int Threshold_E_Cal;//!
+  unsigned int Threshold_EHG_Cal;//!
+  unsigned int Threshold_Outers_Cal;//!
   
   std::vector<std::string> Source_isotope;                          //!
   std::vector<double> Source_E;                                     //!

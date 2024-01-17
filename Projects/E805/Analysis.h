@@ -21,10 +21,12 @@
  *                                                                           *
  *****************************************************************************/
 
-#include"Geometry_Clover_Exogam.h"
+// #include"Geometry_Clover_Exogam.h"
 #include "TMust2Physics.h"
 #include "TCATSPhysics.h"
-#include "TMust2PhysicsReader.h"
+#include "TTACPhysics.h"
+#include "TExogamPhysics.h"
+// #include "TMust2PhysicsReader.h"
 #include"NPVAnalysis.h"
 #include"TZDDPhysics.h"
 #include"NPEnergyLoss.h"
@@ -68,7 +70,18 @@ class Analysis: public NPL::VAnalysis{
     bool CheckExoDeltaTV(float ExoTime);
 
     static NPL::VAnalysis* Construct();
-    TTreeReaderValue<TMust2Data>* r_ReaderEventData; 
+    TTreeReaderValue<TMust2Data>* r_ReaderEventData;
+
+  private:
+    void TreatCATS();
+    void TreatZDD(); 
+    void TreatTAC(); 
+    void TreatMUST2(); 
+    void TreatEXO(); 
+
+  private:
+
+    bool bCATS;
 
   private:
 
@@ -149,6 +162,8 @@ class Analysis: public NPL::VAnalysis{
   
   vector<unsigned int> GATCONFMASTER;
   TTreeReaderValue<vector<unsigned int>>* GATCONFMASTER_;
+  vector<unsigned long long> GATCONFMASTERTS;
+  TTreeReaderValue<vector<unsigned long long>>* GATCONFMASTERTS_;
   
   unsigned short DATATRIG_CATS;
   TTreeReaderValue<unsigned short>* DATATRIG_CATS_;
@@ -333,6 +348,9 @@ class Analysis: public NPL::VAnalysis{
   TMust2Physics* M2;
   TCATSPhysics* CATS;
   TZDDPhysics* ZDD;
+  TTACPhysics* TAC;
+  TExogamPhysics* Exogam;
+
   TMust2PhysicsReader* M2_Reader;
   TInitialConditions* InitialConditions;
   TReactionConditions* ReactionConditions;
@@ -374,7 +392,7 @@ class Analysis: public NPL::VAnalysis{
   double Theta_seg;
   double Phi_seg;
 
-  Char_t Exogam[100];
+  // Char_t Exogam[100];
   Int_t ExoNumb;
   Int_t Flange_tmp;
   int FlangeNumb[12];
@@ -382,7 +400,7 @@ class Analysis: public NPL::VAnalysis{
 
 
   /////////////Exogam
-  Clover_struc Exogam_Clovers_struc[12];
+  // Clover_struc Exogam_Clovers_struc[12];
 
 
   TCutG* proton_cut[4];

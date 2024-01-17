@@ -29,5 +29,6 @@ TExogamPhysicsReader::TExogamPhysicsReader()
 };
 
 void TExogamPhysicsReader::r_SetTreeReader(TTreeReader* TreeReader){
-r_ReaderEventData = new TTreeReaderValue<TExogamData>(*TreeReader,"Exogam");
+    std::cout << "TEST " << TreeReader << std::endl;
+    r_ReaderEventData = new TTreeReaderValue<TExogamData>(*TreeReader,"Exogam");
 }; 
