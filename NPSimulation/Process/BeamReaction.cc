@@ -115,6 +115,7 @@ void NPS::BeamReaction::ReadConfiguration() {
   else if (m_ReactionType == Fusion) {
     vector<InputBlock*> blocks = input.GetAllBlocksWithToken("FusionReaction");
     m_BeamName = NPL::ChangeNameToG4Standard(blocks[0]->GetString("Beam"));
+    m_BeamNameNPL = blocks[0]->GetString("Beam");
     m_TargetNuclei = blocks[0]->GetString("Target");
     m_FusionProduct = blocks[0]->GetString("Product");
     m_FusionExcitation = blocks[0]->GetDouble("ExcitationEnergy", "MeV");
@@ -676,6 +677,8 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack, G4FastStep& fastStep)
     NPL::Particle N(m_FusionProduct);
     N.SetExcitationEnergy(m_FusionExcitation);
     NPL::Particle T(m_TargetNuclei);
+    NPL::Particle B(m_BeamNameNPL);
+
     int PZ = N.GetZ();
     int PA = N.GetA();
     Product = IonTable->GetIon(PZ, PA, m_FusionExcitation * MeV);
@@ -684,7 +687,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack, G4FastStep& fastStep)
     TVector3 BeamP = NPS::ConvertVector(PrimaryTrack->GetMomentum());
 
     TLorentzVector BeamLV;
-    BeamLV.SetVectM(BeamP, N.Mass() * MeV);
+    BeamLV.SetVectM(BeamP, B.Mass() * MeV);
     TLorentzVector TargetLV;
     TargetLV.SetVectM(TVector3(0, 0, 0), T.Mass() * MeV);
     TLorentzVector TotalLV = BeamLV + TargetLV;
@@ -692,6 +695,13 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack, G4FastStep& fastStep)
     // energy lost in the fusion process to be removed to the total energy
     // Total Available Ek = Initial Ek + (InitialMass-FinalMass)
     double KineAvailable = TotalLV.Et() + (TotalLV.Mag() - N.Mass());
+    // beam energy too low to allow for fusion to occur
+    if (KineAvailable < 0) {
+      // FIXME
+      // avoid the creation of secondary but the primary is still killed
+      return;
+    }
+
     G4ThreeVector momentum_dir = NPS::ConvertVector(TotalLV.Vect().Unit());
 
     //////FIXME Unsure of this part
