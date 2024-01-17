@@ -150,6 +150,7 @@ class TZDDPhysics : public TObject, public NPL::VDetector, public TZDDPhysicsRea
     void Match_IC1();
     
     void Match_PL();
+    // bool CheckGoodEvent();
 
     // PreTreating Energy for IC and Plastic 
     void PreTreatEnergy(std::string Detector, CalibrationManager* Cal);
