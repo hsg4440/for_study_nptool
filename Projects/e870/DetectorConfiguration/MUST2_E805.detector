@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 26 micrometer
- %THICKNESS= 0.000001 micrometer
+ %THICKNESS= 26 micrometer
+ THICKNESS= 0.000001 micrometer
  ANGLE= 0 deg
  RADIUS=  15 mm
  MATERIAL= CH2
