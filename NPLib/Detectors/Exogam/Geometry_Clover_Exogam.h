@@ -558,7 +558,9 @@ float EXOGAM_Segment_Pos1,EXOGAM_Segment_Pos2 ;
 	
 	else {printf("Bad flange number, flange %d  doesn't exist in EXOGAM !!!!!! \n",flange);}
 
-	
+	delete ShapeC;	
+	delete ShapeS1;	
+	delete ShapeS2;	
   
   
   return Result;

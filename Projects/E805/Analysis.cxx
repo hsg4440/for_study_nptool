@@ -18,7 +18,6 @@
  * Comment:                                                                  *
  *                                                                           *
  *****************************************************************************/
-
 #include<iostream>
 using namespace std;
 #include"Analysis.h"
@@ -70,7 +69,8 @@ void Analysis::Init(){
   Reaction_pd->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pd->GetBeamEnergy(),TargetThickness*0.5,0));
   Reaction_pt->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_pt->GetBeamEnergy(),TargetThickness*0.5,0));
   Reaction_p3He->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_p3He->GetBeamEnergy(),TargetThickness*0.5,0));
-  Cal = CalibrationManager::getInstance();  
+  Cal = CalibrationManager::getInstance();
+  IsPhysics = NPOptionManager::getInstance()->GetInputPhysicalTreeOption(); 
 }
   ///////////////////////////// Initialize some important parameters //////////////////////////////////
 
@@ -105,7 +105,7 @@ void Analysis::TreatEvent(){
     //if(bCATS){
     //  TreatZDD();
     //  TreatTAC();
-    //  TreatMUST2();
+    TreatMUST2();
     //  TreatEXO();
     //}
   /*//for(unsigned int countMust2 = 0 ; countMust2 < M2->Si_E.size() ; countMust2++){

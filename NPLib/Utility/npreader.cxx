@@ -204,43 +204,19 @@ int main(int argc , char** argv){
       }
     }
 
-    /*else{
-      std::cout << "test npa branch 3" << std::endl;
-      while(inputTreeReader->Next()){
-			//for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
+    else{
+			for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
         // Get the Physics Data
-        //Chain -> GetEntry(i);
+        Chain -> GetEntry(i);
         // User Analysis
         UserAnalysis->TreatEvent();
         // Fill the tree      
         myDetector->FillOutputTree();
 
         current_tree = Chain->GetTreeNumber()+1;
-        ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
         ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
-        //if(myOptionManager->GetOnline() && i%10000==0){
-        //  myDetector->CheckSpectraServer();
-
-        //  bool first = true;
-        //  while(!Chain || first){
-        //    first = false;
-        //    RootInput::getInstance()->GetFile()->ReadKeys(kTRUE);
-
-        //    Chain = (TChain*)  RootInput::getInstance()->GetFile()->FindKeyAny(ChainName)->ReadObj();    
-        //    new_nentries = Chain->GetEntries();
-        //    if(new_nentries!=nentries){
-        //      RootInput::getInstance()->SetChain(Chain);
-        //      myDetector->InitializeRootInput();
-        //      nentries = Chain->GetEntries();
-        //    }
-        //    else{
-        //      first = true;
-        //    }
-        //  }
-        //}      
       }
     }
-*/
     UserAnalysis->End();
   }
 

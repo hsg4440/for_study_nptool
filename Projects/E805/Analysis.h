@@ -82,7 +82,7 @@ class Analysis: public NPL::VAnalysis{
   private:
 
     bool bCATS;
-
+    bool IsPhysics;
   private:
 
   /// Currently only treating multiplicity 1 events
