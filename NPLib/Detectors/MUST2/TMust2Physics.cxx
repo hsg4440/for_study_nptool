@@ -1232,11 +1232,12 @@ void TMust2Physics::AddParameterToCalibrationManager() {
   vector<double> standardCsI;
   for (int i = 0; i < m_NumberOfTelescope; ++i) {
 
-    if (m_CsIOffset[i] == 1) {
+    if (m_CsIOffset[i+1] == 1) {
       standardCsI = {0, 500. / 16384.};
     }
-    else
+    else{
       standardCsI = {-250, 250. / 8192.};
+    }
 
     for (int j = 0; j < 128; ++j) {
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_Si_X" + NPL::itoa(j + 1) + "_E",

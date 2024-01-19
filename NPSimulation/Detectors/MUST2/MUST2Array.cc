@@ -933,7 +933,7 @@ void MUST2Array::ReadSensitive(const G4Event*) {
       vector<unsigned int> level = CsIScorer->GetLevel(i);
       if (ECsI > ThresholdCsI) {
         if (m_CsIOffset[level[0]] == 1)
-          m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 0, 0, 16384));
+          m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 500, 0, 16384));
         else
           m_Event->SetCsIE(level[0], level[1], NPL::EnergyToADC(ECsI, 0, 250, 8192, 16384));
         double timeCsI = RandGauss::shoot(CsIScorer->GetTime(i), ResoTimeMust);

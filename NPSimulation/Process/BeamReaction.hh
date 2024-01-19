@@ -24,68 +24,64 @@
 #ifndef BeamReaction_h
 #define BeamReaction_h
 
-#include "G4VFastSimulationModel.hh"
 #include "G4Abla.hh"
 #include "G4AblaInterface.hh"
 #include "G4Fragment.hh"
-#include "PhysicsList.hh"
-#include "NPReaction.h"
-#include "NPQFS.h"
+#include "G4VFastSimulationModel.hh"
 #include "NPPhaseSpace.h"
+#include "NPQFS.h"
+#include "NPReaction.h"
+#include "PhysicsList.hh"
 #include "TReactionConditions.h"
 class G4VPhysicalVolume;
-namespace NPS{
-  enum ReactionType{
-    TwoBody,
-    QFS,
-    PhaseSpace,
-    Fusion
-    };
+namespace NPS {
+  enum ReactionType { TwoBody, QFS, PhaseSpace, Fusion };
 
-  class BeamReaction : public G4VFastSimulationModel{
-    public:
-      BeamReaction (G4String, G4Region*);
-      BeamReaction (G4String);
-      ~BeamReaction ();
+  class BeamReaction : public G4VFastSimulationModel {
+   public:
+    BeamReaction(G4String, G4Region*);
+    BeamReaction(G4String);
+    ~BeamReaction();
 
-    public:
-      void ReadConfiguration();
-      G4bool IsApplicable(const G4ParticleDefinition&);
-      G4bool ModelTrigger(const G4FastTrack &);
-      void DoIt(const G4FastTrack&, G4FastStep&);
- 
-    private:
-      NPL::Reaction m_Reaction;
-      NPL::QFS m_QFS;
-      NPL::PhaseSpace m_PhaseSpace;
-      string m_BeamName;
-      int m_ReactionType;
-      G4AblaInterface* ABLA;
+   public:
+    void ReadConfiguration();
+    G4bool IsApplicable(const G4ParticleDefinition&);
+    G4bool ModelTrigger(const G4FastTrack&);
+    void DoIt(const G4FastTrack&, G4FastStep&);
 
-      bool   m_active;// is the process active
-      bool   m_shoot;
-      double m_StepSize;
-      double m_Z;
-      double m_S;
-      double m_rand;
-      double m_length;
-      int    m_Parent_ID;
-      double m_event_weight;
-      double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,G4Material* Material);
-    
-    private:// specific for the simple case of fusion
-      string m_TargetNuclei;
-      string m_FusionProduct;
-      double m_FusionExcitation;
-  
    private:
-     TReactionConditions* m_ReactionConditions;
- 
+    NPL::Reaction m_Reaction;
+    NPL::QFS m_QFS;
+    NPL::PhaseSpace m_PhaseSpace;
+    string m_BeamName;
+    string m_BeamNameNPL;
+    int m_ReactionType;
+    G4AblaInterface* ABLA;
+
+    bool m_active; // is the process active
+    bool m_shoot;
+    double m_StepSize;
+    double m_Z;
+    double m_S;
+    double m_rand;
+    double m_length;
+    int m_Parent_ID;
+    double m_event_weight;
+    double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,
+                        G4Material* Material);
+
+   private: // specific for the simple case of fusion
+    string m_TargetNuclei;
+    string m_FusionProduct;
+    double m_FusionExcitation;
+
+   private:
+    TReactionConditions* m_ReactionConditions;
+
    public:
     void AttachReactionConditions();
-    void SetStepSize(double step){m_StepSize=step;};
+    void SetStepSize(double step) { m_StepSize = step; };
   };
-}
+} // namespace NPS
 
-
-#endif 
+#endif
