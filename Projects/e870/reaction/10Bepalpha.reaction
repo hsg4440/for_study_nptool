@@ -13,9 +13,9 @@ Beam
   SigmaX= 6.216 mm
   SigmaY= 6.109 mm
   % Playground:
-  %SigmaEnergy= ?? MeV
-  %SigmaX= ?? mm
-  %SigmaY= ?? mm
+  %SigmaEnergy= 23.2 MeV
+  %SigmaX= 7 mm
+  %SigmaY= 6.8 mm
 
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg

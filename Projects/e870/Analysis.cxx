@@ -21,7 +21,7 @@
  *****************************************************************************/
 #include <iostream>
 using namespace std;
-
+#include "NPVAnalysis.h"
 #include "Analysis.h"
 #include "NPAnalysisFactory.h"
 #include "NPDetectorManager.h"
@@ -91,9 +91,6 @@ void Analysis::Init() {
   CsI_E_M2 = 0;
   Energy = 0;
   ThetaGDSurface = 0;
-  X = 0;
-  Y = 0;
-  Z = 0;
   dE = 0;
   BeamDirection = TVector3(0, 0, 1);
   nbTrack = 0;
@@ -128,18 +125,22 @@ void Analysis::TreatEvent() {
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
     /************************************************/
+
     // Part 1 : Impact Angle
+    //THIS IS THE NEW PART
+
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
     TVector3 HitDirection = M2->GetPositionOfInteraction(countMust2) - BeamImpact;
+    TVector3 Coords = M2->GetPositionOfInteraction(countMust2);
     double Theta = HitDirection.Angle(BeamDirection);
-
-    X = M2->GetPositionOfInteraction(countMust2).X();
-    Y = M2->GetPositionOfInteraction(countMust2).Y();
-    Z = M2->GetPositionOfInteraction(countMust2).Z();
+    X.push_back(Coords.x());
+    Y.push_back(Coords.y());
+    Z.push_back(Coords.z());
 
     ThetaM2Surface = HitDirection.Angle(-M2->GetTelescopeNormal(countMust2));
     ThetaNormalTarget = HitDirection.Angle(TVector3(0, 0, 1));
+
 
     /************************************************/
 
@@ -167,9 +168,11 @@ void Analysis::TreatEvent() {
     Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, Theta);
 
     // What is written in the tree
+ 
     ThetaLab.push_back(Theta / deg);
     Ex.push_back(reaction.ReconstructRelativistic(Energy, Theta));
     ELab.push_back(Energy);
+    
     /************************************************/
 
   } // end loop MUST2
@@ -185,9 +188,12 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM", &ThetaCM, "ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("Run", &Run, "Run/I");
-  RootOutput::getInstance()->GetTree()->Branch("X", &X, "X/D");
-  RootOutput::getInstance()->GetTree()->Branch("Y", &Y, "Y/D");
-  RootOutput::getInstance()->GetTree()->Branch("Z", &Z, "Z/D");
+  // RootOutput::getInstance()->GetTree()->Branch("X", &X, "X/D"); Like before
+  // RootOutput::getInstance()->GetTree()->Branch("Y", &Y, "Y/D"); 
+  // RootOutput::getInstance()->GetTree()->Branch("Z", &Z, "Z/D");
+  RootOutput::getInstance()->GetTree()->Branch("X", &X);
+  RootOutput::getInstance()->GetTree()->Branch("Y", &Y);
+  RootOutput::getInstance()->GetTree()->Branch("Z", &Z);
   RootOutput::getInstance()->GetTree()->Branch("dE", &dE, "dE/D");
   if (!simulation) {
   }
@@ -222,9 +228,12 @@ void Analysis::ReInitValue() {
   EDC = -1000;
   BeamEnergy = -1000;
   ThetaCM = -1000;
-  X = -1000;
-  Y = -1000;
-  Z = -1000;
+  // X = -1000;
+  // Y = -1000;
+  // Z = -1000;
+  X.clear();
+  Y.clear();
+  Z.clear();
   dE = -1000;
   ELab.clear();
   ThetaLab.clear();
