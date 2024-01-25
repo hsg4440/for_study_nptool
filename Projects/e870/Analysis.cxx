@@ -134,6 +134,7 @@ void Analysis::TreatEvent() {
     TVector3 HitDirection = M2->GetPositionOfInteraction(countMust2) - BeamImpact;
     TVector3 Coords = M2->GetPositionOfInteraction(countMust2);
     double Theta = HitDirection.Angle(BeamDirection);
+    double Phi = HitDirection.Phi();
     X.push_back(Coords.x());
     Y.push_back(Coords.y());
     Z.push_back(Coords.z());
@@ -170,6 +171,7 @@ void Analysis::TreatEvent() {
     // What is written in the tree
  
     ThetaLab.push_back(Theta / deg);
+    PhiLab.push_back(Phi / deg);
     Ex.push_back(reaction.ReconstructRelativistic(Energy, Theta));
     ELab.push_back(Energy);
     
@@ -186,6 +188,7 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex);
   RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab);
+  RootOutput::getInstance()->GetTree()->Branch("PhiLab", &PhiLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM", &ThetaCM, "ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("Run", &Run, "Run/I");
   // RootOutput::getInstance()->GetTree()->Branch("X", &X, "X/D"); Like before
@@ -237,6 +240,7 @@ void Analysis::ReInitValue() {
   dE = -1000;
   ELab.clear();
   ThetaLab.clear();
+  PhiLab.clear();
   Ex.clear();
 }
 
