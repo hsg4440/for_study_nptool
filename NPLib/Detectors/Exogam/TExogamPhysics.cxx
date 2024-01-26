@@ -578,6 +578,7 @@ void TExogamPhysics::InitializeRootInputPhysics() {
   // Option to use the standard npanalysis
   else{
   TChain* inputChain = RootInput::getInstance()->GetChain();
+  inputChain->SetBranchStatus("Exogam" , true );
   inputChain->SetBranchStatus("EventMultiplicty", true);
   inputChain->SetBranchStatus("ECC_Multiplicity", true);
   inputChain->SetBranchStatus("GOCCE_Multiplicity", true);

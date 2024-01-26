@@ -27,7 +27,8 @@ int main(int argc , char** argv){
   // command line parsing
   NPOptionManager* myOptionManager = NPOptionManager::getInstance(argc,argv);
   myOptionManager->SetIsAnalysis();
-  myOptionManager->SetReader(true);
+  if(!myOptionManager->GetInputPhysicalTreeOption())
+    myOptionManager->SetReader(true);
   std::string inputfilename = myOptionManager->GetRunToReadFile();
   // if input files are not given, use those from TAsciiFile
   if (myOptionManager->IsDefault("DetectorConfiguration")) {

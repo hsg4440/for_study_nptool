@@ -214,6 +214,7 @@ void TTACPhysics::InitializeRootInputPhysics() {
   // Option to use the standard npanalysis
   else{
   TChain* inputChain = RootInput::getInstance()->GetChain();
+  inputChain->SetBranchStatus("TAC",  true );
   inputChain->SetBranchAddress("TAC", &m_EventPhysics);
   }
 }

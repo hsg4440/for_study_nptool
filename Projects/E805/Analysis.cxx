@@ -98,14 +98,16 @@ bool Analysis::FillOutputCondition(){
 void Analysis::TreatEvent(){
 
     ReInit();
+    // std::cout << "TEST " << GATCONFMASTER.size() << std::endl;
     
     //////////////////// MUST2 Part ////////////////////
-    //TreatCATS();
-    bCATS = true;
+    TreatCATS();
+    if(bCATS){
+      TreatMUST2();
+    }
     //if(bCATS){
     //  TreatZDD();
     //  TreatTAC();
-    TreatMUST2();
     //  TreatEXO();
     //}
   /*//for(unsigned int countMust2 = 0 ; countMust2 < M2->Si_E.size() ; countMust2++){
@@ -132,13 +134,17 @@ void Analysis::TreatEvent(){
 }
 
 void Analysis::TreatCATS(){
-  BeamImpact = TVector3(CATS->PositionOnTargetX,CATS->PositionOnTargetY,0); 
+  if(CATS->PositionOnTargetX > -1000 && CATS->PositionOnTargetY > -1000){
+    BeamImpact = TVector3(CATS->PositionOnTargetX,CATS->PositionOnTargetY,0); 
+    BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],CATS->PositionZ[0] - CATS->PositionZ[1]);
+    bCATS = true;
+  }
+  else bCATS = false;
+  
   // BeamImpact = TVector3(0,0,0); 
   // std::cout << "Position On target : " << CATS->PositionOnTargetX << " " << CATS->PositionOnTargetY << std::endl; 
-  BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],CATS->PositionZ[0] - CATS->PositionZ[1]);
   // BeamDirection = TVector3(0,0,1);
   // std::cout << "Position XY " <<  CATS->PositionX[1] - CATS->PositionX[0] << " " << CATS->PositionY[1] - CATS->PositionY[0] << " " << CATS->PositionZ[1] - CATS->PositionZ[0] << std::endl;
-  bCATS = true;
 }
 
 void Analysis::TreatZDD(){
@@ -150,7 +156,7 @@ void Analysis::TreatTAC(){
 }
 
 void Analysis::TreatMUST2(){
-  
+
   int M2_size = M2->Si_E.size();
   for(unsigned int countMust2 = 0 ; countMust2 < M2_size ; countMust2++){
     M2_TelescopeM++;
@@ -160,8 +166,12 @@ void Analysis::TreatMUST2(){
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
       
-    TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact ;
+    BeamImpact = TVector3(0,0,0);
+    BeamDirection = TVector3(0,0,1);
+    TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact;
     M2_ThetaLab.push_back(HitDirection.Angle( BeamDirection ));
+    //std::cout << BeamImpact.X() << " " << BeamImpact.Y() << " "  << BeamImpact.Z() << std::endl;
+    //std::cout << BeamDirection.X() << " " << BeamDirection.Y() << " "  << BeamDirection.Z() << std::endl << std::endl;;
 
     M2_X.push_back(M2 -> GetPositionOfInteraction(countMust2).X());
     M2_Y.push_back(M2 -> GetPositionOfInteraction(countMust2).Y());
@@ -180,10 +190,10 @@ void Analysis::TreatMUST2(){
       Energy[ParticleType[i]] = 0;
       CsI_Energy[ParticleType[i]] = 0;
 
-    if(CsI_E_M2>8192 ){
+    if(M2->CsI_E_Raw[countMust2] > 8192){
       // The energy in CsI is calculate form dE/dx Table because
       std::string name = "MUST2/"+ParticleType[i]+"_T"+NPL::itoa(TelescopeNumber)+"_CsI"+NPL::itoa(CristalNb)+"_E";
-      CsI_Energy[ParticleType[i]] =  Cal->ApplyCalibration(name,CsI_E_M2);
+      CsI_Energy[ParticleType[i]] =  Cal->ApplyCalibration(name,M2->CsI_E_Raw[countMust2]);
       Energy[ParticleType[i]] = CsI_Energy[ParticleType[i]];
     }
 
@@ -356,9 +366,17 @@ void Analysis::UnallocateVariables(){
 
 void Analysis::InitInputBranch(){
 
-  TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
-  GATCONFMASTER_ = new TTreeReaderValue<vector<unsigned int>>(*inputTreeReader,"GATCONF");
-  GATCONFMASTERTS_ = new TTreeReaderValue<vector<unsigned long long>>(*inputTreeReader,"GATCONFTS");
+  if(!NPOptionManager::getInstance()->GetInputPhysicalTreeOption()){
+    TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
+    GATCONFMASTER_ = new TTreeReaderValue<vector<unsigned int>>(*inputTreeReader,"GATCONF");
+    GATCONFMASTERTS_ = new TTreeReaderValue<vector<unsigned long long>>(*inputTreeReader,"GATCONFTS");
+
+  }
+ // else{
+ //   RootInput::getInstance()->GetChain()->SetBranchAddress("GATCONF",&GATCONFMASTER);
+ //   RootInput::getInstance()->GetChain()->SetBranchAddress("GATCONFTS",&GATCONFMASTERTS);
+ // }
+
   //DATATRIG_CATS_ = new TTreeReaderValue<unsigned short>(*inputTreeReader,"DATATRIG_CATS");
   /*PlasticRaw_   = new TTreeReaderArray<UShort_t>(*inputTreeReader,"PlasticRaw");
   PlasticRaw_TS_ = new TTreeReaderArray<ULong64_t>(*inputTreeReader,"PlasticRawTS");

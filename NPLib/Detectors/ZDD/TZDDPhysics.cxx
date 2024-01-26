@@ -79,7 +79,7 @@ void TZDDPhysics::BuildPhysicalEvent() {
   PreTreat();
 
   // match energy and time together
-  Match_IC();
+  Match_IC1();
   if(IC_Nbr.size() > 0)
     Match_PL();
   // Treat_DC();
@@ -518,6 +518,7 @@ void TZDDPhysics::InitializeRootInputPhysics() {
   }
   // Option to use the standard npanalysis
   else{
+  inputChain->SetBranchStatus("ZDD",  true );
   inputChain->SetBranchAddress("ZDD", &m_EventPhysics);
   }
 }
