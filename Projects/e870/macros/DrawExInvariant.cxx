@@ -128,11 +128,6 @@ void DrawExInvariant() {
         p_alpha.SetMag(p_alpha_mag);
         LV_alpha.SetPxPyPzE(p_alpha.x(), p_alpha.y(), p_alpha.z(), etot_alpha);
 
-        // double etot_alpha = m_alpha + e_alpha;
-        // double p_alpha_mag = sqrt(etot_alpha * etot_alpha - m_alpha * m_alpha);
-        // LV_alpha.SetPxPyPzE(p_alpha_mag * sin(theta_alpha) * cos(phi_alpha), p_alpha_mag * sin(phi_alpha),
-        //                     p_alpha_mag * cos(theta_alpha), etot_alpha);
-
         ////////////////////////////////////////////////////////////////////////////////
         double gamma_li = e_li / m_7Li + 1;
         double beta_li = sqrt(1 - 1 / (pow(gamma_li, 2.)));
@@ -144,12 +139,6 @@ void DrawExInvariant() {
                       cos(theta_li));              // pz
         p_li.SetMag(p_li_mag);
         LV_7Li.SetPxPyPzE(p_li.x(), p_li.y(), p_li.z(), etot_li);
-
-        //         double etot_li = m_7Li + e_li;
-        //         double p_li_mag = sqrt(etot_li * etot_li - m_7Li * m_7Li);
-        //         LV_7Li.SetPxPyPzE(p_li_mag * sin(theta_li) * cos(phi_li), p_li_mag * sin(phi_li), p_li_mag *
-        //         cos(theta_li),
-        //                           etot_li);
 
         LV_p.SetPxPyPzE(0, 0, 0, mp);
         TLorentzVector LV_total = LV_alpha + LV_7Li - LV_p;
@@ -167,8 +156,6 @@ void DrawExInvariant() {
   hExInv->Draw();
   hExMM->SetLineColor(kRed);
   hExMM->Draw("same");
-  hExMMNoCATS->SetLineColor(kGreen);
-  hExMMNoCATS->Draw("same");
 
   TF1* fitExTot = new TF1("fitExTot", "gaus", hExInv->GetXaxis()->GetXmin(), hExInv->GetXaxis()->GetXmax());
   fitExTot->SetNpx(10000);
@@ -184,11 +171,11 @@ void DrawExInvariant() {
   double sigmaEx = fitEx->GetParameter(2);
   std::cout << "FWHM of hEx: " << sigmaEx*2.35 << " MeV" << std::endl;
 
-  TF1* fitExNoCATS = new TF1("fitExNoCATS", "gaus", fitRangeMin, fitRangeMax);
-  fitExNoCATS->SetNpx(10000);
-  hExMMNoCATS->Fit(fitExNoCATS, "Q", "", -10, 10);
-  double sigmaExNoCATS = fitExNoCATS->GetParameter(2);
-  std::cout << "FWHM of hExNoCATS: " << sigmaExNoCATS*2.35 << " MeV" << std::endl;
+  // TF1* fitExNoCATS = new TF1("fitExNoCATS", "gaus", fitRangeMin, fitRangeMax);
+  // fitExNoCATS->SetNpx(10000);
+  // hExMMNoCATS->Fit(fitExNoCATS, "Q", "", -10, 10);
+  // double sigmaExNoCATS = fitExNoCATS->GetParameter(2);
+  // std::cout << "FWHM of hExNoCATS: " << sigmaExNoCATS*2.35 << " MeV" << std::endl;
 
   TLegend* legend = new TLegend(0.75, 0.75, 0.85, 0.85);
   legend->AddEntry(hExInv, "hExInv", "l"); // "l" for line
