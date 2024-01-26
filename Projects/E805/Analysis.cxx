@@ -166,8 +166,8 @@ void Analysis::TreatMUST2(){
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
       
-    //BeamImpact = TVector3(0,0,0);
-    //BeamDirection = TVector3(0,0,1);
+    BeamImpact = TVector3(0,0,0);
+    BeamDirection = TVector3(0,0,1);
     TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact;
     M2_ThetaLab.push_back(HitDirection.Angle( BeamDirection ));
     //std::cout << BeamImpact.X() << " " << BeamImpact.Y() << " "  << BeamImpact.Z() << std::endl;
