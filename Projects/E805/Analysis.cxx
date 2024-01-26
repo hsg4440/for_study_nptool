@@ -136,7 +136,7 @@ void Analysis::TreatEvent(){
 void Analysis::TreatCATS(){
   if(CATS->PositionOnTargetX > -1000 && CATS->PositionOnTargetY > -1000){
     BeamImpact = TVector3(CATS->PositionOnTargetX,CATS->PositionOnTargetY,0); 
-    BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],CATS->PositionZ[0] - CATS->PositionZ[1]);
+    BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],-(CATS->PositionZ[0] - CATS->PositionZ[1]));
     bCATS = true;
   }
   else bCATS = false;
