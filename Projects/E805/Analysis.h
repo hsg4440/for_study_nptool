@@ -118,6 +118,13 @@ class Analysis: public NPL::VAnalysis{
   std::vector<double> M2_Y;
   std::vector<double> M2_Z;
   std::vector<double> M2_dE;
+
+  std::vector<double> EXO_Doppler_pd;
+  std::vector<double> EXO_Doppler_pt;
+  std::vector<double> EXO_Doppler_p3He;
+  std::vector<double> Beta_pd;
+  std::vector<double> Beta_pt;
+  std::vector<double> Beta_p3He;
   
 
   double OriginalBeamEnergy ; // AMEV

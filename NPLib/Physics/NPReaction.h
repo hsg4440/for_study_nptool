@@ -243,6 +243,9 @@ namespace NPL {
 
     // Return Excitation Energy
     double ReconstructRelativistic(double EnergyLab, double ThetaLab, double PhiLab = 0);
+    
+    // Return Lorentz Vector of Heavy Recoil after reaction
+    TLorentzVector LorentzAfterReaction(double EnergyLab, double ThetaLab, double PhiLab = 0);
 
     // Return ThetaCM
     // EnergyLab: energy measured in the laboratory frame

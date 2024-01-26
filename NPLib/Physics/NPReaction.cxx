@@ -309,6 +309,15 @@ double Reaction::ReconstructRelativistic(double EnergyLab, double ThetaLab, doub
   return Eex;
 }
 
+TLorentzVector Reaction::LorentzAfterReaction(double EnergyLab, double ThetaLab, double PhiLab){
+  double E3 = m3 + EnergyLab;
+  double p_Lab_3 = sqrt(E3 * E3 - m3 * m3);
+  fEnergyImpulsionLab_3 =
+      TLorentzVector(p_Lab_3 * sin(ThetaLab) * cos(PhiLab), p_Lab_3 * sin(PhiLab), p_Lab_3 * cos(ThetaLab), E3);
+  fEnergyImpulsionLab_4 = fTotalEnergyImpulsionLab - fEnergyImpulsionLab_3;
+  return fEnergyImpulsionLab_4;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Return ThetaCM
 double Reaction::EnergyLabToThetaCM(double EnergyLab, double ThetaLab) {
