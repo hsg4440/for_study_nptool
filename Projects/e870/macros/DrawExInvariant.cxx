@@ -23,6 +23,7 @@ void DrawExInvariant() {
   std::vector<double>* ThetaLab = 0;
   std::vector<double>* PhiLab = 0;
   std::vector<double>* Ex = 0;
+  std::vector<double>* ExNoCATS = 0;
   TBranch* b_ELab;
   TBranch* b_ThetaLab;
   TBranch* b_PhiLab;
@@ -30,6 +31,7 @@ void DrawExInvariant() {
   TBranch* b_Y;
   TBranch* b_Z;
   TBranch* b_Ex;
+  TBranch* b_ExNoCATS;
 
   t->SetBranchStatus("*", false);
   t->SetBranchStatus("MUST2", true);
@@ -42,10 +44,13 @@ void DrawExInvariant() {
   t->SetBranchAddress("PhiLab", &PhiLab, &b_PhiLab);
   t->SetBranchStatus("Ex", "true");
   t->SetBranchAddress("Ex", &Ex, &b_Ex);
+  t->SetBranchStatus("ExNoCATS", "true");
+  t->SetBranchAddress("ExNoCATS", &ExNoCATS, &b_ExNoCATS);
 
-  TH1F* hExInv = new TH1F("hExInv", "hExInv", 1000, -20, 20);
-  TH1F* hExMM = new TH1F("hExMM", "hExMM", 1000, -20, 20);
-  TH2F* hE1E2 = new TH2F("hE1E2", "hE1E2", 1000, 0, 500, 1000, 0, 500);
+  TH1F* hExInv = new TH1F("hExInv", "hExInv", 200, -5, 5);
+  TH1F* hExMM = new TH1F("hExMM", "hExMM", 200, -5, 5);
+  TH1F* hExMMNoCATS = new TH1F("hExMMNoCATS", "hExMMNoCATS", 200, -5, 5);
+  TH2F* hE1E2 = new TH2F("hE1E2", "hE1E2", 200, 0, 500, 1000, 0, 500);
   TH2F* hELabThetaLab = new TH2F("hELabThetLab", "hELabThetaLab", 1000, 0, 50, 1000, 0, 500);
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +69,8 @@ void DrawExInvariant() {
 
     if (M2->Si_E.size() == 2) {
       if ((cuta->IsInside(M2->CsI_E[0], M2->Si_E[0])) && (cutli->IsInside(M2->CsI_E[1], M2->Si_E[1]))) {
+        hExMM->Fill(Ex->at(0));
+        hExMMNoCATS->Fill(ExNoCATS->at(0));
         // Particle1 = alpha
         e_alpha = ELab->at(0);
         theta_alpha = ThetaLab->at(0) * M_PI / 180.;
@@ -83,10 +90,10 @@ void DrawExInvariant() {
         else
           phi_li = phi_li + 180;
         phi_li = phi_li * M_PI / 180.;
-        hExMM->Fill(Ex->at(0));
       }
       else if ((cuta->IsInside(M2->CsI_E[1], M2->Si_E[1])) && (cutli->IsInside(M2->CsI_E[0], M2->Si_E[0]))) {
         hExMM->Fill(Ex->at(1));
+        hExMMNoCATS->Fill(ExNoCATS->at(1));
         // Particle2 = alpha
         e_alpha = ELab->at(1);
         theta_alpha = ThetaLab->at(1) * M_PI / 180.;
@@ -112,8 +119,6 @@ void DrawExInvariant() {
         ////////////////////////////////////////////////////////////////////////////////
         double gamma_alpha = e_alpha / m_alpha + 1;
         double beta_alpha = sqrt(1 - 1 / (pow(gamma_alpha, 2.)));
-        cout << i << endl;
-        cout << "alpha: " << e_alpha << " " << beta_alpha << " " << theta_alpha << endl;
         double p_alpha_mag = gamma_alpha * m_alpha * beta_alpha;
         double etot_alpha = sqrt(pow(p_alpha_mag, 2) + pow(m_alpha, 2));
 
@@ -123,15 +128,9 @@ void DrawExInvariant() {
         p_alpha.SetMag(p_alpha_mag);
         LV_alpha.SetPxPyPzE(p_alpha.x(), p_alpha.y(), p_alpha.z(), etot_alpha);
 
-        // double etot_alpha = m_alpha + e_alpha;
-        // double p_alpha_mag = sqrt(etot_alpha * etot_alpha - m_alpha * m_alpha);
-        // LV_alpha.SetPxPyPzE(p_alpha_mag * sin(theta_alpha) * cos(phi_alpha), p_alpha_mag * sin(phi_alpha),
-        //                     p_alpha_mag * cos(theta_alpha), etot_alpha);
-
         ////////////////////////////////////////////////////////////////////////////////
         double gamma_li = e_li / m_7Li + 1;
         double beta_li = sqrt(1 - 1 / (pow(gamma_li, 2.)));
-        cout << "li: " << e_li << " " << beta_li << " " << theta_li << endl;
         double p_li_mag = gamma_li * m_7Li * beta_li;
         double etot_li = sqrt(pow(p_li_mag, 2) + pow(m_7Li, 2));
 
@@ -141,17 +140,10 @@ void DrawExInvariant() {
         p_li.SetMag(p_li_mag);
         LV_7Li.SetPxPyPzE(p_li.x(), p_li.y(), p_li.z(), etot_li);
 
-        //         double etot_li = m_7Li + e_li;
-        //         double p_li_mag = sqrt(etot_li * etot_li - m_7Li * m_7Li);
-        //         LV_7Li.SetPxPyPzE(p_li_mag * sin(theta_li) * cos(phi_li), p_li_mag * sin(phi_li), p_li_mag *
-        //         cos(theta_li),
-        //                           etot_li);
-
         LV_p.SetPxPyPzE(0, 0, 0, mp);
         TLorentzVector LV_total = LV_alpha + LV_7Li - LV_p;
 
         double ExTot = LV_total.Mag() - m_10Be;
-        cout << ExTot << endl;
         hExInv->Fill(ExTot);
         hE1E2->Fill(e_alpha, e_li);
         hELabThetaLab->Fill(theta_alpha * 180 / M_PI, e_alpha);
@@ -166,16 +158,24 @@ void DrawExInvariant() {
   hExMM->Draw("same");
 
   TF1* fitExTot = new TF1("fitExTot", "gaus", hExInv->GetXaxis()->GetXmin(), hExInv->GetXaxis()->GetXmax());
+  fitExTot->SetNpx(10000);
   hExInv->Fit(fitExTot, "Q");
-  double meanExTot = fitExTot->GetParameter(1);
-  std::cout << "Center of hExInv: " << meanExTot << " MeV" << std::endl;
+  double sigmaExTot = fitExTot->GetParameter(2);
+  std::cout << "FWHM of hExInv: " << sigmaExTot*2.35 << " MeV" << std::endl;
 
   double fitRangeMin = 0.0;
   double fitRangeMax = 15.0;
   TF1* fitEx = new TF1("fitEx", "gaus", fitRangeMin, fitRangeMax);
-  hExMM->Fit(fitEx, "", "", -10, 10);
-  double meanEx = fitEx->GetParameter(1);
-  std::cout << "Center of hEx: " << meanEx << " MeV" << std::endl;
+  fitEx->SetNpx(10000);
+  hExMM->Fit(fitEx, "Q", "", -10, 10);
+  double sigmaEx = fitEx->GetParameter(2);
+  std::cout << "FWHM of hEx: " << sigmaEx*2.35 << " MeV" << std::endl;
+
+  // TF1* fitExNoCATS = new TF1("fitExNoCATS", "gaus", fitRangeMin, fitRangeMax);
+  // fitExNoCATS->SetNpx(10000);
+  // hExMMNoCATS->Fit(fitExNoCATS, "Q", "", -10, 10);
+  // double sigmaExNoCATS = fitExNoCATS->GetParameter(2);
+  // std::cout << "FWHM of hExNoCATS: " << sigmaExNoCATS*2.35 << " MeV" << std::endl;
 
   TLegend* legend = new TLegend(0.75, 0.75, 0.85, 0.85);
   legend->AddEntry(hExInv, "hExInv", "l"); // "l" for line

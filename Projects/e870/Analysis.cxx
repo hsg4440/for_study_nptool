@@ -21,12 +21,12 @@
  *****************************************************************************/
 #include <iostream>
 using namespace std;
-#include "NPVAnalysis.h"
 #include "Analysis.h"
 #include "NPAnalysisFactory.h"
 #include "NPDetectorManager.h"
 #include "NPFunction.h"
 #include "NPOptionManager.h"
+#include "NPVAnalysis.h"
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis() {}
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +60,7 @@ void Analysis::Init() {
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  reaction2.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
   OriginalBeamEnergy = reaction.GetBeamEnergy();
   std::cout << OriginalBeamEnergy << std::endl;
   // target thickness
@@ -83,7 +84,6 @@ void Analysis::Init() {
   reaction.SetBeamEnergy(FinalBeamEnergy);
 
   // initialize various parameters
-  Rand = TRandom3();
   DetectorNumber = 0;
   ThetaNormalTarget = 0;
   ThetaM2Surface = 0;
@@ -94,6 +94,7 @@ void Analysis::Init() {
   dE = 0;
   BeamDirection = TVector3(0, 0, 1);
   nbTrack = 0;
+  Rand = new TRandom3();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,15 +105,21 @@ void Analysis::TreatEvent() {
   TVector3 BeamDirection;
 
   // For simulation
-  XTarget = 0;
-  YTarget = 0;
   BeamDirection = TVector3(0, 0, 1);
-
+  XTarget = ReactionConditions->GetVertexPositionX();
+  YTarget = ReactionConditions->GetVertexPositionY();
+  XTarget = Rand->Gaus(XTarget * mm, 1 * mm);
+  YTarget = Rand->Gaus(YTarget * mm, 1 * mm);
   BeamImpact = TVector3(XTarget, YTarget, 0);
+  BeamImpact2 = TVector3(0, 0, 0);
+
+  BeamEnergy = ReactionConditions->GetBeamEnergy();
+  BeamEnergy = Rand->Gaus(BeamEnergy, 0.1 * BeamEnergy / 2.35);
+
   // determine beam energy for a randomized interaction point in target
   // 1% FWHM randominastion (E/100)/2.35
   // reaction.SetBeamEnergy(Rand.Gaus(BeamEnergy, BeamEnergy * 1. / 100. / 2.35));
-  // reaction.SetBeamEnergy(BeamEnergy);
+  reaction.SetBeamEnergy(BeamEnergy);
 
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
@@ -127,21 +134,24 @@ void Analysis::TreatEvent() {
     /************************************************/
 
     // Part 1 : Impact Angle
-    //THIS IS THE NEW PART
+    // THIS IS THE NEW PART
 
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
     TVector3 HitDirection = M2->GetPositionOfInteraction(countMust2) - BeamImpact;
-    TVector3 Coords = M2->GetPositionOfInteraction(countMust2);
     double Theta = HitDirection.Angle(BeamDirection);
     double Phi = HitDirection.Phi();
+
+    TVector3 HitDirection2 = M2->GetPositionOfInteraction(countMust2) - BeamImpact2;
+    double ThetaNoCATS =HitDirection2.Angle(BeamDirection); 
+
+    TVector3 Coords = M2->GetPositionOfInteraction(countMust2);
     X.push_back(Coords.x());
     Y.push_back(Coords.y());
     Z.push_back(Coords.z());
 
     ThetaM2Surface = HitDirection.Angle(-M2->GetTelescopeNormal(countMust2));
     ThetaNormalTarget = HitDirection.Angle(TVector3(0, 0, 1));
-
 
     /************************************************/
 
@@ -169,12 +179,13 @@ void Analysis::TreatEvent() {
     Energy = LightTarget.EvaluateInitialEnergy(Energy, TargetThickness * 0.5, Theta);
 
     // What is written in the tree
- 
+
     ThetaLab.push_back(Theta / deg);
     PhiLab.push_back(Phi / deg);
     Ex.push_back(reaction.ReconstructRelativistic(Energy, Theta));
+    ExNoCATS.push_back(reaction2.ReconstructRelativistic(Energy, Theta));
     ELab.push_back(Energy);
-    
+
     /************************************************/
 
   } // end loop MUST2
@@ -184,27 +195,17 @@ void Analysis::TreatEvent() {
 void Analysis::End() {}
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
-  // RootOutput::getInstance()->GetTree()->Branch("Exogam", &ExogamData);
   RootOutput::getInstance()->GetTree()->Branch("Ex", &Ex);
+  RootOutput::getInstance()->GetTree()->Branch("ExNoCATS", &ExNoCATS);
   RootOutput::getInstance()->GetTree()->Branch("ELab", &ELab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab", &ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("PhiLab", &PhiLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM", &ThetaCM, "ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("Run", &Run, "Run/I");
-  // RootOutput::getInstance()->GetTree()->Branch("X", &X, "X/D"); Like before
-  // RootOutput::getInstance()->GetTree()->Branch("Y", &Y, "Y/D"); 
-  // RootOutput::getInstance()->GetTree()->Branch("Z", &Z, "Z/D");
   RootOutput::getInstance()->GetTree()->Branch("X", &X);
   RootOutput::getInstance()->GetTree()->Branch("Y", &Y);
   RootOutput::getInstance()->GetTree()->Branch("Z", &Z);
   RootOutput::getInstance()->GetTree()->Branch("dE", &dE, "dE/D");
-  if (!simulation) {
-  }
-  else {
-    RootOutput::getInstance()->GetTree()->Branch("OriginalELab", &OriginalELab, "OriginalELab/D");
-    RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab", &OriginalThetaLab, "OriginalThetaLab/D");
-    RootOutput::getInstance()->GetTree()->Branch("BeamEnergy", &BeamEnergy, "BeamEnergy/D");
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,10 +221,7 @@ void Analysis::InitInputBranch() {
     RootInput::getInstance()->GetChain()->SetBranchStatus("fRC_*", true);
     RootInput::getInstance()->GetChain()->SetBranchAddress("ReactionConditions", &ReactionConditions);
   }
-  // RootInput::getInstance()->GetChain()->SetBranchStatus("Exogam", true);
   RootInput::getInstance()->GetChain()->SetBranchStatus("fExo*", true);
-  // RootInput::getInstance()->GetChain()->SetBranchAddress("Exogam", &ExogamData);
-  // RootInput::getInstance()->GetChain()->SetBranchStatus("ZDD", true);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue() {
@@ -231,9 +229,6 @@ void Analysis::ReInitValue() {
   EDC = -1000;
   BeamEnergy = -1000;
   ThetaCM = -1000;
-  // X = -1000;
-  // Y = -1000;
-  // Z = -1000;
   X.clear();
   Y.clear();
   Z.clear();
@@ -242,6 +237,7 @@ void Analysis::ReInitValue() {
   ThetaLab.clear();
   PhiLab.clear();
   Ex.clear();
+  ExNoCATS.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
