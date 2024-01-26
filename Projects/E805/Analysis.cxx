@@ -493,6 +493,10 @@ void Analysis::ReInit(){
   EXO_Doppler_p3He.clear();
   EXO_Doppler_pt.clear();
   EXO_Doppler_pd.clear();
+  
+  Beta_p3He.clear();
+  Beta_pt.clear();
+  Beta_pd.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
