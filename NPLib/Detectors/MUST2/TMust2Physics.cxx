@@ -377,7 +377,7 @@ void TMust2Physics::BuildPhysicalEvent() {
       //  Search for associate Time
       double Si_X_T = -1000;
       for (unsigned int t = 0; t < m_StripXTMult; ++t) {
-        if (m_PreTreatedData->GetMMStripXTStripNbr(couple_X) == m_PreTreatedData->GetMMStripXTStripNbr(t)) {
+        if (N == m_PreTreatedData->GetMMStripXTDetectorNbr(t) && X == m_PreTreatedData->GetMMStripXTStripNbr(t)) {
           Si_X_T = m_PreTreatedData->GetMMStripXTTime(t);
           break;
         }
@@ -385,7 +385,7 @@ void TMust2Physics::BuildPhysicalEvent() {
 
       double Si_Y_T = -1000;
       for (unsigned int t = 0; t < m_StripYTMult; ++t) {
-        if (m_PreTreatedData->GetMMStripYTStripNbr(couple_Y) == m_PreTreatedData->GetMMStripYTStripNbr(t)) {
+        if (N == m_PreTreatedData->GetMMStripYTDetectorNbr(t) && Y == m_PreTreatedData->GetMMStripYTStripNbr(t)) {
           Si_Y_T = m_PreTreatedData->GetMMStripYTTime(t);
           break;
         }
@@ -401,7 +401,8 @@ void TMust2Physics::BuildPhysicalEvent() {
             // Look for associate time
             for (unsigned int k = 0; k < m_SiLiTMult; ++k) {
               // Same Pad, same Detector
-              if (m_PreTreatedData->GetMMSiLiEPadNbr(j) == m_PreTreatedData->GetMMSiLiTPadNbr(k)) {
+              if (N == m_PreTreatedData->GetMMSiLiTDetectorNbr(k) &&
+                m_PreTreatedData->GetMMSiLiEPadNbr(j) == m_PreTreatedData->GetMMSiLiTPadNbr(k)) {
                 SiLi_T[SiLi_T.size() - 1] = m_PreTreatedData->GetMMSiLiTTime(k);
                 break;
               }
@@ -421,7 +422,8 @@ void TMust2Physics::BuildPhysicalEvent() {
             // Look for associate Time
             for (unsigned int k = 0; k < m_CsITMult; ++k) {
               // Same Cristal, Same Detector
-              if (m_PreTreatedData->GetMMCsIECristalNbr(j) == m_PreTreatedData->GetMMCsITCristalNbr(k)) {
+              if (N == m_PreTreatedData->GetMMCsITDetectorNbr(k) && 
+                m_PreTreatedData->GetMMCsIECristalNbr(j) == m_PreTreatedData->GetMMCsITCristalNbr(k)) {
                 CsI_T[CsI_T.size() - 1] = m_PreTreatedData->GetMMCsITTime(j);
                 break;
               }
