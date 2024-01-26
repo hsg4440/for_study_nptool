@@ -39,6 +39,12 @@ fi
 
 # Get the Major version
 version_major_string="${version%.*}"
+# Since 6.30 they changed the numbering scheme from 6.XX/XX
+# to 6.XX.XX
+num_char=${#version_major_string}  
+if [ $num_char -gt 1 ]
+then version_major_string="${version%.*.*}"
+fi
 version_major=$(($version_major_string))
 
 # if before version 4, exit

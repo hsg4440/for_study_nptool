@@ -58,6 +58,7 @@ class Analysis: public NPL::VAnalysis{
   double EDC;
   std::vector<double> ELab;
   std::vector<double> ThetaLab;
+  std::vector<double> PhiLab;
   double ThetaCM;
   double OriginalELab;
   double OriginalThetaLab;
@@ -93,9 +94,9 @@ class Analysis: public NPL::VAnalysis{
   double BeamEnergy;
   
   double ThetaGDSurface ;
-  double X ;
-  double Y ;
-  double Z ;
+  std::vector<double> X ;
+  std::vector<double> Y ;
+  std::vector<double> Z ;
   // Vamos Branches
   unsigned long long int LTS;
   
