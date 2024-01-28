@@ -80,7 +80,9 @@ void TCATSPhysics::PreTreat(){
         else {
           stripX =  m_EventData->GetCATSStripX(i);
         }
-        m_PreTreatedData->SetStripX( m_EventData->GetCATSDetX(i) , stripX, QX);
+        if(QX < 0)
+          QX = 0;
+        m_PreTreatedData->SetStripX( m_EventData->GetCATSDetX(i) , stripX, (unsigned int)QX);
       }
     }
   }
@@ -100,7 +102,9 @@ void TCATSPhysics::PreTreat(){
         else {
           stripY = m_EventData->GetCATSStripY(i) ;
         }
-        m_PreTreatedData->SetStripY( m_EventData->GetCATSDetY(i), stripY, QY );
+        if(QY < 0)
+          QY = 0;
+        m_PreTreatedData->SetStripY( m_EventData->GetCATSDetY(i), stripY, (unsigned int)QY );
       }
     }
   }

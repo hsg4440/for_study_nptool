@@ -166,8 +166,8 @@ void Analysis::TreatMUST2(){
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
       
-    BeamImpact = TVector3(0,0,0);
-    BeamDirection = TVector3(0,0,1);
+    //BeamImpact = TVector3(0,0,0);
+    //BeamDirection = TVector3(0,0,1);
     TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact;
     M2_ThetaLab.push_back(HitDirection.Angle( BeamDirection ));
     //std::cout << BeamImpact.X() << " " << BeamImpact.Y() << " "  << BeamImpact.Z() << std::endl;
@@ -218,8 +218,8 @@ void Analysis::TreatMUST2(){
     M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
     
     TLorentzVector PHeavy_pd = Reaction_pd->LorentzAfterReaction(Energy["deuteron"] , M2_ThetaLab[countMust2]);
-    TLorentzVector PHeavy_pt = Reaction_pd->LorentzAfterReaction(Energy["triton"] , M2_ThetaLab[countMust2]);
-    TLorentzVector PHeavy_p3He = Reaction_pd->LorentzAfterReaction(Energy["alpha"] , M2_ThetaLab[countMust2]);
+    TLorentzVector PHeavy_pt = Reaction_pt->LorentzAfterReaction(Energy["triton"] , M2_ThetaLab[countMust2]);
+    TLorentzVector PHeavy_p3He = Reaction_p3He->LorentzAfterReaction(Energy["alpha"] , M2_ThetaLab[countMust2]);
     Beta_pd.push_back(PHeavy_pd.Beta());
     Beta_pt.push_back(PHeavy_pt.Beta());
     Beta_p3He.push_back(PHeavy_p3He.Beta());
