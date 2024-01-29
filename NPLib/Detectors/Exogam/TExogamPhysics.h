@@ -75,11 +75,13 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   
   // Previous treatment + Add_Back (size of vectors are not the same because of AB !)
   std::vector<double> E_AB;
-  std::vector<unsigned int> FlangeN_AB;
-  std::vector<unsigned int> Size_AB;
+  std::vector<unsigned int> FlangeN_ABD;
+  std::vector<unsigned int> Size_ABD;
   std::vector<unsigned int> CrystalN_ABD;
   std::vector<int> OuterN_ABD;
-  std::vector<double> E_ABD;
+  std::vector<double> Theta_D;
+  std::vector<double> Phi_D;
+  // std::vector<double> E_ABD;
 
 
 

@@ -180,20 +180,31 @@ void TExogamPhysics::BuildPhysicalEvent() {
     
     // Adding all AddBack (AB) related stuff
     E_AB.push_back(E_AddBack);
-    FlangeN_AB.push_back(flange_nbr);
-    Size_AB.push_back((*it).second.size());
+    FlangeN_ABD.push_back(flange_nbr);
+    Size_ABD.push_back((*it).second.size());
 
     // Adding these parameters for Doppler correction purposes (D)
     CrystalN_ABD.push_back(crystal_nbr);
     int MaxOuterId = GetMaxOuter(Id_Max);
     OuterN_ABD.push_back(GetMaxOuter(Id_Max));
-
-    // If a max Outer is found, Do doppler correction, else push_back -1000;
-    double EnergyDoppler = -1000;
+    
     if(MaxOuterId > -1){
-      EnergyDoppler= GetDoppler(E_AddBack, flange_nbr, crystal_nbr, MaxOuterId);
+      Exogam_struc = Ask_For_Angles(flange_nbr, ComputeMeanFreePath(E_AddBack));
+      double Theta_seg = Exogam_struc.Theta_Crystal_Seg[crystal_nbr][MaxOuterId];
+      double Phi_seg = Exogam_struc.Phi_Crystal_Seg[crystal_nbr][MaxOuterId];
+      Theta_D.push_back(Theta_seg);
+      Phi_D.push_back(Phi_seg);
     }
-    E_ABD.push_back(EnergyDoppler);
+    else{
+      Theta_D.push_back(-1000);
+      Phi_D.push_back(-1000);
+    }
+    // If a max Outer is found, Do doppler correction, else push_back -1000;
+    //double EnergyDoppler = -1000;
+    //if(MaxOuterId > -1){
+    //  EnergyDoppler= GetDoppler(E_AddBack, flange_nbr, crystal_nbr, MaxOuterId);
+    //}
+    //E_ABD.push_back(EnergyDoppler);
   }
 }
 
@@ -286,11 +297,13 @@ void TExogamPhysics::Clear() {
   CrystalN.clear();
   // E_Doppler.clear();
   E_AB.clear();
-  FlangeN_AB.clear();
-  Size_AB.clear();
+  FlangeN_ABD.clear();
+  Size_ABD.clear();
   CrystalN_ABD.clear();
   OuterN_ABD.clear();
-  E_ABD.clear();
+  Theta_D.clear();
+  Phi_D.clear();
+  // E_ABD.clear();
 
 //
 //  ECC_CloverNumber.clear();

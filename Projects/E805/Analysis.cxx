@@ -104,11 +104,11 @@ void Analysis::TreatEvent(){
     TreatCATS();
     if(bCATS){
       TreatMUST2();
+      TreatEXO();
     }
     //if(bCATS){
     //  TreatZDD();
     //  TreatTAC();
-    //  TreatEXO();
     //}
   /*//for(unsigned int countMust2 = 0 ; countMust2 < M2->Si_E.size() ; countMust2++){
   //Si_E_M2 = M2->Si_E[countMust2];
@@ -136,7 +136,7 @@ void Analysis::TreatEvent(){
 void Analysis::TreatCATS(){
   if(CATS->PositionOnTargetX > -1000 && CATS->PositionOnTargetY > -1000){
     BeamImpact = TVector3(CATS->PositionOnTargetX,CATS->PositionOnTargetY,0); 
-    BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],CATS->PositionZ[0] - CATS->PositionZ[1]);
+    BeamDirection = TVector3(CATS->PositionX[0] - CATS->PositionX[1],CATS->PositionY[0] - CATS->PositionY[1],-(CATS->PositionZ[0] - CATS->PositionZ[1]));
     bCATS = true;
   }
   else bCATS = false;
@@ -166,8 +166,8 @@ void Analysis::TreatMUST2(){
     ThetaM2Surface = 0;
     ThetaNormalTarget = 0;
       
-    BeamImpact = TVector3(0,0,0);
-    BeamDirection = TVector3(0,0,1);
+    //BeamImpact = TVector3(0,0,0);
+    //BeamDirection = TVector3(0,0,1);
     TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact;
     M2_ThetaLab.push_back(HitDirection.Angle( BeamDirection ));
     //std::cout << BeamImpact.X() << " " << BeamImpact.Y() << " "  << BeamImpact.Z() << std::endl;
@@ -217,6 +217,14 @@ void Analysis::TreatMUST2(){
     M2_Ex_t.push_back(Reaction_pt->ReconstructRelativistic( Energy["triton"] , M2_ThetaLab[countMust2] ));
     M2_Ex_a.push_back(Reaction_p3He->ReconstructRelativistic( Energy["alpha"] , M2_ThetaLab[countMust2] ));
     
+    TLorentzVector PHeavy_pd = Reaction_pd->LorentzAfterReaction(Energy["deuteron"] , M2_ThetaLab[countMust2]);
+    TLorentzVector PHeavy_pt = Reaction_pt->LorentzAfterReaction(Energy["triton"] , M2_ThetaLab[countMust2]);
+    TLorentzVector PHeavy_p3He = Reaction_p3He->LorentzAfterReaction(Energy["alpha"] , M2_ThetaLab[countMust2]);
+    Beta_pd.push_back(PHeavy_pd.Beta());
+    Beta_pt.push_back(PHeavy_pt.Beta());
+    Beta_p3He.push_back(PHeavy_p3He.Beta());
+
+
     M2_CsI_E_p.push_back(CsI_Energy["proton"]);
     M2_CsI_E_d.push_back(CsI_Energy["deuteron"]);
     M2_CsI_E_t.push_back(CsI_Energy["triton"]);
@@ -232,6 +240,15 @@ void Analysis::TreatMUST2(){
 }
 
 void Analysis::TreatEXO(){
+  int EXO_AB_size = Exogam->E_AB.size();
+  for(unsigned int countExo = 0 ; countExo < EXO_AB_size; countExo++){
+  // Doing Doppler correction only if one reaction occurs
+    if(Beta_pd.size() == 1){
+      EXO_Doppler_pd.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_pd[0],Exogam->E_AB[countExo]));
+      EXO_Doppler_pt.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_pt[0],Exogam->E_AB[countExo]));
+      EXO_Doppler_p3He.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_p3He[0],Exogam->E_AB[countExo]));
+    }
+  }
   // }
   /*
   if(M2->Si_E.size() > 0){
@@ -299,9 +316,16 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("M2_X",&M2_X);
   RootOutput::getInstance()->GetTree()->Branch("M2_Y",&M2_Y);
   RootOutput::getInstance()->GetTree()->Branch("M2_Z",&M2_Z);
-  RootOutput::getInstance()->GetTree()->Branch("M2_dE",&M2_dE);
-  RootOutput::getInstance()->GetTree()->Branch("CsI_E_M2",&CsI_E_M2);
-  // RootOutput::getInstance()->GetTree()->Branch("M2_ECsI_from_deltaE",&M2_ECsI_from_deltaE);
+  // RootOutput::getInstance()->GetTree()->Branch("M2_dE",&M2_dE);
+  // RootOutput::getInstance()->GetTree()->Branch("CsI_E_M2",&CsI_E_M2);
+  
+  RootOutput::getInstance()->GetTree()->Branch("EXO_Doppler_pd",&EXO_Doppler_pd);
+  RootOutput::getInstance()->GetTree()->Branch("EXO_Doppler_pt",&EXO_Doppler_pt);
+  RootOutput::getInstance()->GetTree()->Branch("EXO_Doppler_p3He",&EXO_Doppler_p3He);
+  
+  RootOutput::getInstance()->GetTree()->Branch("Beta_pd",&Beta_pd);
+  RootOutput::getInstance()->GetTree()->Branch("Beta_p3He",&Beta_p3He);
+  RootOutput::getInstance()->GetTree()->Branch("Beta_pt",&Beta_pt);
   /*
   RootOutput:: getInstance()->GetTree()->Branch("TAC_CATS_PL",&TAC_CATS_PL,"TAC_CATS_PL/s");
   RootOutput:: getInstance()->GetTree()->Branch("TAC_CATS_PLTS",&TAC_CATS_PLTS,"TAC_CATS_PLTS/l");
@@ -466,6 +490,13 @@ void Analysis::ReInit(){
   M2_Z.clear();
   M2_dE.clear();
 
+  EXO_Doppler_p3He.clear();
+  EXO_Doppler_pt.clear();
+  EXO_Doppler_pd.clear();
+  
+  Beta_p3He.clear();
+  Beta_pt.clear();
+  Beta_pd.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

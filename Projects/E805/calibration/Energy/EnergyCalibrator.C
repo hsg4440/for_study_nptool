@@ -24,7 +24,7 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
     }
     main_name = FolderName.str() ;
     TString make_folder = "mkdir ./Calibration/" + main_name ;   
-    folder = "./Calibration/" + FolderName.str() ;
+    folder = "./Calibration/" + main_name ;
     system(make_folder);
     system(make_folder+"/peaks");
     system(make_folder+"/dispersion");
