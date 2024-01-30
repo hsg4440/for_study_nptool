@@ -6,6 +6,7 @@ void DrawExInvariant() {
   double m_7Li = 7 * mu + 14.91;   // MeV/c2
   double m_10Be = 10 * mu + 12.61; // MeV/c2
   double mp = mu + 7.289;          // MeV/c2
+  cout << m_10Be << " " << mp << " " << m_alpha << " " << m_7Li << endl;
   // double m_5Li = 5 * mu + 11.68;       // MeV/c2
 
   TChain* t = new TChain("PhysicsTree");
@@ -118,8 +119,10 @@ void DrawExInvariant() {
       if (e_alpha > 0 && e_li > 0) {
         ////////////////////////////////////////////////////////////////////////////////
         double gamma_alpha = e_alpha / m_alpha + 1;
+        cout << gamma_alpha <<endl;
         double beta_alpha = sqrt(1 - 1 / (pow(gamma_alpha, 2.)));
         double p_alpha_mag = gamma_alpha * m_alpha * beta_alpha;
+        // cout << p_alpha_mag << endl;
         double etot_alpha = sqrt(pow(p_alpha_mag, 2) + pow(m_alpha, 2));
 
         TVector3 p_alpha(sin(theta_alpha) * cos(phi_alpha), // px
