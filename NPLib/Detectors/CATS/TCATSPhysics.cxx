@@ -235,12 +235,18 @@ void TCATSPhysics::BuildPhysicalEvent(){
       // PositionOnTargetY= Positions[2].second.second + (Positions[2].second.second-3-Positions[1].second.second)*t;
     if(Mask1_Z != 0 && Mask2_Z != 0)
      { 
-      double tmask1 = (Mask1_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
-      double tmask2 = (Mask2_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
-      PositionOnMask1X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask1;
-      PositionOnMask1Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask1;
-      PositionOnMask2X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask2;
-      PositionOnMask2Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask2;
+      //double tmask1 = (Mask1_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
+      //double tmask2 = (Mask2_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
+      //PositionOnMask1X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask1;
+      //PositionOnMask1Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask1;
+      //PositionOnMask2X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask2;
+      //PositionOnMask2Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask2;
+      double tmask1 = (Mask1_Z-Positions[2].first)/(Mask1_Z-Positions[1].first);
+      double tmask2 = (Mask2_Z-Positions[2].first)/(Mask2_Z-Positions[1].first);
+      PositionOnMask1X=  (Positions[2].second.first  -Positions[1].second.first*tmask1)/(1.-tmask1);
+      PositionOnMask1Y=  (Positions[2].second.second -Positions[1].second.second*tmask1)/(1.-tmask1);
+      PositionOnMask2X=  (Positions[2].second.first  -Positions[1].second.first*tmask2)/(1.-tmask2);
+      PositionOnMask2Y=  (Positions[2].second.second -Positions[1].second.second*tmask2)/(1.-tmask2);
      }
      else{
       PositionOnMask1X= -1000;
@@ -905,6 +911,7 @@ namespace CATS_LOCAL{
     g->Fit(f,"QN0");
     delete g;
     return f->GetParameter(1)  ;
+    delete f;
 
   return 0;
   }
