@@ -222,31 +222,20 @@ void TCATSPhysics::BuildPhysicalEvent(){
     }
   }
 
-  // Sorting Positions depending on Z
- // std::sort(Positions.begin(), Positions.end(), 
- // [&](const auto& Pos1, const auto& Pos2){
- //   return Pos1.first < Pos2.first;
- // });
   // At least two CATS need to gave back position in order to reconstruct on Target 
-  if(Positions.size()>1){
-      double t = (m_Zproj-Positions[2].first)/(m_Zproj-Positions[1].first);
-      PositionOnTargetX= (Positions[2].second.first - Positions[1].second.first*t)/(1 - t);
-      PositionOnTargetY= (Positions[2].second.second - Positions[1].second.second*t)/(1 - t);
-      // PositionOnTargetY= Positions[2].second.second + (Positions[2].second.second-3-Positions[1].second.second)*t;
+  if(Positions.size()==2){ 
+      double t = (m_Zproj-Positions[1].first)/(m_Zproj-Positions[2].first);
+      PositionOnTargetX= Positions[1].second.first + (Positions[2].second.first - Positions[1].second.first)*t;
+      PositionOnTargetY= Positions[1].second.second + (Positions[2].second.second - Positions[1].second.second)*t;
     if(Mask1_Z != 0 && Mask2_Z != 0)
      { 
-      //double tmask1 = (Mask1_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
-      //double tmask2 = (Mask2_Z-Positions[2].first)/(Positions[2].first-Positions[1].first);
-      //PositionOnMask1X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask1;
-      //PositionOnMask1Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask1;
-      //PositionOnMask2X= Positions[2].second.first + (Positions[2].second.first-Positions[1].second.first)*tmask2;
-      //PositionOnMask2Y= Positions[2].second.second + (Positions[2].second.second-Positions[1].second.second)*tmask2;
-      double tmask1 = (Mask1_Z-Positions[2].first)/(Mask1_Z-Positions[1].first);
-      double tmask2 = (Mask2_Z-Positions[2].first)/(Mask2_Z-Positions[1].first);
-      PositionOnMask1X=  (Positions[2].second.first  -Positions[1].second.first*tmask1)/(1.-tmask1);
-      PositionOnMask1Y=  (Positions[2].second.second -Positions[1].second.second*tmask1)/(1.-tmask1);
-      PositionOnMask2X=  (Positions[2].second.first  -Positions[1].second.first*tmask2)/(1.-tmask2);
-      PositionOnMask2Y=  (Positions[2].second.second -Positions[1].second.second*tmask2)/(1.-tmask2);
+      double tmask1 = (Positions[1].first-Mask1_Z)/(Positions[2].first - Positions[1].first);
+      double tmask2 = (Positions[2].first-Mask2_Z)/(Positions[2].first - Positions[1].first);
+      
+      PositionOnMask1X=  Positions[1].second.first - (Positions[2].second.first  -Positions[1].second.first)*tmask1;
+      PositionOnMask1Y=  Positions[1].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask1;
+      PositionOnMask2X=  Positions[2].second.first - (Positions[2].second.first  -Positions[1].second.first)*tmask2;
+      PositionOnMask2Y=  Positions[2].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask2;
      }
      else{
       PositionOnMask1X= -1000;
