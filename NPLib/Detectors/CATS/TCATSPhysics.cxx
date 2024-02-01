@@ -190,7 +190,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
     // a shift - -1 is made to have PosX in between -0.5 and 27.5
     // for the following calculation of the position in the lab.
-    // std::cout << PosX << " " << PosY << std::endl;
     PosX = PosX;
     PosY = PosY;
 
@@ -225,10 +224,9 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
   // At least two CATS need to gave back position in order to reconstruct on Target 
   if(Positions.size()==2){ 
-      double t = (m_Zproj-Positions[1].first)/(Positions[2].first - Positions[1].first);
+      double t = (m_Zproj-Positions[1].first)/(Positions[2].first-Positions[1].first);
       PositionOnTargetX= Positions[1].second.first + (Positions[2].second.first - Positions[1].second.first)*t;
       PositionOnTargetY= Positions[1].second.second + (Positions[2].second.second - Positions[1].second.second)*t;
-      // std::cout << t << " " << PositionOnTargetX << " " << Positions[1].second.first << " " << Positions[2].second.first <<  std::endl;
     if(Mask1_Z != 0 && Mask2_Z != 0)
      { 
       double tmask1 = (Positions[1].first-Mask1_Z)/(Positions[2].first - Positions[1].first);
@@ -238,7 +236,6 @@ void TCATSPhysics::BuildPhysicalEvent(){
       PositionOnMask1Y=  Positions[1].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask1;
       PositionOnMask2X=  Positions[2].second.first - (Positions[2].second.first  -Positions[1].second.first)*tmask2;
       PositionOnMask2Y=  Positions[2].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask2;
-      // std::cout << tmask2<< " " << PositionOnMask2X << " " << Positions[1].second.first << " " << Positions[2].second.first <<  std::endl;
      }
      else{
       PositionOnMask1X= -1000;
