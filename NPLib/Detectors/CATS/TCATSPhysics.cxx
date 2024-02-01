@@ -216,6 +216,7 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
       // Positon [Detector] = <PosZ,<PosX,PosY>>
       Positions[DetN] = make_pair(StripPositionZ[DetN], make_pair(px0+(px1-px0)*(PosX-sx0),py0+(py1-py0)*(PosY-sy0)));
+      // std::cout << PosX << " " << px0 << std::endl;
       PositionX.push_back(px0+(px1-px0)*(PosX-sx0));  
       PositionY.push_back(py0+(py1-py0)*(PosY-sy0));
       PositionZ.push_back(StripPositionZ[DetN]); 
@@ -224,9 +225,10 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
   // At least two CATS need to gave back position in order to reconstruct on Target 
   if(Positions.size()==2){ 
-      double t = (m_Zproj-Positions[1].first)/(m_Zproj-Positions[2].first);
+      double t = (m_Zproj-Positions[1].first)/(Positions[2].first - Positions[1].first);
       PositionOnTargetX= Positions[1].second.first + (Positions[2].second.first - Positions[1].second.first)*t;
       PositionOnTargetY= Positions[1].second.second + (Positions[2].second.second - Positions[1].second.second)*t;
+      // std::cout << t << " " << PositionOnTargetX << " " << Positions[1].second.first << " " << Positions[2].second.first <<  std::endl;
     if(Mask1_Z != 0 && Mask2_Z != 0)
      { 
       double tmask1 = (Positions[1].first-Mask1_Z)/(Positions[2].first - Positions[1].first);
@@ -236,6 +238,7 @@ void TCATSPhysics::BuildPhysicalEvent(){
       PositionOnMask1Y=  Positions[1].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask1;
       PositionOnMask2X=  Positions[2].second.first - (Positions[2].second.first  -Positions[1].second.first)*tmask2;
       PositionOnMask2Y=  Positions[2].second.second - (Positions[2].second.second -Positions[1].second.second)*tmask2;
+      // std::cout << tmask2<< " " << PositionOnMask2X << " " << Positions[1].second.first << " " << Positions[2].second.first <<  std::endl;
      }
      else{
       PositionOnMask1X= -1000;
@@ -409,7 +412,7 @@ void TCATSPhysics::AddCATS(TVector3 C_X1_Y1, TVector3 C_X28_Y1, TVector3 C_X1_Y2
     for( int j = 0 ; j < 28 ; j++ ){
       StripCenter  = Strip_1_1 + StripPitch*( i*U + j*V  )	;
       lineX.push_back( StripCenter.x() )	;
-      lineY.push_back( StripCenter.y() )	;	
+      lineY.push_back( StripCenter.y() )	;
     }
 
     OneDetectorStripPositionX.push_back(lineX);
