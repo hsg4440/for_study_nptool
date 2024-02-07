@@ -36,9 +36,9 @@ void GenerateCS() {
       vy.push_back(0);
     }
     else {
-      file << i / 10. << " " << g->Eval(i / 10.)*scale << endl;
+      file << i / 10. << " " << g->Eval(i / 10.) * scale << endl;
       vx.push_back(i / 10.);
-      vy.push_back(g->Eval(i / 10.)*scale);
+      vy.push_back(g->Eval(i / 10.) * scale);
     }
   }
 
@@ -51,7 +51,7 @@ void GenerateCS() {
   for (unsigned int i = 0; i < g2->GetN(); i++) {
     // integral += i * g2->Eval(i);
     // npoints++;
-    integral += g2->Eval(i)*1/npoints;
+    integral += g2->Eval(i) * 1 / npoints;
     // cout << integral << " " << npoints << endl;
   }
   cout << integral << endl;
@@ -73,35 +73,42 @@ void CompareCS() {
   g27->SetName("g27");
   g27->Draw("same");
 
-//   std::vector<double> vx;
-//   std::vector<double> vy;
+  int integral10 = 0;
+  for (int i = 10; i < 90; i++) {
+    integral10 += g10->Eval(i) * 2. * M_PI * (cos(i * M_PI / 180.) + cos((i+1) * M_PI / 180.)) * 1. / (90. - 10.);
+    cout << integral10 << endl;
+  }
+  cout << integral10 << endl;
 
-//   // ofstream file;
-//   // file.open("cross_sections/12Cd6LiNptool03_70.txt");
-//   // file.open("cross_sections/12Cd6LiNptool18MeV.txt");
-//   // file.open("cross_sections/12Cd6LiNptool27MeV.txt");
-//   // file.open("cross_sections/12Cd6LiNptool10MeV.txt");
-//   // file.open("cross_sections/test.txt");
+  //   std::vector<double> vx;
+  //   std::vector<double> vy;
 
-//   TRandom3* r = new TRandom3();
-//   for (int i = 0; i < 1800; i++) {
+  //   // ofstream file;
+  //   // file.open("cross_sections/12Cd6LiNptool03_70.txt");
+  //   // file.open("cross_sections/12Cd6LiNptool18MeV.txt");
+  //   // file.open("cross_sections/12Cd6LiNptool27MeV.txt");
+  //   // file.open("cross_sections/12Cd6LiNptool10MeV.txt");
+  //   // file.open("cross_sections/test.txt");
 
-//     if (i / 10. < 10 || i / 10. > 90) {
-//       file << i / 10. << " " << 0 << endl;
-//       vx.push_back(i / 10.);
-//       vy.push_back(0);
-//     }
-//     else if (g->Eval(i / 10.) < 0) {
-//       file << i / 10. << " " << 0 << endl;
-//       vx.push_back(i / 10.);
-//       vy.push_back(0);
-//     }
-//     else {
-//       file << i / 10. << " " << g->Eval(i / 10.)*scale << endl;
-//       vx.push_back(i / 10.);
-//       vy.push_back(g->Eval(i / 10.)*scale);
-//     }
-//   }
+  //   TRandom3* r = new TRandom3();
+  //   for (int i = 0; i < 1800; i++) {
+
+  //     if (i / 10. < 10 || i / 10. > 90) {
+  //       file << i / 10. << " " << 0 << endl;
+  //       vx.push_back(i / 10.);
+  //       vy.push_back(0);
+  //     }
+  //     else if (g->Eval(i / 10.) < 0) {
+  //       file << i / 10. << " " << 0 << endl;
+  //       vx.push_back(i / 10.);
+  //       vy.push_back(0);
+  //     }
+  //     else {
+  //       file << i / 10. << " " << g->Eval(i / 10.)*scale << endl;
+  //       vx.push_back(i / 10.);
+  //       vy.push_back(g->Eval(i / 10.)*scale);
+  //     }
+  //   }
 
   // TGraph* g2 = new TGraph(vx.size(), &vx[0], &vy[0]);
   // g2->Draw("same");
