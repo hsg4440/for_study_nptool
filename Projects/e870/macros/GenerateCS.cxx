@@ -47,13 +47,14 @@ void GenerateCS() {
   g2->SetLineColor(kRed);
 
   double integral = 0;
-  int npoints = 0;
+  int npoints = g2->GetN();
   for (unsigned int i = 0; i < g2->GetN(); i++) {
-    integral += i * g2->Eval(i);
-    npoints++;
+    // integral += i * g2->Eval(i);
+    // npoints++;
+    integral += g2->Eval(i)*1/npoints;
     // cout << integral << " " << npoints << endl;
   }
-  cout << integral / npoints << endl;
+  cout << integral << endl;
 }
 
 void CompareCS() {
@@ -64,9 +65,12 @@ void CompareCS() {
 
   double scale = 1;
   g10->Draw();
+  g10->SetName("g10");
   g10->SetLineColor(kRed);
+  g18->SetName("g18");
   g18->Draw("same");
   g18->SetLineColor(kBlue);
+  g27->SetName("g27");
   g27->Draw("same");
 
 //   std::vector<double> vx;
