@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 26 micrometer
+ % 5mg/cm2
+ THICKNESS= 53 micrometer
  %THICKNESS= 0.000001 micrometer
  ANGLE= 0 deg
  RADIUS=  15 mm

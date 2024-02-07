@@ -13,21 +13,22 @@ void DrawEx() {
   TCutG* cutToF4 = NULL;
   bool ToF4 = false;
 
-  /*
   ////////////////////////////////////////////////////////////////////////////////
-  t->Add("../../Outputs/Analysis/Ana10Bepalpha_38AMeV_CH2.root"); // Name of simulated file
-  NPL::Reaction r("10Be(p,4He)7Li@380");
+  // t->Add("../../Outputs/Analysis/Ana10Bepalpha_38AMeV_CH2.root"); // Name of simulated file
+  // NPL::Reaction r("10Be(p,4He)7Li@380");
 
-  // YOUR 3 AND 4 CUT
-  fcutDEE3 = new TFile("cuts/CUT_alpha.root", "read");
-  cutDEE3 = (TCutG*)gDirectory->FindObjectAny("CUT_alpha");
-  fcutDEE4 = new TFile("cuts/CUT_7Li.root", "read");
-  cutDEE4 = (TCutG*)gDirectory->FindObjectAny("CUT_7Li");
-  */
+  // // YOUR 3 AND 4 CUT
+  // fcutDEE3 = new TFile("cuts/CUT_alpha.root", "read");
+  // cutDEE3 = (TCutG*)gDirectory->FindObjectAny("CUT_alpha");
+  // fcutDEE4 = new TFile("cuts/CUT_7Li.root", "read");
+  // cutDEE4 = (TCutG*)gDirectory->FindObjectAny("CUT_7Li");
 
   ////////////////////////////////////////////////////////////////////////////////
-  t->Add("../../Outputs/Analysis/Ana10Bed6Li_20AMeV_CD2.root"); // Name of simulated file
-  NPL::Reaction r("10Be(d,6Li)6He@200");
+  // t->Add("../../Outputs/Analysis/Ana10Bed6Li_20AMeV_CD2.root"); // Name of simulated file
+  // NPL::Reaction r("10Be(d,6Li)6He@200");
+  
+  t->Add("../../Outputs/Analysis/Ana10Bed6Li_38AMeV_CD2.root"); // Name of simulated file
+  NPL::Reaction r("10Be(d,6Li)6He@380");
 
   // YOUR 3 AND 4 CUT
   fcutDEE3 = new TFile("cuts/CUT_6Li.root", "read");

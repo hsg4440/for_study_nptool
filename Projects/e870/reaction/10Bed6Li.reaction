@@ -1,7 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Beam
   Particle= 10Be
-  Energy= 150 MeV
+  %Energy= 380 MeV
+  Energy= 200 MeV
   SigmaEnergy= 21.6 MeV
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
