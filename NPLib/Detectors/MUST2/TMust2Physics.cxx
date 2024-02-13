@@ -1186,6 +1186,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
       exit(1);
     }
   }
+  InitializeStandardParameter();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1643,6 +1644,9 @@ void TMust2Physics::InitializeRootHistogramsEnergyF(Int_t DetectorNumber) {
   unsigned int NbStrips = 128;
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
+  string Path = "../../Inputs/EnergyLoss/";
+  if(Alpha_Al == nullptr)
+    Alpha_Al = new NPL::EnergyLoss(Path+"alpha_Al.G4table","G4table",100);
 
   for (Int_t j = 0; j < NbStrips; j++) {
     TString hnameXE = Form("hMM%d_STRX_E%d", DetectorNumber, j + 1);
@@ -1668,36 +1672,47 @@ void TMust2Physics::InitializeRootHistogramsEnergyF(Int_t DetectorNumber) {
   TString hname = Form("SigmaFit_T%d", DetectorNumber);
   (*TH1Map)["MUST2"][hname] = new TH1F("Sigma", "Sigma from fit (channel)", 80, 0, 10);
 
-  hname = Form("Dispersion_T%d", DetectorNumber);
-  (*TH1Map)["MUST2"][hname] = new TH1F("Dispersion", "Dispersion from Zero Extrapolation (channel)", 40, -20, 20);
+  hname = Form("DispersionX_T%d", DetectorNumber);
+  (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
+  (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
+  (*TGraphMap)["MUST2"][hname]->SetName(hname);
+  (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
+  
+  hname = Form("DispersionY_T%d", DetectorNumber);
+  (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
+  (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
+  (*TGraphMap)["MUST2"][hname]->SetName(hname);
+  (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
 
   hname = Form("coeffX_a_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
-  (*TGraphMap)["MUST2"][hname]->Draw("ap");
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
 
   hname = Form("coeffX_b_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
-  (*TGraphMap)["MUST2"][hname]->Draw("ap");
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
 
   hname = Form("coeffY_a_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
-  (*TGraphMap)["MUST2"][hname]->Draw("ap");
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
 
   hname = Form("coeffY_b_T%d", DetectorNumber);
   (*TGraphMap)["MUST2"][hname] = new TGraphErrors(NbStrips);
   (*TGraphMap)["MUST2"][hname]->SetTitle(hname);
   (*TGraphMap)["MUST2"][hname]->SetName(hname);
   (*TGraphMap)["MUST2"][hname]->SetMarkerStyle(2);
-  (*TGraphMap)["MUST2"][hname]->Draw("ap");
+  (*TGraphMap)["MUST2"][hname]->SetLineColorAlpha(0,0);
 }
 
 void TMust2Physics::FillHistogramsCalib() {
@@ -1979,6 +1994,12 @@ void TMust2Physics::WriteHistogramsEnergyF() {
       gDirectory->mkdir("Energy");
       // gDirectory->mkdir("Time");
       gDirectory->cd("Energy");
+      (*TGraphMap)["MUST2"][Form("DispersionX_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("DispersionY_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", it->first)]->Write();
+      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", it->first)]->Write();
       for (Int_t j = 0; j < NbStrips; j++) {
         TString hnameXE = Form("hMM%d_STRX_E%d", it->first, j + 1);
         TString hnameYE = Form("hMM%d_STRY_E%d", it->first, j + 1);
@@ -1989,11 +2010,6 @@ void TMust2Physics::WriteHistogramsEnergyF() {
         (*TGraphMap)["MUST2"][hnameFITXE]->Write();
         (*TGraphMap)["MUST2"][hnameFITYE]->Write();
       }
-      (*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
-      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", it->first)]->Write();
-      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", it->first)]->Write();
-      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", it->first)]->Write();
-      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", it->first)]->Write();
     }
     File->cd("MUST2");
   }
@@ -2025,50 +2041,224 @@ void TMust2Physics::DoCalibrationEnergyF(Int_t DetectorNumber) {
   auto TH1Map = RootHistogramsCalib::getInstance()->GetTH1Map();
   auto TGraphMap = RootHistogramsCalib::getInstance()->GetTGraphMap();
   unsigned int NbStrips = 128;
+  // We assume that the pedestals are aligned at 8192 channels
+  unsigned int PedestalValue = 8192;
   ofstream* calib_file = new ofstream;
   ofstream* dispersion_file = new ofstream;
 
   DefineCalibrationSource();
 
+  unsigned int max_steps = 100;
+  double AlThickness = 0.3*um;
+  double Al_step = 0.1*um;
+  double mean_extrapolation;
+  std::map<unsigned int, double> a;
+  std::map<unsigned int, double> b;
+  std::map<unsigned int, double> dispersion;
   CreateCalibrationEnergyFiles(DetectorNumber, "X", calib_file, dispersion_file);
+  
+  // Prepare the calibration : find all peaks in channels for each strip and do a first calibration assuming 0.3 um of aluminum
+  std::vector<double> Source_E_Slowed;
+  Source_E_Slowed = SlowSource(AlThickness);
+  // (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->Clear();
+  // (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->Clear();
+  // (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->Clear();
+  
   for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {
-    double a = 0, b = 0;
-    if (FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRX_E%d", DetectorNumber, StripNb)]), "X", StripNb,
-                   DetectorNumber)) {
+    if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRX_E%d", DetectorNumber, StripNb)]), "X", StripNb, DetectorNumber)){
+      double a_temp, b_temp;
       FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]), "X", StripNb,
-                      DetectorNumber, &a, &b);
-      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a);
-      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b);
-      double dispersion = -b / a;
-      (*TH1Map)["MUST2"][Form("Dispersion_T%d", DetectorNumber)]->Fill(dispersion);
-      *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion
-                       << endl;
+                      DetectorNumber, &a_temp, &b_temp,Source_E_Slowed);
+      (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a_temp);
+      (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b_temp);
+      dispersion[StripNb] = PedestalValue + b_temp / a_temp;
+      if(abs(dispersion[StripNb]) < 40){
+        (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, dispersion[StripNb]);
+        a[StripNb] = a_temp; b[StripNb] = b_temp;
+      }
+      else{
+        a[StripNb] = 0.0; b[StripNb] = 0.0;
+        dispersion[StripNb] = -1000;
+      }
     }
-    *calib_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E " << b << " " << a << endl;
-
-    AlphaMean.clear();
-    AlphaSigma.clear();
+    else{
+      a[StripNb] = 0.0; b[StripNb] = 0.0;
+      dispersion[StripNb] = -1000;
+    }
   }
+  mean_extrapolation = FindMeanExtrapolation((*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]);
+  (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetMaximum(mean_extrapolation+30);
+  (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetMinimum(mean_extrapolation-30);
+  std::cout << "extrapo value " << mean_extrapolation << std::endl;
+  double step = 0;
+  bool check1 = false; bool check2 = false;
+  while(abs(mean_extrapolation) > 0.1 && step < max_steps){
+    std::cout << "step " << step << " " << mean_extrapolation << std::endl;
+    // (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->Clear();
+    // (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->Clear();
+    // (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->Clear();
+    // Here we change Al thickness, if the step is too big, we divide it by 10
+    if(mean_extrapolation < 0)
+    {
+      AlThickness -= Al_step;
+      check1=true;
+    }
+    else if (mean_extrapolation > 0)
+    {
+      AlThickness += Al_step;
+      check2=true;
+    }
+    if(check1&&check2)
+    {
+      Al_step/=10.;
+      check1=false;check2=false;
+    }
+    Source_E_Slowed = SlowSource(AlThickness);
+    for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {    
+      if (AlphaMean[StripNb].size() > 0 && dispersion[StripNb] > -1000) {
+        double a_temp, b_temp;
+        FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITX_E%d", DetectorNumber, StripNb)]), "X", StripNb,
+                        DetectorNumber, &a_temp, &b_temp,Source_E_Slowed);
+        (*TGraphMap)["MUST2"][Form("coeffX_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a_temp);
+        (*TGraphMap)["MUST2"][Form("coeffX_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b_temp);
+        dispersion[StripNb] = PedestalValue + b_temp / a_temp;
+        if(abs(dispersion[StripNb]) < 40){
+          (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, dispersion[StripNb]);
+          a[StripNb] = a_temp; b[StripNb] = b_temp;
+        }
+        else{
+          a[StripNb] = 0.0; b[StripNb] = 0.0;
+          dispersion[StripNb] = -1000;
+        }
+      }
+    }
+    mean_extrapolation = FindMeanExtrapolation((*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]);
+    (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetMaximum(mean_extrapolation+30);
+    (*TGraphMap)["MUST2"][Form("DispersionX_T%d", DetectorNumber)]->SetMinimum(mean_extrapolation-30);
+    step++;
+  }
+  for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {    
+    *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E_Zero_Dispersion " << dispersion[StripNb] << endl;
+    *calib_file << "MUST2_T" << DetectorNumber << "_Si_X" << StripNb << "_E " << b[StripNb] << " " << a[StripNb] << endl;
+  }
+  *dispersion_file << "MUST2_T" << DetectorNumber << " Dead Layer: " << AlThickness/um << " um of Aluminum" << endl;
+  
+  
+  AlphaMean.clear();
+  AlphaSigma.clear();
   CloseCalibrationEnergyFiles(calib_file, dispersion_file);
+  
+  max_steps = 100;
+  AlThickness = 0.3*um;
+  Al_step = 0.1*um;
+  mean_extrapolation = 1000;
+  a.clear();
+  b.clear();
+  dispersion.clear();
+  
   CreateCalibrationEnergyFiles(DetectorNumber, "Y", calib_file, dispersion_file);
+  
+  // Prepare the calibration : find all peaks in channels for each strip and do a first calibration assuming 0.3 um of aluminum
+  Source_E_Slowed.clear();
+  Source_E_Slowed = SlowSource(AlThickness);
+  // (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->Clear();
+  // (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->Clear();
+  // (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->Clear();
+  
   for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {
-    double a = 0, b = 0;
-    if (FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
-                   DetectorNumber)) {
-      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
-                      DetectorNumber, &a, &b);
-      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a);
-      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b);
-      double dispersion = -b / a;
-      (*TH1Map)["MUST2"][Form("Dispersion_T%d", DetectorNumber)]->Fill(dispersion);
-      *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion
-                       << endl;
+    if(FindAlphas(((*TH1Map)["MUST2"][Form("hMM%d_STRY_E%d", DetectorNumber, StripNb)]), "Y", StripNb, DetectorNumber)){
+      double a_temp, b_temp;
+        FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
+                        DetectorNumber, &a_temp, &b_temp,Source_E_Slowed);
+        (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a_temp);
+        (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b_temp);
+        dispersion[StripNb] = PedestalValue + b_temp / a_temp;
+        if(abs(dispersion[StripNb]) < 40){
+          (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, dispersion[StripNb]);
+          a[StripNb] = a_temp; b[StripNb] = b_temp;
+        }
+        else{
+          a[StripNb] = 0.0; b[StripNb] = 0.0;
+          dispersion[StripNb] = -1000;
+        }
     }
-    *calib_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E " << b << " " << a << endl;
-    AlphaMean.clear();
-    AlphaSigma.clear();
+    else{
+      a[StripNb] = 0.0; b[StripNb] = 0.0;
+      dispersion[StripNb] = -1000;
+    }
   }
+  mean_extrapolation = FindMeanExtrapolation((*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]);
+  (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetMaximum(mean_extrapolation+30);
+  (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetMinimum(mean_extrapolation-30);
+  step = 0;
+  check1 = false;check2 = false;
+  while(abs(mean_extrapolation) > 0.1 && step < max_steps){
+    // (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->Clear();
+    // (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->Clear();
+    // (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->Clear();
+    // Here we change Al thickness, if the step is too big, we divide it by 10
+    if(mean_extrapolation < 0)
+    {
+      AlThickness += Al_step;
+      check1=true;
+    }
+    else if (mean_extrapolation > 0)
+    {
+      AlThickness -= Al_step;
+      check2=true;
+    }
+    if(check1&&check2)
+    {
+      Al_step/=10.;
+      check1=false;check2=false;
+    }
+    Source_E_Slowed = SlowSource(AlThickness);
+    for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {    
+      if (AlphaMean[StripNb].size() > 0&& dispersion[StripNb] > -1000) {
+      double a_temp, b_temp;
+      FitLinearEnergy(((*TGraphMap)["MUST2"][Form("hMM%d_FITY_E%d", DetectorNumber, StripNb)]), "Y", StripNb,
+                      DetectorNumber, &a_temp, &b_temp,Source_E_Slowed);
+      (*TGraphMap)["MUST2"][Form("coeffY_a_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, a_temp);
+      (*TGraphMap)["MUST2"][Form("coeffY_b_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, b_temp);
+      dispersion[StripNb] = PedestalValue + b_temp / a_temp;
+        if(abs(dispersion[StripNb]) < 40){
+          (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetPoint(StripNb, StripNb, dispersion[StripNb]);
+          a[StripNb] = a_temp; b[StripNb] = b_temp;
+        }
+        else{
+          a[StripNb] = 0.0; b[StripNb] = 0.0;
+          dispersion[StripNb] = -1000;
+        }
+      }
+    }
+    mean_extrapolation = FindMeanExtrapolation((*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]);
+    (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetMaximum(mean_extrapolation+30);
+    (*TGraphMap)["MUST2"][Form("DispersionY_T%d", DetectorNumber)]->SetMinimum(mean_extrapolation-30);
+    step++;
+  }
+  for (unsigned int StripNb = 1; StripNb < NbStrips + 1; StripNb++) {    
+    *dispersion_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E_Zero_Dispersion " << dispersion[StripNb] << endl;
+    *calib_file << "MUST2_T" << DetectorNumber << "_Si_Y" << StripNb << "_E " << b[StripNb] << " " << a[StripNb] << endl;
+  }
+  *dispersion_file << "MUST2_T" << DetectorNumber << " Dead Layer: " << AlThickness/um << " um of Aluminum" << endl;
+  
+  
+  AlphaMean.clear();
+  AlphaSigma.clear();
   CloseCalibrationEnergyFiles(calib_file, dispersion_file);
+
+}
+
+std::vector<double> TMust2Physics::SlowSource(double AlThickness){
+  std::vector<double> Slowed_Source;
+  for(auto AlphaE: Source_E){
+    Slowed_Source.push_back(Alpha_Al->Slow(AlphaE,AlThickness,0));
+  }
+  return Slowed_Source;
+}
+
+double TMust2Physics::FindMeanExtrapolation(TGraphErrors* DispersionGraph){
+  return DispersionGraph->GetMean(2);
 }
 
 void TMust2Physics::DefineCalibrationSource() {
@@ -2110,15 +2300,16 @@ void TMust2Physics::DefineCalibrationSource() {
 }
 
 void TMust2Physics::FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb,
-                                    unsigned int DetectorNumber, double* a, double* b) {
-  if (AlphaMean.size() == 3 && AlphaSigma.size() == 3) {
+                                    unsigned int DetectorNumber, double* a, double* b,std::vector<double> Source_E_slowed){                               
+  // FitHist->Reset();                
+  if (AlphaMean[StripNb].size() == 3 && AlphaSigma[StripNb].size() == 3) {
     double AlphaSourceEnergy[3];
     double AlphaSourceSigma[3];
     // double AlphaMeanP[3];
     // double AlphaSigmaP[3];
     if (side == "X") {
       for (unsigned int i = 0; i < 3; i++) {
-        AlphaSourceEnergy[i] = Source_E[3 * i];
+        AlphaSourceEnergy[i] = Source_E_slowed[3 * i];
         AlphaSourceSigma[i] = Source_Sig[3 * i];
         // AlphaMeanP[i] = AlphaMean[i];
         // AlphaSigmaP[i] = AlphaSigma[i];
@@ -2126,7 +2317,7 @@ void TMust2Physics::FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigne
     }
     else if (side == "Y") {
       for (unsigned int i = 0; i < 3; i++) {
-        AlphaSourceEnergy[i] = Source_E[6 - 3 * i];
+        AlphaSourceEnergy[i] = Source_E_slowed[6 - 3 * i];
         AlphaSourceSigma[i] = Source_Sig[6 - 3 * i];
         // AlphaMeanP[i] = AlphaMean[i];
         // AlphaSigmaP[i] = AlphaSigma[i];
@@ -2136,8 +2327,8 @@ void TMust2Physics::FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigne
       std::cout << "Check side string formatting" << std::endl;
     }
     for (Int_t p = 0; p < 3; p++) {
-      FitHist->SetPoint(p, AlphaMean[p], AlphaSourceEnergy[p]);
-      FitHist->SetPointError(p, AlphaSigma[p], AlphaSourceSigma[p]);
+      FitHist->SetPoint(p, AlphaMean[StripNb][p], AlphaSourceEnergy[p]);
+      FitHist->SetPointError(p, AlphaSigma[StripNb][p], AlphaSourceSigma[p]);
     }
 
     TF1* f1 = new TF1("f1", "[1]+[0]*x");
@@ -2186,20 +2377,20 @@ bool TMust2Physics::FindAlphas(TH1F* CalibHist, TString side, unsigned int Strip
         if (side == "X") {
           // linf = Xpeaks[p]-2;
           // lsup = Xpeaks[p]+8;
-          linf = Xpeaks[p] - 5;
-          lsup = Xpeaks[p] + 5;
+          linf = Xpeaks[p] - 2;
+          lsup = Xpeaks[p] + 8;
         }
 
         else if (side == "Y") {
-          linf = Xpeaks[p] - 5;
-          lsup = Xpeaks[p] + 5;
+          linf = Xpeaks[p] - 8;
+          lsup = Xpeaks[p] + 2;
           // linf = Xpeaks[p]-8;
           // lsup = Xpeaks[p]+2;
         }
         TF1* gauss = new TF1("gauss", "gaus", linf, lsup);
         CalibHist->Fit(gauss, "RQ");
-        AlphaMean.push_back(gauss->GetParameter(1));
-        AlphaSigma.push_back(gauss->GetParameter(2));
+        AlphaMean[StripNb].push_back(gauss->GetParameter(1));
+        AlphaSigma[StripNb].push_back(gauss->GetParameter(2));
         (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(gauss->GetParameter(2));
       }
     }
@@ -2220,22 +2411,22 @@ bool TMust2Physics::FindAlphas(TH1F* CalibHist, TString side, unsigned int Strip
       TF1* SatellitePu = new TF1("gauss", source_Pu, linf[0], lsup[0], 4);
       SatellitePu->SetParameters(150, Xpeaks[0], Xpeaks[0] - 1, 0.1);
       CalibHist->Fit(SatellitePu, "RQ+");
-      AlphaMean.push_back(SatellitePu->GetParameter(1));
-      AlphaSigma.push_back(SatellitePu->GetParameter(3));
+      AlphaMean[StripNb].push_back(SatellitePu->GetParameter(1));
+      AlphaSigma[StripNb].push_back(SatellitePu->GetParameter(3));
       (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatellitePu->GetParameter(3));
 
       TF1* SatelliteAm = new TF1("gauss", source_Am, linf[1], lsup[1], 4);
       SatelliteAm->SetParameters(150, Xpeaks[1], Xpeaks[1] - 1, 0.1);
       CalibHist->Fit(SatelliteAm, "RQ+");
-      AlphaMean.push_back(SatelliteAm->GetParameter(1));
-      AlphaSigma.push_back(SatelliteAm->GetParameter(3));
+      AlphaMean[StripNb].push_back(SatelliteAm->GetParameter(1));
+      AlphaSigma[StripNb].push_back(SatelliteAm->GetParameter(3));
       (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatelliteAm->GetParameter(3));
 
       TF1* SatelliteCm = new TF1("gauss", source_Cm, linf[2], lsup[2], 4);
       SatelliteCm->SetParameters(150, Xpeaks[2], Xpeaks[2] - 1, 0.1);
       CalibHist->Fit(SatelliteCm, "RQ+");
-      AlphaMean.push_back(SatelliteCm->GetParameter(1));
-      AlphaSigma.push_back(SatelliteCm->GetParameter(3));
+      AlphaMean[StripNb].push_back(SatelliteCm->GetParameter(1));
+      AlphaSigma[StripNb].push_back(SatelliteCm->GetParameter(3));
       (*TH1Map)["MUST2"][Form("SigmaFit_T%d", DetectorNumber)]->Fill(SatelliteCm->GetParameter(3));
     }
   }

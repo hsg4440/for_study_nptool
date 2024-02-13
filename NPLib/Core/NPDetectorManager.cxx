@@ -118,18 +118,39 @@ void NPL::DetectorManager::ReadDoCalibrationFile(std::string Path)   {
   NPL::InputParser parser(Path);
   std::set<std::string> check;
   std::vector<std::string> token = parser.GetAllBlocksToken();
+  NPL::DetectorFactory* theFactory = NPL::DetectorFactory::getInstance();
   
-  std::map<std::string, VDetector*>::iterator it;
-
-  for (it = m_Detector.begin(); it != m_Detector.end(); it++)
-  {
+  std::string runToReadfileName = NPOptionManager::getInstance()->GetRunToReadFile();
+  RootInput::getInstance(runToReadfileName);
+  
+  ////////////////////////////////////////////
+  /////////// Search for Detectors ///////////
+  ////////////////////////////////////////////
+  // Get the list of main token
+  
+  std::cout << "IN DO CALIBRATION " << token.size() << std::endl;
+  // Look for detectors among them
+  for(unsigned int i = 0 ; i < token.size() ; i++){
+    VDetector* detector = theFactory->Construct(token[i]);
+    VTreeReader* Reader = theFactory->ConstructReader(token[i]);
+    if(detector!=NULL && check.find(token[i])==check.end()){
       if(NPOptionManager::getInstance()->GetVerboseLevel()){
         std::cout << "/////////////////////////////////////////" << std::endl;
-        std::cout << "//// Adding Detector for DoCalibration " << it->first << std::endl; 
+        std::cout << "//// Adding Detector for DoCalibration " << token[i] << std::endl; 
       }
-      it->second->ReadDoCalibration(parser);
+      detector->ReadDoCalibration(parser);
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         std::cout << "/////////////////////////////////////////" << std::endl;
+
+      // Add array to the VDetector Vector
+      AddDetector(token[i], detector);
+      AddDetectorReader(token[i], Reader);
+      check.insert(token[i]);
+    }
+    else if(detector!=NULL){
+      delete detector;
+      delete Reader;
+    }
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -299,7 +320,6 @@ void NPL::DetectorManager::SetTreeReader(TTreeReader* TreeReader){
   static std::map<std::string,VDetector*>::iterator it;
   static std::map<std::string,VDetector*>::iterator begin=m_Detector.begin();
   static std::map<std::string,VDetector*>::iterator end= m_Detector.end();
-  
   for (it =begin; it != end; ++it) {
     (it->second->*m_SetTreeReaderPtr)(TreeReader);
   }

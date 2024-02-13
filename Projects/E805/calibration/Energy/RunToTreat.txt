@@ -1,6 +1,4 @@
 TTreeName 
-	AD
+	RD
 RootFileName 
-  /home/mugast/Analysis_MUGAST_LISE_test/nptool/Projects/MUGAST/converted_runs/RootA/r0019_000a.root
-  /home/mugast/Analysis_MUGAST_LISE_test/nptool/Projects/MUGAST/converted_runs/RootA/r0019_001a.root
-  /home/mugast/Analysis_MUGAST_LISE_test/nptool/Projects/MUGAST/converted_runs/RootA/r0019_002a.root
+  ../../data/RootRnes/Calib/NPTOOL/r0388_000r.root

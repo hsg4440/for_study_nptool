@@ -35,7 +35,7 @@ CalibrationFilePath
     ./data/NPRoot/Calibration/Run_CSICalib/CsI_MM3_alpha.txt
     ./data/NPRoot/Calibration/Run_CSICalib/CsI_MM4_alpha.txt
 
-    ./calibration/CATS/CATS1X/CATSLin1X_r0366.txt
-    ./calibration/CATS/CATS1Y/CATSLin1Y_r0366.txt
-    ./calibration/CATS/CATS2X/CATSLin2X_r0166.txt
-    ./calibration/CATS/CATS2Y/CATSLin2Y_r0166.txt
+    ./data/NPRoot/Calibration/CATS/CATSLin1X_r0366.txt
+    ./data/NPRoot/Calibration/CATS/CATSLin1Y_r0366.txt
+    ./data/NPRoot/Calibration/CATS/CATSLin2X_r0166.txt
+    ./data/NPRoot/Calibration/CATS/CATSLin2Y_r0166.txt

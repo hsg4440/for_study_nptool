@@ -28,14 +28,6 @@ int main(int argc , char** argv){
   myOptionManager->SetIsCalibration();
   myOptionManager->SetReader(true);
   std::string inputfilename = myOptionManager->GetRunToReadFile();
-  // if input files are not given, use those from TAsciiFile
-  if (myOptionManager->IsDefault("DetectorConfiguration")) {
-    std::string name = RootInput::getInstance(inputfilename)->DumpAsciiFile("DetectorConfiguration");
-    if(name!="fail"){
-      myOptionManager->SetDetectorFile(name);
-     std::cout << "\033[1;33mInfo: No Detector file given, using Input tree one \033[0m" << std::endl;;
-    }  
-  }
 
   if (myOptionManager->IsDefault("DoCalibration")) {
     std::cout << "Please use a valid DoCalibration File" << std::endl;
@@ -43,64 +35,20 @@ int main(int argc , char** argv){
   }
 
   // get input files from NPOptionManager
-  std::string detectorfileName    = myOptionManager->GetDetectorFile();
   std::string docalibrationfileName    = myOptionManager->GetDoCalibrationFile();
   std::string OutputfileName      = myOptionManager->GetOutputFile();
-
-  // Instantiate RootOutput
-  //std::string TreeName="NPTool_Tree";
-
-  //// User decided of the name
-  //if(!myOptionManager->IsDefault("TreeName")){
-  //  TreeName=myOptionManager->GetOutputTreeName();
-  //}
-
-  // Case of a Physics tree produced
-  //else if(!myOptionManager->GetInputPhysicalTreeOption()){ 
-  //  TreeName="PhysicsTree";
-  //  if(myOptionManager->IsDefault("OutputFileName"))
-  //    OutputfileName="PhysicsTree";
-  //}
-
-  //// Case of Result tree produced
-  //else{
-  //  TreeName="ResultTree";
-  //  if(myOptionManager->IsDefault("OutputFileName"))
-  //    OutputfileName="ResultTree";
-  //}
 
   RootHistogramsCalib::getInstance(OutputfileName);
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
-  myDetector->ReadConfigurationFile(docalibrationfileName);
+  myDetector->ReadDoCalibrationFile(docalibrationfileName);
   myDetector->InitializeRootInput();
-  // Attempt to load an analysis
-  // NPL::VAnalysis* UserAnalysis = NULL;
-  //std::string libName = "./libNPAnalysis" + myOptionManager->GetSharedLibExtension();
-  // dlopen(libName.c_str(),RTLD_NOW | RTLD_GLOBAL);
-  // char* error = dlerror();
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
-  std::cout << "Checking TreeReader adress: " << inputTreeReader << std::endl;
   myDetector->SetTreeReader(inputTreeReader);
-  //if(error==NULL){
-  //  UserAnalysis = NPL::AnalysisFactory::getInstance()->Construct(); 
-  //  UserAnalysis->SetDetectorManager(myDetector);
-  //  UserAnalysis->Init();
-  //  //UserAnalysis->InitTreeReader(inputTreeReader);
-  //} 
-  //else{
-  //  std::string str_error=error;
-  //  if(str_error.find("image not found")!=std::string::npos ||str_error.find("No such file or directory")!=std::string::npos )
-  //    std::cout << "\033[1;33m**** INFO: No User analysis found, building Physical tree ****\033[0m" << std::endl;
-  //  else{
-  //    std::cout << "\033[1;31m**** ERROR: Failure to load libNPAnalysis ****" << std::endl << error << "\033[0m" <<std::endl;
-  //    exit(1);
-  //  }
-  //}
-
-
-  std::cout << std::endl << "///////// Starting Analysis ///////// "<< std::endl;
+  
+  
+  std::cout << std::endl << "///////// Starting Calibration ///////// "<< std::endl;
   TChain* Chain = RootInput:: getInstance()->GetChain();
   myOptionManager->GetNumberOfEntryToAnalyse();
 
@@ -126,18 +74,18 @@ int main(int argc , char** argv){
   int current_tree = 0 ;
   int total_tree = Chain->GetNtrees();
   int entry_max = NPOptionManager::getInstance()->GetNumberOfEntryToAnalyse();
+  std::cout << entry_max << std::endl;
+  std::cout << inputTreeReader->Next() << std::endl;
 
   bool IsCalibration = myOptionManager->IsCalibration();
-  std::cout << IsCalibration << "\n";
-
   if(IsCalibration){
-    myDetector->ReadDoCalibrationFile(docalibrationfileName);
     myDetector->InitializeRootHistogramsCalib(); 
-  std::cout << "coucou" << "\n";
-    while(inputTreeReader->Next() && treated < entry_max){
+    while(inputTreeReader->Next()){
       myDetector->FillHistogramsCalib();
       current_tree = Chain->GetTreeNumber()+1;
       ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
+      if(entry_max >= 0 && treated> entry_max)
+        break;
     }
     myDetector->DoCalibration();
     myDetector->WriteHistogramsCalib();
@@ -145,7 +93,6 @@ int main(int argc , char** argv){
   else{
     std::cout << "Error, IsCalibration Option not well configured !\n"; 
   }
-  std::cout << "test core dumped 1\n";
 
 #if __cplusplus > 199711L && NPMULTITHREADING
   myDetector->StopThread();
@@ -154,13 +101,10 @@ int main(int argc , char** argv){
   current_tree = Chain->GetTreeNumber()+1;
   //ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
 
-  std::cout << "test core dumped 2\n";
   ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
 
-  std::cout << "test core dumped 3\n";
   RootInput::Destroy();
   RootHistogramsCalib::Destroy();
-  std::cout << "test core dumped 4\n";
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////

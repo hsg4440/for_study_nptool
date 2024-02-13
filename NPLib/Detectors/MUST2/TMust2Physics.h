@@ -173,7 +173,11 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   bool FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber); //!
 
   void FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb, unsigned int DetectorNumber,
-                       double* a, double* b); //!
+                       double* a, double* b, std::vector<double> Source_E); //!
+
+  std::vector<double> SlowSource(double AlThickness);//!
+
+  double FindMeanExtrapolation(TGraphErrors* DispersionHist);//!
 
   void WriteHistogramsCalib(); //!
 
@@ -384,8 +388,8 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   bool IsCalibCSI = false;                                          //!
   bool IsCalibEnergy = false;                                       //!
   std::map<TString, std::map<unsigned int, unsigned int>> BadStrip; //!
-  std::vector<double> AlphaSigma;                                   //!
-  std::vector<double> AlphaMean;                                    //!
+  std::map<unsigned int,std::vector<double>> AlphaSigma;                                    //!
+  std::map<unsigned int,std::vector<double>> AlphaMean;                                    //!
   std::vector<TString> Source_isotope;                              //!
   std::vector<double> Source_E;                                     //!
   std::vector<double> Source_Sig;                                   //!
@@ -407,6 +411,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
   std::vector<string> ParticleType{"proton", "deuteron", "triton", "alpha"}; //!
   // map<int,std::string> CalibFile;//!
+  NPL::EnergyLoss* Alpha_Al = nullptr;//!
 
  private:                   // Spectra Class
   TMust2Spectra* m_Spectra; //!

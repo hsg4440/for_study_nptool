@@ -17,9 +17,9 @@
 #include "TH1F.h"
 
 
-#include "/home/mugast/Analysis_MUGAST_LISE_test/nptool/NPLib/Detectors/MUST2/TMust2Data.h"
-#include "/home/mugast/Analysis_MUGAST_LISE_test/nptool/NPLib/Detectors/Mugast/TMugastData.h"
-#include "/home/mugast/Analysis_MUGAST_LISE_test/nptool/NPLib/include/RootInput.h"
+#include "../../../../NPLib/Detectors/MUST2/TMust2Data.h"
+#include "../../../../NPLib/Detectors/Mugast/TMugastData.h"
+#include "../../../../NPLib/include/RootInput.h"
 
 #define NBTELESCOPE 4	
 #define	NBSTRIPS	128

@@ -9,7 +9,6 @@
 using namespace std;
 
 // Root
-#include "TString.h"
 #include "TSpectrum.h"
 #include "TGraphErrors.h"
 #include "TGraph.h"
@@ -25,8 +24,8 @@ using namespace std;
 //#include "/home/mugast/analysis/nptool/NPLib/Physics/NPEnergyLoss.h"
 //#include "/home/mugast/analysis/nptool/NPLib/Core/NPSystemOfUnits.h"
 
-#include "/home/mugast/Analysis_MUGAST_LISE_test/nptool/NPLib/Physics/NPEnergyLoss.h"
-#include "/home/mugast/Analysis_MUGAST_LISE_test/nptool/NPLib/Core/NPSystemOfUnits.h"
+#include "../../../../NPLib/Physics/NPEnergyLoss.h"
+#include "../../../../NPLib/Core/NPSystemOfUnits.h"
 
 using namespace NPUNITS;
 using namespace NPL;
@@ -43,60 +42,60 @@ EnergyLoss EL_Al("./EnergyLossTable/alpha_Al.G4table" , "G4Table", 100) ;
 EnergyLoss EL_Si("./EnergyLossTable/alpha_Si.G4table" , "G4Table", 100) ;
 // Information about the calibration condition (use Latex marks-up)
 
-const TString xy                  = "Y";
-const TString Experiment          = "MUGAST_LISE23";
-const TString Run_Period          = "16/02/23"; 
-const TString Operator            = "Valerian and Hugo";
-const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-const TString Comment             = "MUST2";
-const char* frun = "run_19";
+const std::string xy                  = "X";
+const std::string Experiment          = "MUGAST_LISE23";
+const std::string Run_Period          = "16/02/23"; 
+const std::string Operator            = "Valerian and Hugo";
+const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+const std::string Comment             = "MUST2";
+const char* frun = "";
 
-// const TString Experiment          = "e793s";
-// const TString Run_Period          = "08/03/21";
-// const TString Operator            = "Franco";
-// const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-// const TString Comment             = "Mugast";
+// const std::string Experiment          = "e793s";
+// const std::string Run_Period          = "08/03/21";
+// const std::string Operator            = "Franco";
+// const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+// const std::string Comment             = "Mugast";
 
-// const TString Experiment          = "Test";
-// const TString Run_Period          = "27/02/19";
-// const TString Operator            = "VALERIAN and CYRIL";
-// const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-// const TString Comment             = "Mugast";
+// const std::string Experiment          = "Test";
+// const std::string Run_Period          = "27/02/19";
+// const std::string Operator            = "VALERIAN and CYRIL";
+// const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+// const std::string Comment             = "Mugast";
 
-/* const TString Experiment          = "E744"; */
-/* const TString Run_Period          = "Mai 2018"; */
-/* const TString Operator            = "Valerian"; */
-/* const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm"; */
-/* const TString Comment             = "T5 with 100V on DSSD"; */
+/* const std::string Experiment          = "E744"; */
+/* const std::string Run_Period          = "Mai 2018"; */
+/* const std::string Operator            = "Valerian"; */
+/* const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm"; */
+/* const std::string Comment             = "T5 with 100V on DSSD"; */
 /* const char* frun = "run_0196"; */
 /*
-   const TString Experiment          = "E744";
-   const TString Run_Period          = "June 2018";
-   const TString Operator            = "Valerian";
-   const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-   const TString Comment             = "Y T1-T5";
+   const std::string Experiment          = "E744";
+   const std::string Run_Period          = "June 2018";
+   const std::string Operator            = "Valerian";
+   const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+   const std::string Comment             = "Y T1-T5";
    const char* frun = "run_3001";
    */
 
-//const TString Experiment          = "RIBF57";
-//const TString Run_Period          = "April 2010, Riken BigRIPS, Run 3";
-//const TString Operator            = "Adrien MATTA";
-//const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-//const TString Comment             = "Source at 0$^{\\circ}$";
+//const std::string Experiment          = "RIBF57";
+//const std::string Run_Period          = "April 2010, Riken BigRIPS, Run 3";
+//const std::string Operator            = "Adrien MATTA";
+//const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+//const std::string Comment             = "Source at 0$^{\\circ}$";
 //const char* frun = "RIBF57_runx";
 
-//const TString Experiment          = "e569s";
-//const TString Run_Period          = "july 2009, Ganil VAMOS, Run 19-21";
-//const TString Operator            = "Adrien MATTA";
-//const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-//const TString Comment             = "Source at 0$^{\\circ}$ facing Telescope 1,2,3,4";
+//const std::string Experiment          = "e569s";
+//const std::string Run_Period          = "july 2009, Ganil VAMOS, Run 19-21";
+//const std::string Operator            = "Adrien MATTA";
+//const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+//const std::string Comment             = "Source at 0$^{\\circ}$ facing Telescope 1,2,3,4";
 //const char*   frun                = "e569s_run_19_21";
 
-//const TString Experiment          = "e530";
-//const TString Run_Period          = "march 2009, Ganil LISE, Run 3";
-//const TString Operator            = "Adrien MATTA";
-//const TString Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
-//const TString Comment             = "Source at 0$^{\\circ}$ facing Telescope 1,2,3,4";
+//const std::string Experiment          = "e530";
+//const std::string Run_Period          = "march 2009, Ganil LISE, Run 3";
+//const std::string Operator            = "Adrien MATTA";
+//const std::string Source              = "3 alpha peaks $^{239}$Pu, $^{241}$Am, $^{244}$Cm";
+//const std::string Comment             = "Source at 0$^{\\circ}$ facing Telescope 1,2,3,4";
 //const char* frun = "e530_run_0003";
 
 int Telescope_Number=0;
@@ -104,14 +103,14 @@ const int Strip_Start=1;
 const int Strip_End=128;
 
 // choosing a method for the fit
-const TString method = "ZeroExtrapolation" ;
-//const TString method = "ZeroForce";
+const std::string method = "ZeroExtrapolation" ;
+//const std::string method = "ZeroForce";
 const bool RefitWithSatellite = false;
 const bool Pedestals_Aligned = true;   
 Int_t CurrentTelescope = 0;
 Int_t CurrentStrip     = 0;
-TString folder;
-TString main_name;
+std::string folder;
+std::string main_name;
 TCanvas* Tsummary;
 TCanvas* Buffer;
 double sigma_fit_centroid = 0.;
@@ -124,7 +123,7 @@ Int_t NumberOfIsotope;
 
 // Source original value
 Int_t Source_Number_Peak;
-TString*  Source_isotope;
+std::string*  Source_isotope;
 Double_t* Source_branching_ratio;
 Double_t* Source_E;
 Double_t* Source_Sig;
@@ -157,14 +156,14 @@ TFile *inFile;
 void AutoCalibration(int first_telescope ,int last_telescope, std::string fDet);
 void EnergyCalibrator(std::string);
 Double_t Pedestals(TH1F *);
-void Alpha(TH1F*, TString, Double_t,std::string);
-bool Finder(TH1F*, TString , Double_t*, Double_t*);
+void Alpha(TH1F*, std::string, Double_t,std::string);
+bool Finder(TH1F*, std::string , Double_t*, Double_t*);
 Double_t Calib_ZeroForceMethod(string ,TGraphErrors*,float, Double_t*, Double_t*,std::string);
 Double_t Calib_ZeroExtrapolationMethod(TH1F* hist ,string ,TGraphErrors*,float, Double_t*, Double_t*, Double_t &a , Double_t &b,std::string);
-void LatexSummaryHeader(TString xy,std::string);
+void LatexSummaryHeader(std::string xy,std::string);
 void LatexSummaryEnder();
 void LatexSummaryTelescope();
-void DefineSource(TString sourceName="3 alphas");
+void DefineSource(std::string sourceName="3 alphas");
 
 
 void Find_Satellites(TH1F *h);

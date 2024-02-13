@@ -20,6 +20,7 @@ MCRMethod::MCRMethod()
   //Init();
   // MetroHast();
   Nappe();
+  // NappeBis();
   //MinimizationFunction();
 }
 
@@ -287,7 +288,7 @@ void MCRMethod::Nappe(){
   int X2 = 40;
   double stepx1 = 0.1;
   double stepx2 = 0.1;
-  string Side = "Y";
+  string Side = "X";
 
 
   TH1Map = new std::map<int,std::map<string,TH1F*>>;
@@ -300,8 +301,8 @@ void MCRMethod::Nappe(){
     }
   }
   // std::cout << "test2" << std::endl;
-  runmask[0] = "r0314_mask1";
-  runmask[1] = "r0315_mask1";
+  runmask[0] = "r314_mask1";
+  runmask[1] = "r315_mask2";
   for(unsigned int i = 0; i < 2; i++){
     Chain[i] = new TChain("PhysicsTree");
     Chain[i]->Add(path+runmask[i]+".root"); //CATS1
@@ -314,11 +315,14 @@ void MCRMethod::Nappe(){
   CATSPhysics_[i]= new TTreeReaderValue<TCATSPhysics>(*TreeReader[i],"CATS");
 
   }
-  TString CName = "CUT_314_mask1";
+  
+  
+  TString CName = "CUTm_1";
   CFile[0] = new TFile(CName+".root");
   CUT[0] = (TCutG*)CFile[0]->FindObjectAny(CName);
   std::cout << CUT[0] << std::endl;
-  CName = "CUT_315_mask1";
+  // CName = "CUTm_2";
+  CName = "CUTm_2";
   CFile[1] = new TFile(CName+".root");
   CUT[1] = (TCutG*)CFile[1]->FindObjectAny(CName);
   std::cout << CUT[1] << std::endl;
@@ -403,12 +407,201 @@ void MCRMethod::Nappe(){
 
 
 float MCRMethod::ProjectOnCats(unsigned int i, double x1, double x2){
-  double tmask = (CATSPosZ[1]-MASKPosZ[i])/(CATSPosZ[0] - MASKPosZ[i]);
-  return x2 -x1*tmask;
+  double tmask = (CATSPosZ[i] - MASKPosZ[i])/(CATSPosZ[1] - CATSPosZ[0]); 
+  // double tmaskt = (-CATSPosZ[0])/(CATSPosZ[1] - CATSPosZ[0]); 
+  if(i == 0)
+    return x1 -(x2-x1)*tmask;
+  else if(i == 1)
+    return x2 - (x2-x1)*tmask;
+  // else if(i == 1)
+    // return x1 + (x2-x1)*tmask;
+  else
+    exit(1);
+};
+
+void MCRMethod::NappeBis(){
+  int X1 = 10;
+  int X2 = 10;
+  double stepx1 = 0.2;
+  double stepx2 = 0.2;
+  string Side = "X";
+
+
+  TH1Map = new std::map<int,std::map<string,TH1F*>>;
+  double norm[2*X1+1][2*X2+1];
+  for(unsigned int i = 0; i < 2; i++){
+    for(int i1 = -X1; i1 <= X1; i1++){
+      for(int i2 = -X2; i2 <= X2; i2++){
+          (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)] = new TH1F(Form("h_m%i_x1%i_x2%i",i, i1, i2),Form("h_m%i_x1%i_x2%i",i, i1, i2),300,-30,30);
+      }
+    }
+  }
+  runmask[0] = "NPA_360";// called runmask, but here runmask is the target run
+  runmask[1] = "NPA_364";// this one is the normal run to analyze pd
+  for(unsigned int i = 0; i < 2; i++){
+    Chain[i] = new TChain("PhysicsTree");
+    Chain[i]->Add(path+runmask[i]+".root"); //CATS1
+    if (!(Chain[i]->GetEntries())){
+      printf("ERROR in the Chain !! \n");
+      return;
+    }
+  // std::cout << "test3" << std::endl;
+  TreeReader[i] = new TTreeReader(Chain[i]);
+  CATSPhysics_[i]= new TTreeReaderValue<TCATSPhysics>(*TreeReader[i],"CATS");
+
+  }
+  MUST2Physics_= new TTreeReaderValue<TMust2Physics>(*TreeReader[1],"MUST2");
+  ZDDPhysics_= new TTreeReaderValue<TZDDPhysics>(*TreeReader[1],"ZDD");
+  TACPhysics_= new TTreeReaderValue<TTACPhysics>(*TreeReader[1],"TAC");
+  M2_CsI_E_p_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_CsI_E_p");
+  M2_CsI_E_d_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_CsI_E_d");
+  M2_CsI_E_t_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_CsI_E_t");
+  M2_CsI_E_a_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_CsI_E_a");
+  M2_ELab_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_ELab");
+  M2_ThetaLab_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_ThetaLab");
+  M2_ThetaCM_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_ThetaCM");
+  M2_X_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_X");
+  M2_Y_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_Y");
+  M2_Z_ = new TTreeReaderValue<std::vector<double>>(*TreeReader[1],"M2_Z");
+  
+  TString CName = "CUT_360";
+  CFile[0] = new TFile(CName+".root");
+  CUT[0] = (TCutG*)CFile[0]->FindObjectAny(CName);
+  std::cout << CUT[0] << std::endl;
+  // CName = "CUTm_2";
+  CName = "CUT_364";
+  CFile[1] = new TFile(CName+".root");
+  CUT[1] = (TCutG*)CFile[1]->FindObjectAny(CName);
+  
+  ULong64_t GetEntries = Chain[1]->GetEntries();
+  std::cout << CUT[1] << std::endl;
+  for(unsigned int i = 0; i < 2; i++){
+  clock_t start = clock(), current, end;
+    while (TreeReader[i]->Next()){
+        Long64_t cEntry = TreeReader[i]->GetCurrentEntry();;
+        if (cEntry%100000 == 0){
+            current = clock();
+            Double_t Frac = 1.0*cEntry/GetEntries;
+            Double_t Time = ((double) (current-start)/CLOCKS_PER_SEC);
+            Double_t TimeLeft = Time*(1/Frac - 1.);
+
+            std::cout << "\rEntry : " << cEntry
+                 << "/" << GetEntries
+                 << " --- "
+                 << Form("%.2f",100.*cEntry/GetEntries) <<" %"
+                 << " --- "
+                 <<Form("%.00f RunEvt/sec",cEntry/Time)
+                <<" --- "
+               << " Time Left : "<< Form("%d min ",(int)TimeLeft/60)
+               << Form("%01.00d sec",(int)TimeLeft%60)
+               << std::flush;
+        }
+      CATSPhysics = &**(CATSPhysics_[i]);
+      if(CATSPhysics->PositionX.size() == 2 && CATSPhysics->PositionY.size()==2){
+  // std::cout << "test5 " << CATSPhysics->GetCATSMult() << " " << CATSPhysics->DetNumber[0] << " " << (CATSPhysics->PositionX).size() << " " << CATSPhysics->PositionY[i] << " " << CUT[i]->IsInside(CATSPhysics->PositionX[i],CATSPhysics->PositionY[i]) << std::endl;
+        if(condition(i)){
+          for(int i1 = -X1; i1 <= X1; i1++){
+            for(int i2 = -X2; i2 <= X2; i2++){
+              // std::cout << "test " <<  i1 << " " << i2 << std::endl;
+  // std::cout << "test4" << std::endl;
+              double x1, x2;
+              if(Side == "X"){
+                x1 = CATSPhysics->PositionX[0] +i1*stepx1;
+                x2 = CATSPhysics->PositionX[1] +i2*stepx2;
+              }
+              else if(Side == "Y"){
+                x1 = CATSPhysics->PositionY[0] +i1*stepx1;
+                x2 = CATSPhysics->PositionY[1] +i2*stepx2;
+              }
+              (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)]->Fill(ProjectOnTarget(i,x1,x2));
+              norm[X1+i1][X2+i2] = -1000;
+
+            }
+          }
+        }
+      }
+    }
+  }
+  (*TH1Map)[0][Form("h_m%i_x1%i_x2%i",0, 0, 0)]->Draw();
+  new TCanvas;
+  (*TH1Map)[1][Form("h_m%i_x1%i_x2%i",1, 1, 1)]->Draw("");
+  (*TH1Map)[1][Form("h_m%i_x1%i_x2%i",1, 2, 2)]->Draw("same");
+
+  auto c1 = new TCanvas;
+  TH2F* HeatMap[2];
+  TF1 *fitfunc[2];
+  fitfunc[0] = new TF1("fitfunc","gausn",-10,10);
+  // fitfunc[1] = new TF1("fitfunc","gausn(0) + gausn(3)",-10,10);
+  auto SumHeatMap = new TH2F("Sumheatmap","Sumheatmap",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  HeatMap[0] = new TH2F("heatmap_0","heatmap_0",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  HeatMap[1] = new TH2F("heatmap_1","heatmap_1",2*X1+1, -X1*stepx1, (X1+1)*stepx1, 2*X2+1, -X2*stepx2, (X2+1)*stepx2);
+  for(unsigned int i = 0; i < 2; i++){
+    TSpectrum* Spec = new TSpectrum(i+1,1.);
+    for(int i1 = -X1; i1 <= X1; i1++){
+      for(int i2 = -X2; i2 <= X2; i2++){
+        
+        Int_t nfound = Spec->Search((*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)],2,"",0.15);
+        double value;
+        if(nfound == 1){
+          Double_t* PeaksPosX = Spec->GetPositionX();
+        
+          fitfunc[0]->SetParameters(200,PeaksPosX[0],1);
+          (*TH1Map)[i][Form("h_m%i_x1%i_x2%i",i, i1, i2)]->Fit(fitfunc[0],"QL","",-30,30);
+
+          value = fitfunc[0]->GetParameter(1);
+        }
+        else
+          value = 1e5;
+        HeatMap[i]->SetBinContent(X1+i1+1,X2+i2+1,value);
+
+        if(i== 0)
+          norm[X1+i1][X2+i2] = value;
+        else if(i== 1)
+          norm[X1+i1][X2+i2] = abs(norm[X1+i1][X2+i2] - value);
+             
+      }
+    }
+  }
+  for(int i1 = -X1; i1 <= X1; i1++){
+    for(int i2 = -X2; i2 <= X2; i2++){
+      SumHeatMap->SetBinContent(X1+i1+1,X2+i2+1,norm[X1+i1][X2+i2]);
+  
+    }
+  }
+  // SumHeatMap->Add(HeatMap[0],HeatMap[1],1,1);
+  for(unsigned int i = 0; i < 2; i++){
+  auto c = new TCanvas();
+  HeatMap[i]->Draw("colz");
+  }
+  auto c = new TCanvas();
+  SumHeatMap->Draw("colz");
+}
+
+bool MCRMethod::condition(unsigned int i){
+    return CUT[i]->IsInside(CATSPhysics->PositionOnTargetX,CATSPhysics->PositionOnTargetY);
+}
+
+float MCRMethod::ProjectOnTarget(unsigned int i, double x1, double x2){
+  double tmaskt = (-CATSPosZ[0])/(CATSPosZ[1] - CATSPosZ[0]); 
+  return x1 + (x2-x1)*tmaskt;
 };
 
 
+void MCRMethod::Unallocate(){
+  M2_CsI_E_p     = **M2_CsI_E_p_ ;
+  M2_CsI_E_d     = **M2_CsI_E_d_ ;
+  M2_CsI_E_t     = **M2_CsI_E_t_ ;
+  M2_CsI_E_a     = **M2_CsI_E_a_ ;
+  M2_ELab       = **M2_ELab_ ;
+  M2_ThetaLab   = **M2_ThetaLab_ ;
+  M2_ThetaCM     = **M2_ThetaCM_ ;
+  M2_X           = **M2_X_ ;
+  M2_Y           = **M2_Y_ ;
+  M2_Z           = **M2_Z_ ;
+  // M2_dE          = **M2_dE_ ;
+  Must2Physics   = **MUST2Physics_ ;
 
+}
 
 
 

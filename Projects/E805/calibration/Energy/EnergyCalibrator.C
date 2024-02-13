@@ -11,7 +11,7 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
     int step_limit = 100;
     int k = 0 ;
 
-    TString inFileName = frun;
+    std::string inFileName = frun;
 
     Telescope_Number = i ;
     // Create a folder to Hold all the file from calibration
@@ -23,22 +23,22 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
       FolderName << Experiment << "_" << inFileName << "_" << xy << "_MG" << Telescope_Number << "_E";
     }
     main_name = FolderName.str() ;
-    TString make_folder = "mkdir ./Calibration/" + main_name ;   
+    std::string make_folder = "mkdir ./Calibration/" + main_name ;   
     folder = "./Calibration/" + main_name ;
-    system(make_folder);
-    system(make_folder+"/peaks");
-    system(make_folder+"/dispersion");
-    system(make_folder+"/latex");
-    system(make_folder+"/latex/pictures");
+    system(make_folder.c_str());
+    system((make_folder+"/peaks").c_str());
+    system((make_folder+"/dispersion").c_str());
+    system((make_folder+"/latex").c_str());
+    system((make_folder+"/latex/pictures").c_str());
 
     // open the ROOT file to process
-    TString path  = "./Histograms/";
+    std::string path  = "./Histograms/";
     if(fDet=="MUST2"){
       // inFile = new TFile(path + inFileName +"_RawMUST2Histos_CorrectionPedestals.root");
-      inFile = new TFile(path + inFileName +"_RawMUST2Histos.root");
+      inFile = new TFile((path + inFileName +"_RawMUST2Histos.root").c_str());
     }else if (fDet=="Mugast"){
       // inFile = new TFile(path + inFileName +"_RawMugastHistos_CorrectionPedestals.root");
-      inFile = new TFile(path + inFileName +"_RawMugastHistos.root");
+      inFile = new TFile((path + inFileName +"_RawMugastHistos.root").c_str());
     }
     // inFile = new TFile(path + inFileName +"_RawMust2Histos.root");
     //inFile = new TFile(path + inFileName +"_RawMust2Histos_Threshold.root");
@@ -46,7 +46,7 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
     //cout<<inFile<<endl;
 
     EnergyCalibrator(fDet);
-/*
+
     bool check1=false,check2=false;
     while( !(mean_extrapolation <0.1 && mean_extrapolation >-0.1 ) && k < step_limit )
     {
@@ -82,7 +82,7 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
 
       k++;
     }
-*/
+
     LatexSummaryEnder();
 
     delete Buffer;
@@ -101,7 +101,7 @@ void AutoCalibration(int Telescope_Start, int Telescope_End, std::string fDet="M
 
 
 /////////////////////////////
-void DefineSource(TString sourceName)
+void DefineSource(std::string sourceName)
 {
   if(sourceName=="3 alphas")
   {
@@ -111,7 +111,7 @@ void DefineSource(TString sourceName)
 
     /// Information used in the summary
     Source_Number_Peak = 8;
-    Source_isotope = new TString[Source_Number_Peak] ;Source_E = new Double_t[Source_Number_Peak] ; Source_Sig = new Double_t[Source_Number_Peak] ; Source_branching_ratio = new Double_t[Source_Number_Peak] ;
+    Source_isotope = new std::string[Source_Number_Peak] ;Source_E = new Double_t[Source_Number_Peak] ; Source_Sig = new Double_t[Source_Number_Peak] ; Source_branching_ratio = new Double_t[Source_Number_Peak] ;
 
     // 244Pu
     Source_isotope[0]="$^{239}$Pu"; Source_E[0]   = 5.15659 ; Source_Sig[0] = 0.00014 ; Source_branching_ratio[0] = 70.77 ;
@@ -180,15 +180,15 @@ void EnergyCalibrator(std::string fDet="MUST2")
 
   DefineSource();
 
-  TString str;
-  TString str1;
-  TString str2;
-  TString strbuff;
-  TString strbuff2;
-  TString fname;
-  TString fname2;
-  TString fname3;
-  TString hname;
+  std::string str;
+  std::string str1;
+  std::string str2;
+  std::string strbuff;
+  std::string strbuff2;
+  std::string fname;
+  std::string fname2;
+  std::string fname3;
+  std::string hname;
   LatexSummaryHeader(xy, fDet);
 
   // Clear everything
@@ -251,9 +251,9 @@ void EnergyCalibrator(std::string fDet="MUST2")
   fname3 = folder + "/" + str1 + ".dispersion";
   dispersion_file.open( ( (string)fname3 ).c_str() );
 
-  Tsummary = new TCanvas((TString)("Telescope"+number.str()+"Summary"), (TString)("Telescope "+number.str()+" Summary"), 700, 700);
+  Tsummary = new TCanvas(("Telescope"+number.str()+"Summary").c_str(), ("Telescope "+number.str()+" Summary").c_str(), 700, 700);
   Tsummary->Divide(2,3);
-  Buffer  = new TCanvas((TString)("Buffer"), (TString)("Buffer"), 10, 10);
+  Buffer  = new TCanvas("Buffer", "Buffer", 10, 10);
   Buffer->cd(1);
 
   TH1F *histAlphaToPrint;
@@ -329,10 +329,10 @@ void EnergyCalibrator(std::string fDet="MUST2")
   coeff_b->SetTitle("Offset b (MeV)");
   coeff_b->Draw("ap");
 
-  TString filename = Tsummary->GetName();
-  Tsummary->SaveAs(filename+".pdf");
+  std::string filename = Tsummary->GetName();
+  Tsummary->SaveAs((filename+".pdf").c_str());
   Tsummary->Close();
-  system("mv "+filename+".pdf ./" + folder + "/latex/pictures");
+  system(("mv "+filename+".pdf ./" + folder + "/latex/pictures").c_str());
 
   peaks_file.close();
   calib_file.close();
@@ -397,7 +397,7 @@ Double_t Pedestals(TH1F *hist)
 }
 
 /////////////////////////////////
-void Alpha(TH1F *hist, TString xy, Double_t Pedestal, std::string fDet)
+void Alpha(TH1F *hist, std::string xy, Double_t Pedestal, std::string fDet)
 {
 
   if(xy == "X") 		hist->GetXaxis()->SetRangeUser(8700,9250);
@@ -423,7 +423,7 @@ void Alpha(TH1F *hist, TString xy, Double_t Pedestal, std::string fDet)
 }
 
 /////////////////////////////////
-bool Finder(TH1F *h, TString xy, Double_t *mean, Double_t *sigma)
+bool Finder(TH1F *h, std::string xy, Double_t *mean, Double_t *sigma)
 {
 
   /////////////////////////////////////////////////
@@ -667,7 +667,7 @@ Double_t Calib_ZeroExtrapolationMethod(TH1F* hist , string xy,TGraphErrors *gr, 
 }
 
 /////////////////////////////////////////
-void LatexSummaryHeader(TString xy, std::string fDet)
+void LatexSummaryHeader(std::string xy, std::string fDet)
 {
 
   latex_file.open(folder+"/latex/"+main_name+".tex");
@@ -738,10 +738,10 @@ void LatexSummaryEnder()
   latex_file << endl <<  "\\end{document}" << endl ;
   latex_file.close();
   // generate the pdf file and clean-up
-  system("pdflatex "+folder+"/latex/"+main_name+".tex");
+  system(("pdflatex "+folder+"/latex/"+main_name+".tex").c_str());
   system("rm -f *.log");
   system("rm -f *.aux");
-  system("mv " + main_name+".pdf "+folder  );
+  system(("mv " + main_name+".pdf "+folder).c_str());
 }
 
 ///
@@ -772,8 +772,8 @@ void LatexSummaryTelescope()
     latex_file << "Bad Strip : All Strip are ok."<<endl ;
 
   // Add the Graph
-  TString filename = Tsummary->GetName();
-  TString path = folder+"/latex/pictures/"+filename+".pdf";
+  std::string filename = Tsummary->GetName();
+  std::string path = folder+"/latex/pictures/"+filename+".pdf";
 
   latex_file <<"\\begin{figure}[htcb!]"<<endl ;
   latex_file <<"\\begin{center}"<<endl ;

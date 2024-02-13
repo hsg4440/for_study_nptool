@@ -136,6 +136,7 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
 
     //   Clear The PreTeated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
+    TCATSData* GetPreTreatedData()   {return m_PreTreatedData;}
 
     void BuildPhysicalEvent();
 
