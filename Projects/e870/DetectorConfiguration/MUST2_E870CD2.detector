@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 75 micrometer
+ % 5mg/cm2
+ THICKNESS= 63 micrometer
  ANGLE= 0 deg
  RADIUS=  15 mm
  MATERIAL= CD2
