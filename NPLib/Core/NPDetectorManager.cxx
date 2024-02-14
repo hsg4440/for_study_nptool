@@ -122,6 +122,13 @@ void NPL::DetectorManager::ReadDoCalibrationFile(std::string Path)   {
   
   std::string runToReadfileName = NPOptionManager::getInstance()->GetRunToReadFile();
   RootInput::getInstance(runToReadfileName);
+  if(NPOptionManager::getInstance()->GetCalibrationFile().compare("defaultCalibration.txt")!=0){
+    std::cout << "-C option used, looking for Calibration parameters" << std::endl;
+    CalibrationManager::getInstance(NPOptionManager::getInstance()->GetCalibrationFile());
+  }
+  else
+    std::cout << "-C option not used, no Calibration parameters loaded" << std::endl;
+
   
   ////////////////////////////////////////////
   /////////// Search for Detectors ///////////

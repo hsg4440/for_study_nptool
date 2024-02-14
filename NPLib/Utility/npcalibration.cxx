@@ -74,8 +74,6 @@ int main(int argc , char** argv){
   int current_tree = 0 ;
   int total_tree = Chain->GetNtrees();
   int entry_max = NPOptionManager::getInstance()->GetNumberOfEntryToAnalyse();
-  std::cout << entry_max << std::endl;
-  std::cout << inputTreeReader->Next() << std::endl;
 
   bool IsCalibration = myOptionManager->IsCalibration();
   if(IsCalibration){
