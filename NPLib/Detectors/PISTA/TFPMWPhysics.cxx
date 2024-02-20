@@ -135,8 +135,14 @@ void TFPMWPhysics::BuildPhysicalEvent() {
     //double PosY = FittedHyperbolicSecant(MaxQY[DetN],MapY[DetN]);
 
 
-    PosX = -PosX - DetPosX[DetN];
-    PosY = PosY - DetPosY[DetN];
+    if(DetN==0 || DetN==1){
+      PosX = PosX - DetPosX[DetN];
+      PosY = PosY - DetPosY[DetN];
+    }
+    else if(DetN==2 || DetN==3){
+      PosX = -PosX - DetPosX[DetN];
+      PosY = PosY - DetPosY[DetN];
+    }
 
     int sx0 = (int) PosX;
     int sx1 = sx0+1;
@@ -165,12 +171,13 @@ void TFPMWPhysics::CalculateFocalPlanePosition(double Zf){
     double Y2 = PositionY[2];
     double Y3 = PositionY[3];
 
-    Xf = X2 + (X3-X2)/(Z3-Z2)*(Zf-Z2);
+    double t = (Z3-Zf)/(Z2-Zf);
+    Xf = 1./(t-1)*(t*X2-X3);
     Thetaf = atan((X3-X2)/(Z3-Z2));
-
+    
     Z2 = DetPosZ[2]+m_GapSize;
     Z3 = DetPosZ[3]+m_GapSize;
-    Yf = Y2 + (Y3-Y2)/(Z3-Z2)*(Zf-Z2);
+    Yf = 1./(t-1)*(t*Y2-Y3);
   }
 
 }
@@ -185,17 +192,17 @@ void TFPMWPhysics::CalculateTargetPosition(){
     double X1 = PositionX[1];
     double Y0 = PositionY[0];
     double Y1 = PositionY[1];
-    Xt = X1 + (X0-X1)*Z1/Z0;
+    Xt = (1./(Z1-Z0))*(X0*Z1-X1*Z0);
 
     Z0 = DetPosZ[0]+m_GapSize;
     Z1 = DetPosZ[1]+m_GapSize;
-    Yt = Y1 + (Y0-Y1)*Z1/Z0;
+    Yt = (1./(Z1-Z0))*(Y0*Z1-Y1*Z0);
 
     Z0 = DetPosZ[0];
     Z1 = DetPosZ[1];
-    TVector3 vFF = TVector3(X1-X0,Y1-Y0,Z1-Z0);
-    Theta_in = vFF.Theta();
-    Phi_in = vFF.Phi();
+    //TVector3 vFF = TVector3(X1-X0,Y1-Y0,Z1-Z0);
+    Theta_in = atan((X1-X0)/(Z1-Z0));
+    Phi_in = atan((Y1-Y0)/(Z1-Z0));
   }
 
 }

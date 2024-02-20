@@ -76,17 +76,23 @@ void TICPhysics::BuildSimplePhysicalEvent() {
 void TICPhysics::BuildPhysicalEvent() {
   PreTreat();
 
-  double fIC[11];
-
   int size = m_PreTreatedData->GetICMult();
   for(int i=0; i<size; i++){
     fIC[i] = m_PreTreatedData->GetIC_Charge(i);
   }
 
   if(fIC[1]>0 && fIC[5]>0){
-    DE = 0.5*(fIC[0] + fIC[1] + fIC[2] + fIC[3]) + fIC[4];
+    DE = fIC[0] + fIC[1] + fIC[2] + fIC[3] + fIC[4];
     Eres = fIC[5] + fIC[6] + fIC[7] + fIC[8] + fIC[9];
-    Etot =0.02411*(0.8686*fIC[0]+0.7199*fIC[1]+0.6233*fIC[2]+0.4697*fIC[3]+0.9787*fIC[4]+0.9892*fIC[5]+2.1038*fIC[6]+1.9429*fIC[7]+1.754*fIC[8]+2.5*fIC[9]); 
+
+    static CalibrationManager* Cal = CalibrationManager::getInstance();
+    double scalor = Cal->GetValue("IC/ETOT_SCALING",0);
+    Etot = scalor*(DE+Eres);
+    
+    //DE = 0.5*(fIC[0] + fIC[1] + fIC[2] + fIC[3]) + fIC[4];
+    //Eres = fIC[5] + fIC[6] + fIC[7] + fIC[8] + fIC[9];
+    //Etot = 0.02411*(0.8686*fIC[0]+0.7199*fIC[1]+0.6233*fIC[2]+0.4697*fIC[3]+0.9787*fIC[4]+0.9892*fIC[5]+2.1038*fIC[6]+1.9429*fIC[7]+1.754*fIC[8]+2.5*fIC[9]); 
+
   }
   else{
     DE = -100;
@@ -109,8 +115,13 @@ void TICPhysics::PreTreat() {
 
   unsigned int mysize = m_EventData->GetICMult();
   for (unsigned int i = 0; i < mysize ; ++i) {
-    m_PreTreatedData->SetIC_Charge(m_EventData->GetIC_Charge(i));
-    m_PreTreatedData->SetIC_Section(m_EventData->GetIC_Section(i));
+    int section = m_EventData->GetIC_Section(i);
+    double gain = Cal->GetValue("IC/SEC"+NPL::itoa(section)+"_ALIGN",0);
+    //cout << section << " " << gain << endl;
+    double charge = gain*m_EventData->GetIC_Charge(i);
+
+    m_PreTreatedData->SetIC_Charge(charge);
+    m_PreTreatedData->SetIC_Section(section);
   }
 }
 
@@ -178,6 +189,9 @@ void TICPhysics::Clear() {
   DE = -100;
   Eres = -100;
   Etot = -100;
+  for(int i=0; i<11; i++){
+    fIC[i] = 0;
+  }
 }
 
 
@@ -221,9 +235,10 @@ void TICPhysics::ReadConfiguration(NPL::InputParser parser) {
 void TICPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  for(int sec = 0; sec < m_NumberOfDetectors; sec++){
+  for(int sec = 0; sec < 11; sec++){
     Cal->AddParameter("IC","SEC"+NPL::itoa(sec+1)+"_ALIGN","IC_SEC"+NPL::itoa(sec+1)+"_ALIGN");
   }
+  Cal->AddParameter("IC","ETOT_SCALING","IC_ETOT_SCALING");
 }
 
 ///////////////////////////////////////////////////////////////////////////
