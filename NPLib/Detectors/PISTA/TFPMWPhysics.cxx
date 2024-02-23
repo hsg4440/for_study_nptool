@@ -290,7 +290,7 @@ double TFPMWPhysics::FittedHyperbolicSecant(std::pair<int,double>& MaxQ,std::vec
   unsigned int sizeQ = Map.size(); 
 
   for(unsigned int i = 0 ; i < sizeQ ; i++){
-    if(Map[i].second > (MaxQ.second)*0.2){
+    if(Map[i].second > (MaxQ.second)*0.1){
       q.push_back(Map[i].second);
       y.push_back(Map[i].first);
       final_size++;
