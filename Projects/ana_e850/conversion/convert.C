@@ -26,6 +26,8 @@ void convert(int run=29){
   output_tree->Branch("T_TMW1_FPMW0",&T_TMW1_FPMW0,"T_TMW1_FPMW0/F");
   output_tree->Branch("T_TMW1_FPMW1",&T_TMW1_FPMW1,"T_TMW1_FPMW1/F");
   output_tree->Branch("FPMWPat_0RawNr",fFPMWPat_0RawNr);
+  output_tree->Branch("FPMWPat_0RawM",&fFPMWPat_0RawM);
+  output_tree->Branch("TMWPat_0TS",&TMWPat_0TS);
   output_tree->Branch("Exo_Mult",&Exo_Mult,"Exo_Mult/I");
   output_tree->Branch("Exo_Energy",&Exo_Energy);
   output_tree->Branch("Exo_Crystal",&Exo_Crystal);
@@ -134,6 +136,12 @@ void InitInputTree(){
   // Pat
   input_tree->SetBranchStatus("FPMWPat_0RawNr","true");
   input_tree->SetBranchAddress("FPMWPat_0RawNr",fFPMWPat_0RawNr);
+  input_tree->SetBranchStatus("FPMWPat_0RawM","true");
+  input_tree->SetBranchAddress("FPMWPat_0RawM",&fFPMWPat_0RawM);
+  input_tree->SetBranchStatus("TMWPat_00TS","true");
+  input_tree->SetBranchAddress("TMWPat_00TS",&TMWPat_0TS);
+
+
 
   // IC
   input_tree->SetBranchStatus("IC","true");

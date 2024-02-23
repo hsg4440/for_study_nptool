@@ -113,6 +113,7 @@ class Analysis: public NPL::VAnalysis{
     float T12;
     float T13;
     UShort_t FPMWPat_0RawNr[20];
+    Int_t FPMWPat_0RawM;
     int Exo_Mult;
     vector<float>* Exo_Energy;
     vector<int>* Exo_Crystal;
