@@ -64,8 +64,10 @@ class TICPhysics : public TObject, public NPL::VDetector {
     double DE;
     double Eres;
     double Etot;
+    double fIC[11];
+    double fIC_raw[11];//! 
   private:
-    
+
     /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 Pos); 
   void AddDetector(double R, double Theta, double Phi); 
@@ -124,6 +126,9 @@ class TICPhysics : public TObject, public NPL::VDetector {
     // needed for online analysis for example
     void SetRawDataPointer(TICData* rawDataPointer) {m_EventData = rawDataPointer;}
 
+    void SetFPMWSection(int section) {m_FPMW_Section = section;}
+    int GetFPMWSection() {return m_FPMW_Section;}
+
   // objects are not written in the TTree
   private:
     TICData*         m_EventData;        //!
@@ -142,6 +147,7 @@ class TICPhysics : public TObject, public NPL::VDetector {
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
+    int m_FPMW_Section; //!
 
   // Static constructor to be passed to the Detector Factory
   public:

@@ -269,7 +269,7 @@ void Analysis::InitInputBranch(){
 
 
   RootInput::getInstance()->GetChain()->SetBranchStatus("Inner6MVM",true);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("InnerM6VM",&Inner6MVM);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("Inner6MVM",&Inner6MVM);
   RootInput::getInstance()->GetChain()->SetBranchStatus("Inner6MV",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("Inner6MV",Inner6MV);
   RootInput::getInstance()->GetChain()->SetBranchStatus("Inner6MVN",true);
@@ -281,7 +281,7 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchAddress("Inner20MVM",&Inner20MVM);
   RootInput::getInstance()->GetChain()->SetBranchStatus("Inner20MV",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("Inner20MV",Inner20MV);
-  RootInput::getInstance()->GetChain()->SetBranchStatus("Inner6MVN",true);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("Inner20MVN",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("Inner20MVN",Inner20MVN);
   RootInput::getInstance()->GetChain()->SetBranchStatus("Inner20MVTS",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("Inner20MVTS",Inner20MVTS);

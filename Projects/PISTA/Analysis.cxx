@@ -49,9 +49,9 @@ void Analysis::Init(){
   Transfer = new NPL::Reaction("238U(12C,12C)238U@1417");
 
   // Energy loss table
-  Be10C = EnergyLoss("EnergyLossTable/Be10_C.G4table","G4Table",100);
-  C12C = EnergyLoss("EnergyLossTable/C12_C.G4table","G4Table",100);
-  U238C = EnergyLoss("EnergyLossTable/U238_C.G4table","G4Table",100);
+  //Be10C = EnergyLoss("EnergyLossTable/Be10_C.G4table","G4Table",100);
+  //C12C = EnergyLoss("EnergyLossTable/C12_C.G4table","G4Table",100);
+  //U238C = EnergyLoss("EnergyLossTable/U238_C.G4table","G4Table",100);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,11 +79,11 @@ void Analysis::TreatEvent(){
   TVector3 BeamPosition(XTarget,YTarget,ZTarget);
 
   //TVector3 PositionOnTarget(0,0,0);
-  TVector3 PositionOnTarget(-1,0.5,0);
-  //TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
+  //TVector3 PositionOnTarget(-1,0.5,0);
+  TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
   //TVector3 PositionOnTarget(XTarget, YTarget, 0);
   BeamEnergy = 1417.;//InitialConditions->GetIncidentInitialKineticEnergy();
-  BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
+  //BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer->SetBeamEnergy(BeamEnergy);
   //Transfer->SetBeamEnergy(OriginalBeamEnergy);
   

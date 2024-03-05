@@ -578,6 +578,17 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       return material;
     }
 
+    else if (Name == "Cerium_Oxyde" || Name == "CeO2") {
+      if (!density)
+        density = 7.22 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      material->AddElement(GetElementFromLibrary("Ce"), 1);
+      material->AddElement(GetElementFromLibrary("O"), 2);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
     else if (Name == "Sodium_Oxyde") {
       if (!density)
         density = 2.27 * g / cm3;
