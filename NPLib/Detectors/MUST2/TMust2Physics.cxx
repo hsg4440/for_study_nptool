@@ -1160,6 +1160,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
       EnergyXThreshold[TelescopeNumber] = Energyblocks[i]->GetInt("XThreshold");
       EnergyYThreshold[TelescopeNumber] = Energyblocks[i]->GetInt("YThreshold");
       AlphaFitType[TelescopeNumber] = Energyblocks[i]->GetString("AlphaFitType");
+      m_NumberOfTelescope++;
     }
     else {
       cout << "ERROR: Missing token for EnergyParam DoCalibration blocks, check your "
@@ -1596,7 +1597,7 @@ void TMust2Physics::InitializeRootHistogramsCalib() {
       InitializeRootHistogramsCSIF(it->first);
     }
   }
-  if (NPOptionManager::getInstance()->IsReader() == true && DoCalibrationCsI.size() > 0) {
+  if (NPOptionManager::getInstance()->IsReader() == true && IsCalibCSI) {
     TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
     GATCONF_ = new TTreeReaderValue<std::vector<unsigned int>>(*inputTreeReader, "GATCONF");
   }
@@ -1746,29 +1747,19 @@ void TMust2Physics::FillHistogramsCalib() {
     FillHistogramsCalibEnergyF();
   }
 
-  // if(**GATCONFMASTER_ > 0)
-  //{
-  // }
   if (IsCalibCSI) {
-    // if(!IsCalibEnergy && NPOptionManager::getInstance()->IsReader())
     if (!IsCalibEnergy && NPOptionManager::getInstance()->IsReader() && (**GATCONF_).size() > 0) {
       m_EventData = &(**r_ReaderEventData);
       FillHistogramsCalibCSIF();
     }
   }
-  // if(NPOptionManager::getInstance()->IsReader() == true && IsCalibEnergy) {
-  //   m_EventData = &(**r_ReaderEventData);
-  // }
-  // else if(NPOptionManager::getInstance()->IsReader() == true && IsCalibCSI && **(GATCONFMASTER_) > 0) {
-  //   m_EventData = &(**r_ReaderEventData);
-  // }
-  //  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
-  //  {
-  //    if(it->second)
-  //    {
-  //      FillHistogramsCalibTimeF();
-  //    }
-  //  }
+  for (it = DoCalibrationTime.begin(); it != DoCalibrationTime.end(); it++)
+  {
+    if(it->second)
+    {
+      FillHistogramsCalibTimeF();
+    }
+  }
 }
 
 void TMust2Physics::FillHistogramsCalibEnergyF() {
