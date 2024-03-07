@@ -173,15 +173,18 @@ double GladFieldMap::GetFlightPath(TVector3 vStart, double Brho, TVector3 Pos, T
 //////////////////////////////////////////////////////////////////////
 TVector3 GladFieldMap::PropagateToMWPC(TVector3 pos, TVector3 dir){
   // go to MWPC3 frame reference
+
+  pos += m_Glad_TurningPoint;
   pos.RotateY(-m_CentralTheta);
   dir.RotateY(-m_CentralTheta);
-
+  pos -= m_Glad_TurningPoint;
+  
   double deltaZ = m_MWPC3_POS.Mag() - pos.Z();
   dir*=deltaZ/dir.Z();
   pos+=dir;
   pos.SetX(pos.X());
   pos.RotateY(m_CentralTheta);
- 
+
   return pos;
 
 }
