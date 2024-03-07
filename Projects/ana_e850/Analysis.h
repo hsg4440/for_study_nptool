@@ -48,6 +48,7 @@ class Analysis: public NPL::VAnalysis{
     void InitInputBranch();
     void ReInitValue();
     void LoadCalibParameter();
+    void TwoAlphaAnalysis();
 
     static NPL::VAnalysis* Construct();
 
@@ -67,24 +68,27 @@ class Analysis: public NPL::VAnalysis{
     double ThetaLab;
     double PhiLab;
     double ThetaCM;
+    double Ex242Pu;
     double Ex240Pu;
     double Ex236U;
     double Ex238U;
     double PID;
 
+    int FPMW_Section;
     double FF_Brho;
     double FF_Path;
-    double FF_D;
-    double FF_T;
-    double FF_V;
-    double FF_AoQ;
-    double FF_Beta;
-    double FF_Gamma;
-    double FF_Q;
-    double FF_M1;
-    double FF_Mass;
-    double FF_Etot;
-    int FPMW_Section;
+    
+    double FF_D13;
+    double FF_T13;
+    double FF_V13;
+    double FF_AoQ13;
+    double FF_Beta13;
+    double FF_Gamma13;
+    double FF_Q13;
+    double FF_M113;
+    double FF_Mass13;
+    double FF_Etot13;
+    
     double FF_D14;
     double FF_T14;
     double FF_V14;
@@ -92,13 +96,36 @@ class Analysis: public NPL::VAnalysis{
     double FF_M114;
     double FF_AoQ14;
     double FF_Mass14;
+    
+    double FF_D23;
+    double FF_T23;
+    double FF_V23;
+    double FF_Q23;
+    double FF_M123;
+    double FF_AoQ23;
+    double FF_Mass23;
+
+    double FF_D24;
+    double FF_T24;
+    double FF_V24;
+    double FF_Q24;
+    double FF_M124;
+    double FF_AoQ24;
+    double FF_Mass24;
+  
     double FF_Qav;
     double FF_Massav;
 
+    int m_2alpha;
+    vector<double> Elab1;
+    vector<double> Elab2;
+
     NPL::Reaction* Transfer10Be;
+    NPL::Reaction* Transfer8Be;
     NPL::Reaction* Transfer14C;
     NPL::Reaction* Elastic;
-
+    
+    TVector3 PositionOnTarget;
     TRandom3 Rand;
     double ThetaNormalTarget;
     double ThetaDetectorSurface;
@@ -108,10 +135,10 @@ class Analysis: public NPL::VAnalysis{
     NPL::EnergyLoss Be10C;
     NPL::EnergyLoss U238C;
 
-    float T02;
-    float T03;
-    float T12;
     float T13;
+    float T14;
+    float T23;
+    float T24;
     UShort_t FPMWPat_0RawNr[20];
     Int_t FPMWPat_0RawM;
     int Exo_Mult;
