@@ -406,9 +406,11 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   map<int, double> CSIEnergyYThreshold;             //!
   map<int, double> CSIEThreshold;                   //!
   map<int, double> SiThickness;                   //!
+  map<int, double> AlThickness;                   //!
   TTreeReaderValue<std::vector<unsigned int>>* GATCONF_; //!
   bool DoCSIFit;                                    //!
   std::map<TString, NPL::EnergyLoss*> ParticleSi;   //!
+  std::map<TString, NPL::EnergyLoss*> ParticleAl;   //!
   // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
   std::vector<string> ParticleType{"proton", "deuteron", "triton", "alpha"}; //!
   // map<int,std::string> CalibFile;//!
