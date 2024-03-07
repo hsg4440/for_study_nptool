@@ -252,9 +252,10 @@ npreader -D /path/to/detector.detector -E /path/to/reaction.reaction -R RunToTre
   and only uses standard calibration functions in detector physics libraries
 - _npcalibration_ requires configuration files. Examples of these configuration files can be found
   in npp E805 DoCalibration folder.
-- The motivation behind _npcalibration_ is to get standard calibration files that can be directly used
-  by _npanalysis_ or _npreader_ and a .root file with some results of the calibration to check that it
-  worked well.
+- The motivation behind _npcalibration_ is to get standard calibration file that can be directly used
+  by _npanalysis_ or _npreader_. A root file is also created after calibration, it is recommended to write
+  some histograms and fit functions used during the calibration in this file to check that everything
+  worked as expected
 - Currently supported calibrations are MUST2 Silicon E and CsI E and Exogam E calibration.
 - Output calibration files can be found in a Calibration folder. This folder can be sourced in your
   project.config.
