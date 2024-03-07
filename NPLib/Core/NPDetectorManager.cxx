@@ -159,6 +159,8 @@ void NPL::DetectorManager::ReadDoCalibrationFile(std::string Path)   {
       delete Reader;
     }
   }
+  // The calibration Manager got all the parameter added, so it can load them from the calibration file
+  CalibrationManager::getInstance()->LoadParameterFromFile();
 }
 ///////////////////////////////////////////////////////////////////////////////
 //   Read stream at ConfigFile and pick-up Token declaration of Detector
@@ -316,7 +318,6 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 
   // Start the thread if multithreading supported
 #if __cplusplus > 199711L && NPMULTITHREADING
-  //std::cout << "Test init POOL ////////////////////////////////////////////////////////////" << std::endl;
   InitThreadPool();
 #endif
 
