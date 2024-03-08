@@ -233,14 +233,15 @@ npsimulation -D Example1.detector -E Example1.reaction -B path/to/macro.mac -O F
 ```
 
 ## npreader
-- _npreader_ is a new executable, working similarly as _npanalysis_. It also uses _Analysis.cxx_ to convert raw data to physics tree. 
-- _npreader_ uses TTreeReader.next() to get data event by event. If a trigger condition only uses a small part of the data,
-  this data can be unallocated and checked in _UnallocateBeforeTreat()_ function, returning true or false depending on the trigger
-  (before treating detectors). This can also be done after treating detectors but before building with _UnallocateBeforeBuild()_
-  or after building but before writing with _FillOutputCondition()_. Using these functions is helpful to check only relevant
-  observables and write only relevant physics, which accelerates significantly analysis execution.
-- An example of analysis syntax working with _npreader_ can be found in npp E805.
-- Currently, _npreader_ option is only implemented for MUST2, Exogam, CATS, TAC detectors.
+- _npreader_ is a new executable, working similarly to _npanalysis_. It also uses _Analysis.cxx_/_Analysis.cxx_ to convert raw data to physics tree. 
+- _npreader_ uses the TTreeReader.next() method to retrieve data event by event. A software trigger condition can be set to filter the data.
+  Depending on the trigger condition, a small part of the data can be extracted by the _UnallocateBeforeBuild()_ method to check the condition before building detectors. 
+  The method then returns _true_ or _false_ depending on this trigger, and will continue the analysis in case of _true_, but will stop and go to the next event in case of _false_.
+  Conditions can also be set after building detectors but before treating the analysis using the _UnallocateBeforeTreat()_ method
+  or after treating the analysis but before writing the tree using the _FillOutputCondition()_ method. 
+  These method are useful to treat and write only relevant information which accelerates significantly the execution of the analysis. 
+- An example of such analysis using the new npreader utility can be found in project E805.
+- Currently, the _npreader_ utility is only implemented for MUST2, Exogam, CATS and TAC detectors.
 
 The syntax is the same as npanalysis:
 ```
@@ -248,19 +249,19 @@ npreader -D /path/to/detector.detector -E /path/to/reaction.reaction -R RunToTre
 ```
 
 ## npcalibration
-- _npcalibration_ is an executable to perform detector calibrations. It does not rely on _Analysis.cxx_,
-  and only uses standard calibration functions in detector physics libraries
-- _npcalibration_ requires configuration files. Examples of these configuration files can be found
-  in npp E805 DoCalibration folder.
-- The motivation behind _npcalibration_ is to get standard calibration file that can be directly used
-  by _npanalysis_ or _npreader_. A root file is also created after calibration, it is recommended to write
-  some histograms and fit functions used during the calibration in this file to check that everything
-  worked as expected
-- Currently supported calibrations are MUST2 Silicon E and CsI E and Exogam E calibration.
-- Output calibration files can be found in a Calibration folder. This folder can be sourced in your
+- _npcalibration_ is an executable intended for detector calibrations. It does not rely on _Analysis.cxx_,
+  and only uses standard calibration functions in several detector physics libraries.
+- _npcalibration_ requires configuration files. Examples of such configuration files can be found
+  in project E805 DoCalibration folder.
+- The motivation behind _npcalibration_ is to get standard calibration files that can be directly used
+  by _npanalysis_ or _npreader_. A root file is also created after the calibration has been performed, it is recommended to write
+  the relevant histograms and fit functions used during the calibration to this file to check that everything
+  worked as expected.
+- Currently _npcalibration_ supports MUST2 (DSSD energy and CsI energy) and Exogam (Crystals energy) calibration.
+- Output calibration files can be found in the Calibration folder. This folder can be sourced in your
   project.config.
 - Some calibrations require histogram CUTS (for instance particle identification in CsI detectors of MUST2).
-  A path to these CUTS can also be sourced in project.config. (Example in npp E805 project.config)
+  A path to these CUTS can also be sourced in your project.config. (Example can be found in Project E805: project.config)
 
 
 The syntax is the following:
@@ -268,17 +269,16 @@ The syntax is the following:
 npcalibration -DC /path/to/DoCalibration.do -R RunToTreat.txt -O OutputFile
 ```
 
-If necessary, a preliminary calibration file can be added (for instance, Si E calibration is necessary for MUST2
+If necessary, a preliminary calibration file can be added (for instance, DSSD energy calibration is necessary for MUST2
 CsI calibration)
 ```
 npcalibration -DC /path/to/DoCalibration.do -R RunToTreat.txt -O OutputFile -C /path/to/calibration.txt
 ```
 
-Exogam calibration requires CUBIX software https://cubix.in2p3.fr/. If CUBIX is installed, it needs to be sourced
-in your environment. To compile nptool with CUBIX, add:
+Exogam calibration requires the CUBIX software https://cubix.in2p3.fr/. If CUBIX is installed, it needs to be sourced
+in your environment. To compile nptool with CUBIX, add to your cmake command:
 ```
 -DCUBIX=1
 ```
-when compiling NPLib with cmake.
 
 
