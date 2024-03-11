@@ -54,6 +54,7 @@ ClassImp(TPISTAPhysics)
     m_NumberOfStripsY = 91;
     m_MaximumStripMultiplicityAllowed = 10;
     m_StripEnergyMatching = 0.050;
+    m_DistanceBetweenDEandE = 4;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -104,13 +105,13 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   vector<vector<double>> OneDetectorStripPositionZ;
 
   TVector3 Strip_1_1;
-  double ContractedStripPitchX = StripPitchX*norm/(norm+4);
+  double ContractedStripPitchX = StripPitchX*norm/(norm+m_DistanceBetweenDEandE);
   double ContractedLongBase = NumberOfStripsX*ContractedStripPitchX;
   double deltaX = LongBase/2-ContractedLongBase/2;
 
   //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(StripPitchY / 2.);
   Strip_1_1 = A + u*deltaX + u*(ContractedStripPitchX / 2.) + v*(NumberOfStripsY*StripPitchY - StripPitchY / 2.);
-  //Strip_1_1 = Strip_1_1 + 2.9*u + 2.0*v;
+  //Strip_1_1 = A + u*(StripPitchX / 2.) + v*(NumberOfStripsY*StripPitchY - StripPitchY / 2.);
 
   TVector3 StripPos;
   for(int i=0; i<NumberOfStripsX; i++){
@@ -118,12 +119,12 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
     lineY.clear();
     lineZ.clear();
     for(int j=0; j<NumberOfStripsY; j++){
-      //StripPos = Strip_1_1 + i*u*StripPitchX + j*v*StripPitchY;
+      //StripPos = Strip_1_1 + i*u*StripPitchX - j*v*StripPitchY;
       StripPos = Strip_1_1 + i*u*ContractedStripPitchX - j*v*StripPitchY;
       lineX.push_back(StripPos.X());
-      //lineX.push_back(StripPos.X()*norm/(norm+7*abs(sin(n.Phi()))));
+      //lineX.push_back(StripPos.X()*norm/(norm+4*abs(sin(n.Phi()))));
       lineY.push_back(StripPos.Y());
-      //lineY.push_back(StripPos.Y()*norm/(norm+7*abs(cos(n.Phi()))));
+      //lineY.push_back(StripPos.Y()*norm/(norm+4*abs(cos(n.Phi()))));
       lineZ.push_back(StripPos.Z());
     }
 
