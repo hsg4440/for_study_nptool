@@ -212,6 +212,8 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     vector<vector<vector<double>>> m_StripPositionY; //!
     vector<vector<vector<double>>> m_StripPositionZ; //!
 
+    int m_DistanceBetweenDEandE;
+
     // thresholds
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
