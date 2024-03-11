@@ -131,67 +131,6 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   //   address
   void InitializeRootOutput();
 
-  void DoCalibrationCSIPreTreat();
-
-  void InitializeRootHistogramsCalib(); //!
-
-  void InitializeRootHistogramsEnergyF(Int_t DetectorNumber); //!
-
-  void InitializeRootHistogramsTimeF(Int_t DetectorNumber){}; //!
-
-  void InitializeRootHistogramsCSIF(Int_t DetectorNumber); //!
-
-  void FillHistogramsCalib(); //!
-
-  void FillHistogramsCalibEnergyF(); //!
-
-  void FillHistogramsCalibTimeF(){}; //!
-
-  void FillHistogramsCalibCSIF(); //!
-
-  void DoCalibration(); //!
-
-  void DoCalibrationEnergyF(Int_t DetectorNumber); //!
-
-  void DoCalibrationTimeF(Int_t DetectorNumber); //!
-
-  void DoCalibrationCsIF(Int_t DetectorNumber); //!
-
-  void MakeEnergyCalibFolders(); //!
-
-  void MakeCSICalibFolders(); //!
-
-  void CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream* calib_file,
-                                    ofstream* dispersion_file); //!
-
-  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream* calib_file, TString ParticleType); //!
-
-  void CloseCalibrationCSIFiles(ofstream* calib_file); //!
-
-  void CloseCalibrationEnergyFiles(ofstream* calib_file, ofstream* dispersion_file); //!
-
-  bool FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber); //!
-
-  void FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb, unsigned int DetectorNumber,
-                       double* a, double* b, std::vector<double> Source_E); //!
-
-  std::vector<double> SlowSource(double AlThickness);//!
-
-  double FindMeanExtrapolation(TGraphErrors* DispersionHist);//!
-
-  void WriteHistogramsCalib(); //!
-
-  void WriteHistogramsEnergyF(); //!
-
-  void WriteHistogramsCSIF(); //!
-
-  void WriteHistogramsTimeF(){}; //!
-
-  static Double_t source_Pu(Double_t* x, Double_t* par); //!
-  static Double_t source_Am(Double_t* x, Double_t* par); //!
-  static Double_t source_Cm(Double_t* x, Double_t* par); //!
-
-  void DefineCalibrationSource(); //!
 
   //   This method is called at each event read from the Input Tree. Aime is to
   //   build treat Raw dat in order to extract physical parameter.
@@ -347,6 +286,71 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // And go between pad or cristal.
   bool m_Ignore_not_matching_SiLi; //!
   bool m_Ignore_not_matching_CsI;  //!
+  
+  
+  /////////////////////////// CALIBRATION RELATED METHODS ////////////////////////////////
+  
+  void DoCalibrationCSIPreTreat();//!
+
+  void InitializeRootHistogramsCalib(); //!
+
+  void InitializeRootHistogramsEnergyF(Int_t DetectorNumber); //!
+
+  void InitializeRootHistogramsTimeF(Int_t DetectorNumber){}; //!
+
+  void InitializeRootHistogramsCSIF(Int_t DetectorNumber); //!
+
+  void FillHistogramsCalib(); //!
+
+  void FillHistogramsCalibEnergyF(); //!
+
+  void FillHistogramsCalibTimeF(){}; //!
+
+  void FillHistogramsCalibCSIF(); //!
+
+  void DoCalibration(); //!
+
+  void DoCalibrationEnergyF(Int_t DetectorNumber); //!
+
+  void DoCalibrationTimeF(Int_t DetectorNumber); //!
+
+  void DoCalibrationCsIF(Int_t DetectorNumber); //!
+
+  void MakeEnergyCalibFolders(); //!
+
+  void MakeCSICalibFolders(); //!
+
+  void CreateCalibrationEnergyFiles(unsigned int DetectorNumber, TString side, ofstream* calib_file,
+                                    ofstream* dispersion_file); //!
+
+  void CreateCalibrationCSIFiles(unsigned int DetectorNumber, ofstream* calib_file, TString ParticleType); //!
+
+  void CloseCalibrationCSIFiles(ofstream* calib_file); //!
+
+  void CloseCalibrationEnergyFiles(ofstream* calib_file, ofstream* dispersion_file); //!
+
+  bool FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber); //!
+
+  void FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb, unsigned int DetectorNumber,
+                       double* a, double* b, std::vector<double> Source_E); //!
+
+  std::vector<double> SlowSource(double AlThickness);//!
+
+  double FindMeanExtrapolation(TGraphErrors* DispersionHist);//!
+
+  void WriteHistogramsCalib(); //!
+
+  void WriteHistogramsEnergyF(); //!
+
+  void WriteHistogramsCSIF(); //!
+
+  void WriteHistogramsTimeF(){}; //!
+
+  static Double_t source_Pu(Double_t* x, Double_t* par); //!
+  static Double_t source_Am(Double_t* x, Double_t* par); //!
+  static Double_t source_Cm(Double_t* x, Double_t* par); //!
+
+  void DefineCalibrationSource(); //!
 
  private:                        //   Root Input and Output tree classes
   TMust2Data* m_EventData;       //!
@@ -381,6 +385,9 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   map<int, bool> m_CsIPresent;  //!
   map<int, bool> m_SiLiPresent; //!
   map<int, bool> m_CsIOffset;   //!
+  
+  
+  /////////////////////////// CALIBRATION RELATED VARIABLES ////////////////////////////////
  private:
   map<int, bool> DoCalibrationEnergy;                               //!
   map<int, bool> DoCalibrationTime;                                 //!
