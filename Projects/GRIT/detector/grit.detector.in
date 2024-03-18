@@ -7,14 +7,36 @@ Target
  X= 0 mm 
  Y= 0 mm 
  Z= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias THIRDSTAGEFRONT
+  Action= Replace
+  Value= @THIRDSTAGEFRONT@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias THIRDSTAGEBACK
+  Action= Replace
+  Value= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias SECONDSTAGEFRONT
+  Action= Replace
+  Value= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias SECONDSTAGEBACK
+  Action= Replace
+  Value= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias SECONDSTAGEBARREL
+  Action= Replace
+  Value= 1 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 Annular Back
 GaspardTracker Annular
  Z= -156.5 mm 
  RMIN= 16 mm 
  RMAX= 52 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 Annular Front
 GaspardTracker Annular
@@ -22,8 +44,8 @@ GaspardTracker Annular
  RMIN= 16 mm 
  RMAX= 52 mm 
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT@ 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 End-Cap Back
 GaspardTracker Trapezoid
@@ -32,8 +54,8 @@ GaspardTracker Trapezoid
  X128_Y1= 138.519 -48.717 -69.236 mm
  X1_Y1=  138.518 48.726 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 GaspardTracker Trapezoid
@@ -42,8 +64,8 @@ GaspardTracker Trapezoid
  X128_Y1= 132.395 63.500 -69.236 mm
  X1_Y1=  63.492 132.401 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 GaspardTracker Trapezoid
@@ -52,8 +74,8 @@ GaspardTracker Trapezoid
  X128_Y1=  48.717 138.519 -69.236 mm
  X1_Y1=  -48.726 138.518 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 GaspardTracker Trapezoid
@@ -62,8 +84,8 @@ GaspardTracker Trapezoid
  X128_Y1= -63.500 132.395 -69.236 mm
  X1_Y1=  -132.401 63.492 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 GaspardTracker Trapezoid
@@ -72,8 +94,8 @@ GaspardTracker Trapezoid
  X128_Y1= -138.519 48.717 -69.236 mm
  X1_Y1=  -138.518 -48.726 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 GaspardTracker Trapezoid
@@ -82,8 +104,8 @@ GaspardTracker Trapezoid
  X128_Y1= -132.395 -63.500 -69.236 mm
  X1_Y1=  -63.492 -132.401 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
 GaspardTracker Trapezoid
@@ -92,8 +114,8 @@ GaspardTracker Trapezoid
  X128_Y1= -48.717 -138.519 -69.236 mm
  X1_Y1=  48.726 -138.518 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
 GaspardTracker Trapezoid
@@ -102,8 +124,8 @@ GaspardTracker Trapezoid
  X128_Y1= 63.500 -132.395 -69.236 mm
  X1_Y1=  132.401 -63.492 -69.237 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEBACK 
+ THIRDSTAGE= @THIRDSTAGEBACK
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1 Barrel
 GaspardTracker Square
@@ -192,8 +214,8 @@ GaspardTracker Trapezoid
  X128_Y1= 138.518 48.726 69.237 mm
  X1_Y1=  138.519 -48.717 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 GaspardTracker Trapezoid
@@ -202,8 +224,8 @@ GaspardTracker Trapezoid
  X128_Y1= 63.492 132.401 69.237 mm
  X1_Y1=  132.395 63.500 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 GaspardTracker Trapezoid
@@ -212,8 +234,8 @@ GaspardTracker Trapezoid
  X128_Y1= -48.726 138.518 69.237 mm
  X1_Y1=  48.717 138.519 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 GaspardTracker Trapezoid
@@ -222,8 +244,8 @@ GaspardTracker Trapezoid
  X128_Y1= -132.401 63.492 69.237 mm
  X1_Y1=  -63.500 132.395 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 GaspardTracker Trapezoid
@@ -232,8 +254,8 @@ GaspardTracker Trapezoid
  X128_Y1= -138.518 -48.726 69.237 mm
  X1_Y1=  -138.519 48.717 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 GaspardTracker Trapezoid
@@ -242,8 +264,8 @@ GaspardTracker Trapezoid
  X128_Y1= -63.492 -132.401 69.237 mm
  X1_Y1=  -132.395 -63.500 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
 GaspardTracker Trapezoid
@@ -252,8 +274,8 @@ GaspardTracker Trapezoid
  X128_Y1= 48.726 -138.518 69.237 mm
  X1_Y1=  -48.717 -138.519 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
 GaspardTracker Trapezoid
@@ -262,8 +284,8 @@ GaspardTracker Trapezoid
  X128_Y1= 132.401 -63.492 69.237 mm
  X1_Y1=  63.500 -132.395 69.236 mm
  FIRSTSTAGE= 1
- SECONDSTAGE= 1
- THIRDSTAGE= 1
+ SECONDSTAGE= @SECONDSTAGEFRONT 
+ THIRDSTAGE= @THIRDSTAGEFRONT
  VIS= all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
 

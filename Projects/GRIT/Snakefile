@@ -1,33 +1,38 @@
-# create a list of n indices, increase if more core avalaible
+# create a list of analysed file to produce
 job_list=[]
-for n in range(1,10):
-  job_list.append(str(n))
+for target in range(1,10):
+  for third in range(0,2):
+    job_list.append("root/analysis/GRIT_ts"+str(third)+"_"+str(target)+"um.root")
+    print 
 
 rule trigger:
   input:
-    expand("root/analysis/GRIT_{id}um.root",id=job_list)
+    expand("{filename}",filename=job_list)
 
 rule detector_file:
   output:
-   "detector/grit_{id}um.detector"
+   "detector/grit_ts{on}_{th}um.detector"
   shell:
-   "sed 's/@THICKNESS@/{wildcards.id}/g' detector/grit.detector.in  > detector/grit_{wildcards.id}um.detector"
+   """
+   sed 's/@THICKNESS@/{wildcards.th}/g' detector/grit.detector.in  > detector/grit_ts{wildcards.on}_{wildcards.th}um.detector.in
+   sed 's/@THIRDSTAGEFRONT@/{wildcards.on}/g' detector/grit_ts{wildcards.on}_{wildcards.th}um.detector.in  > detector/grit_ts{wildcards.on}_{wildcards.th}um.detector
+   """
 
 rule simulation:
   input:
-    "detector/grit_{id}um.detector" 
+    "detector/grit_ts{on}_{th}um.detector" 
   output:
-    "root/simulation/GRIT_{id}um.root"
+    "root/simulation/GRIT_ts{on}_{th}um.root"
   shell:
-    "npsimulation -D detector/grit_{wildcards.id}um.detector -E reaction/132Sndp.reaction -O GRIT_{wildcards.id}um -B run.mac" 
+    "npsimulation -D detector/grit_ts{wildcards.on}_{wildcards.th}um.detector -E reaction/132Sndp.reaction -O GRIT_ts{wildcards.on}_{wildcards.th}um -B run.mac" 
 
 rule analysis:
   output:
-    "root/analysis/GRIT_{id}um.root"
+    "root/analysis/GRIT_ts{on}_{th}um.root"
   input:
-    "root/simulation/GRIT_{id}um.root"
+    "root/simulation/GRIT_ts{on}_{th}um.root"
   shell:
-    "npanalysis -T root/simulation/GRIT_{wildcards.id}um.root SimulatedTree -O GRIT_{wildcards.id}um"
+    "npanalysis -T root/simulation/GRIT_ts{wildcards.on}_{wildcards.th}um.root SimulatedTree -O GRIT_ts{wildcards.on}_{wildcards.th}um"
 
 rule clean:
   shell:
