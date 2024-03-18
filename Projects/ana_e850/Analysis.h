@@ -49,9 +49,16 @@ class Analysis: public NPL::VAnalysis{
     void ReInitValue();
     void LoadCalibParameter();
     void TwoAlphaAnalysis();
+    void ReadAnalysisConfig();
 
     static NPL::VAnalysis* Construct();
 
+  private:
+    double m_XTarget_offset;
+    double m_YTarget_offset;
+    double m_ZTarget_offset;
+    double m_Beam_ThetaX;
+    double m_Beam_ThetaY;
   private:
     double BeamEnergy;
     double Xcalc;
@@ -62,6 +69,9 @@ class Analysis: public NPL::VAnalysis{
     double ZTarget;
     double Elab;
     int Telescope;
+    int strip_DE;
+    int strip_E;
+    double Time_E;
     double DeltaE;
     double DeltaEcorr;
     double Eres;

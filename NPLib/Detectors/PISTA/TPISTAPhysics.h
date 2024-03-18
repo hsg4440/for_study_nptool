@@ -217,6 +217,8 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     // thresholds
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
+    double m_Back_E_Time_min;     //!
+    double m_Back_E_Time_max;     //!
 
  private:
     unsigned int m_MaximumStripMultiplicityAllowed;//

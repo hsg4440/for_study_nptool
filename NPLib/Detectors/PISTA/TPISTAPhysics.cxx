@@ -55,6 +55,8 @@ ClassImp(TPISTAPhysics)
     m_MaximumStripMultiplicityAllowed = 10;
     m_StripEnergyMatching = 0.050;
     m_DistanceBetweenDEandE = 4;
+    m_Back_E_Time_min = 0;
+    m_Back_E_Time_max = 3000;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -323,8 +325,8 @@ void TPISTAPhysics::BuildPhysicalEvent() {
         StripNbr_E = m_PreTreatedData->GetPISTA_E_StripNbr(j);
 
         mult_E_per_telescope[E_DetNbr-1]++;
-
-        if(DE_DetNbr==E_DetNbr){
+        double back_time = m_PreTreatedData->GetPISTA_E_BackTime(j);
+        if(DE_DetNbr==E_DetNbr && back_time>m_Back_E_Time_min && back_time<m_Back_E_Time_max){
           // Taking Strip energy for DE
           double DE_Energy = m_PreTreatedData->GetPISTA_DE_StripEnergy(i);
           // Taking BAck Energy for E
@@ -527,6 +529,20 @@ void TPISTAPhysics::ReadAnalysisConfig() {
         m_E_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_E_Threshold << endl;
       }
+
+      else if (whatToDo=="BACK_E_TIME_MIN") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Back_E_Time_min = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Back_E_Time_min << endl;
+      }
+
+      else if (whatToDo=="BACK_E_TIME_MAX") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Back_E_Time_max = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Back_E_Time_max << endl;
+      }
+
+
 
       else if(whatToDo=="DISABLE_CHANNEL"){
         AnalysisConfigFile >> DataBuffer;
