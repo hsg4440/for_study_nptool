@@ -1,0 +1,34 @@
+# create a list of n indices, increase if more core avalaible
+job_list=[]
+for n in range(1,10):
+  job_list.append(str(n))
+
+rule trigger:
+  input:
+    expand("root/analysis/GRIT_{id}um.root",id=job_list)
+
+rule detector_file:
+  output:
+   "detector/grit_{id}um.detector"
+  shell:
+   "sed 's/@THICKNESS@/{wildcards.id}/g' detector/grit.detector.in  > detector/grit_{wildcards.id}um.detector"
+
+rule simulation:
+  input:
+    "detector/grit_{id}um.detector" 
+  output:
+    "root/simulation/GRIT_{id}um.root"
+  shell:
+    "npsimulation -D detector/grit_{wildcards.id}um.detector -E reaction/132Sndp.reaction -O GRIT_{wildcards.id}um -B run.mac" 
+
+rule analysis:
+  output:
+    "root/analysis/GRIT_{id}um.root"
+  input:
+    "root/simulation/GRIT_{id}um.root"
+  shell:
+    "npanalysis -T root/simulation/GRIT_{wildcards.id}um.root SimulatedTree -O GRIT_{wildcards.id}um"
+
+rule clean:
+  shell:
+   "rm -f detector/*.detector && rm -f root/analysis/*.root && rm -f root/simulation/*.root"
