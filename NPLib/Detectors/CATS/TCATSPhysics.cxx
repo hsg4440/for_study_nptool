@@ -289,6 +289,7 @@ void TCATSPhysics::ReadConfiguration(NPL::InputParser parser){
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
+  }
   for(unsigned int i = 0 ; i < blocksMask.size() ; i++){
     if(blocksMask[i]->HasTokenList(tokenMask)){
       AddMask(blocksMask[i]->GetDouble("Z","mm"),blocksMask[i]->GetInt("MaskNumber"));
@@ -297,7 +298,6 @@ void TCATSPhysics::ReadConfiguration(NPL::InputParser parser){
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
-  }
   }
 
   InitializeStandardParameter();

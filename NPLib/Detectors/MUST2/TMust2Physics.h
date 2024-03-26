@@ -58,9 +58,16 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   void Clear(const Option_t*){};
 
  public:
-  vector<TVector2> Match_X_Y();
-  int              CheckEvent(int N);
-  bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
+  
+  // Returns an array of good X,Y pairs (matching in energy)
+  std::vector<std::pair<unsigned int, unsigned int>> Match_X_Y(); //!
+  
+  // Returns a pair <CsI,pixel> if a good match is found
+  std::pair<unsigned int, unsigned int> Match_Pixel(std::pair <unsigned int, unsigned int> XY_couple,unsigned int CsI_size);//!
+  
+  bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr); //!
+  std::vector<std::pair<int, std::pair<unsigned int, unsigned int>>> 
+  Match_Si_CsI(std::vector<std::pair<unsigned int, unsigned int>> Array_of_good_XY_couples);//!
   bool             Match_Si_SiLi(int X, int Y, int PadNbr);
   bool             ResolvePseudoEvent();
 
@@ -329,7 +336,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
 
   void CloseCalibrationEnergyFiles(ofstream* calib_file, ofstream* dispersion_file); //!
 
-  bool FindAlphas(TH1F* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber); //!
+  bool FindAlphas(TH1* CalibHist, TString side, unsigned int StripNb, unsigned int DetectorNumber); //!
 
   void FitLinearEnergy(TGraphErrors* FitHist, TString side, unsigned int StripNb, unsigned int DetectorNumber,
                        double* a, double* b, std::vector<double> Source_E); //!
@@ -394,6 +401,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   map<int, bool> DoCalibrationCsI;                                  //!
   bool IsCalibCSI = false;                                          //!
   bool IsCalibEnergy = false;                                       //!
+  map<int,bool> Cal_Pixel; //!
   std::map<TString, std::map<unsigned int, unsigned int>> BadStrip; //!
   std::map<unsigned int,std::vector<double>> AlphaSigma;                                    //!
   std::map<unsigned int,std::vector<double>> AlphaMean;                                    //!

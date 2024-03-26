@@ -31,8 +31,8 @@
 
 // ROOT headers
 #include "TGraphErrors.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "TCutG.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -73,8 +73,8 @@ private:
   void CreateFile(std::string name);
 public:
   TFile*      GetFile(std::string name="global") ; 
-  std::map<TString,std::map<TString,TH1F*>>*  GetTH1Map(){return TH1Map;}; 
-  std::map<TString,std::map<TString,TH2F*>>*  GetTH2Map(){return TH2Map;}; 
+  std::map<TString,std::map<TString,TH1*>>*  GetTH1Map(){return TH1Map;}; 
+  std::map<TString,std::map<TString,TH2*>>*  GetTH2Map(){return TH2Map;}; 
   std::map<TString,std::map<TString,TGraphErrors*>>*  GetTGraphMap(){return TGraphMap;}; 
   std::map<TString,std::map<TString,TCutG*>>*  GetTCutGMap(){return TCutGMap;}; 
   std::map<TString,std::map<TString,TFile*>>*  GetTFileMap(){return TFileMap;}; 
@@ -85,8 +85,8 @@ private:
   std::string                   pMasterFile;
   TDirectory*                   pCurrentDirectory;
   TFile* pRootFile = nullptr;
-  std::map<TString,std::map<TString,TH1F*>>* TH1Map = new std::map<TString,std::map<TString,TH1F*>>;
-  std::map<TString,std::map<TString,TH2F*>>* TH2Map = new std::map<TString,std::map<TString,TH2F*>>;
+  std::map<TString,std::map<TString,TH1*>>* TH1Map = new std::map<TString,std::map<TString,TH1*>>;
+  std::map<TString,std::map<TString,TH2*>>* TH2Map = new std::map<TString,std::map<TString,TH2*>>;
   std::map<TString,std::map<TString,TGraphErrors*>>* TGraphMap = new std::map<TString,std::map<TString,TGraphErrors*>>;
   std::map<TString,std::map<TString,TCutG*>>* TCutGMap = new std::map<TString,std::map<TString,TCutG*>>;
   std::map<TString,std::map<TString,TFile*>>* TFileMap = new std::map<TString,std::map<TString,TFile*>>;
