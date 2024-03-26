@@ -1578,10 +1578,6 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber) {
 
         if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
           (*TCutGMap)["MUST2"][CutName] = (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
-        //CutName = Form("%s_hMM%u_CSI%u_no_cor", ParticleType[i].c_str(), DetectorNumber, j + 1);
-        //(*TH2Map)["MUST2"][CutName] = new TH2F(CutName, htitleCSIE, 2048, 8192, 16384, 2000, 0, 200);
-        //CutName = Form("%s_hMM%u_CSI%u_cor_diff", ParticleType[i].c_str(), DetectorNumber, j + 1);
-        //(*TH2Map)["MUST2"][CutName] = new TH2F(CutName, "cor_E_diff", 512, 8192, 16384, 100, -10, 10);
       }
     }
   }
@@ -1714,160 +1710,105 @@ void TMust2Physics::FillHistogramsCalibCSIF() {
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
   auto TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
   auto Cal = CalibrationManager::getInstance();
-  bool MatchingCsI = false;
 
-  double matchSigma = m_StripEnergyMatchingSigma;
-  double NmatchSigma = m_StripEnergyMatchingNumberOfSigma;
 
-  unsigned int StripXMult = m_PreTreatedData->GetMMStripXEMult();
-  unsigned int StripYMult = m_PreTreatedData->GetMMStripYEMult();
 
-  // for(unsigned int ix = 0; ix < StripXMult; ix++){
-  // for(unsigned int iy = 0; iy < StripYMult; iy++){
   auto couple = Match_X_Y();
-  unsigned int couple_size = couple.size();
+  auto match = Match_Si_CsI(couple);
+  for(auto event: match){
+    unsigned int Xindex = event.second.first;
+    unsigned int Yindex = event.second.second;
+    // Very important that this is an int and not unsigned int for the -1 case
+    int CsIindex = event.first;
   
-  for (unsigned int i = 0; i < couple_size; ++i) {
-
-    if (m_match_type[i] == 1) {
-
-      unsigned int couple_X = couple[i].first;
-      unsigned int couple_Y = couple[i].first;
-      unsigned int Det = m_PreTreatedData->GetMMStripXEDetectorNbr(couple_X);
-
+    unsigned int DetN = m_PreTreatedData->GetMMStripXEDetectorNbr(Xindex);
+    unsigned int StripXN = m_PreTreatedData->GetMMStripXEStripNbr(Xindex);
+    unsigned int StripYN = m_PreTreatedData->GetMMStripYEStripNbr(Yindex);
+    
+    // This part is there only to get pos of interaction (actually a bit messy, maybe could be fixed)
+    Si_X.clear();
+    Si_Y.clear();
+    TelescopeNumber.clear();
+    Si_X.push_back(StripXN);
+    Si_Y.push_back(StripYN);
+    TelescopeNumber.push_back(DetN);
+    TVector3 BeamImpact = TVector3(0, 0, 0);
+    TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact;
+    double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0));
+    
+    if (DoCalibrationCsI.find(DetN) != DoCalibrationCsI.end()) {
+      
+      
+      
+      double SiXE = m_PreTreatedData->GetMMStripXEEnergy(Xindex);
+      double SiYE = m_PreTreatedData->GetMMStripYEEnergy(Yindex);
   
-    // Condition ensures that the calibration is done only for Detectors input
-    if (DoCalibrationCsI.find(Det) != DoCalibrationCsI.end()) {
-      unsigned int Si_X_Strip = m_PreTreatedData->GetMMStripXEStripNbr(couple_X);
-      unsigned int Si_Y_Strip = m_PreTreatedData->GetMMStripYEStripNbr(couple_Y);
-
-      double Si_X_E = m_PreTreatedData->GetMMStripXEEnergy(couple_X);
-      double Si_Y_E = m_PreTreatedData->GetMMStripYEEnergy(couple_Y);
-
-
+      if(CsIindex >= 0){
+              
+      unsigned int CSIE = m_PreTreatedData->GetMMCsIEEnergy(CsIindex);
+      unsigned int CSIN = m_PreTreatedData->GetMMCsIECristalNbr(CsIindex);
       //FIXME This line should be removed, only here because I made a mistake while doing my CUTS for CSI calib
       double StripXEnergy_O = 0;
       double StripYEnergy_O = 0;
-      for (unsigned int i = 0; i < m_StripXEMult; ++i) {
-        if (m_EventData->GetMMStripXEEnergy(i) > CSIEnergyXThreshold[m_EventData->GetMMStripXEDetectorNbr(i)] &&
-            IsValidChannel(0, m_EventData->GetMMStripXEDetectorNbr(i), m_EventData->GetMMStripXEStripNbr(i))) {
+        if (m_EventData->GetMMStripXEEnergy(Xindex) > CSIEnergyXThreshold[m_EventData->GetMMStripXEDetectorNbr(Xindex)] &&
+            IsValidChannel(0, m_EventData->GetMMStripXEDetectorNbr(Xindex), m_EventData->GetMMStripXEStripNbr(Xindex))) {
               static string name;
               name = "MUST2/T";
-              name += NPL::itoa(m_EventData->GetMMStripXEDetectorNbr(i));
+              name += NPL::itoa(m_EventData->GetMMStripXEDetectorNbr(Xindex));
               name += "_Si_X_O";
-              name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(i));
+              name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(Xindex));
               name += "_E";
-              StripXEnergy_O = Cal->ApplyCalibration(name,m_EventData->GetMMStripXEEnergy(i));
-              break;
+              StripXEnergy_O = Cal->ApplyCalibration(name,m_EventData->GetMMStripXEEnergy(Xindex));
         }
-      }
-      for (unsigned int i = 0; i < m_StripYEMult; ++i) {
-        if (m_EventData->GetMMStripYEEnergy(i) < CSIEnergyYThreshold[m_EventData->GetMMStripYEDetectorNbr(i)] &&
-            IsValidChannel(0, m_EventData->GetMMStripYEDetectorNbr(i), m_EventData->GetMMStripYEStripNbr(i))) {
+        if (m_EventData->GetMMStripYEEnergy(Yindex) < CSIEnergyYThreshold[m_EventData->GetMMStripYEDetectorNbr(Yindex)] &&
+            IsValidChannel(0, m_EventData->GetMMStripYEDetectorNbr(Yindex), m_EventData->GetMMStripYEStripNbr(Yindex))) {
               static string name;
               name = "MUST2/T";
-              name += NPL::itoa(m_EventData->GetMMStripYEDetectorNbr(i));
+              name += NPL::itoa(m_EventData->GetMMStripYEDetectorNbr(Yindex));
               name += "_Si_Y_O";
-              name += NPL::itoa(m_EventData->GetMMStripYEStripNbr(i));
+              name += NPL::itoa(m_EventData->GetMMStripYEStripNbr(Yindex));
               name += "_E";
-              StripYEnergy_O = Cal->ApplyCalibration(name,m_EventData->GetMMStripYEEnergy(i));
-              break;
+              StripYEnergy_O = Cal->ApplyCalibration(name,m_EventData->GetMMStripYEEnergy(Yindex));
         }
-      }
+              
+        TString hnameCSIE = Form("hMM%d_CSI_E%d", DetN, CSIN);
+        (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE, StripXEnergy_O);
+        if (DoCSIFit) {
+          for (unsigned int i = 0; i < ParticleType.size(); i++) {
+            TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), DetN, CSIN);
 
-        // This part is there only to get pos of interaction (actually a bit messy, maybe could be fixed)
-        Si_X.clear();
-        Si_Y.clear();
-        TelescopeNumber.clear();
-        Si_X.push_back(Si_X_Strip);
-        Si_Y.push_back(Si_Y_Strip);
-        TelescopeNumber.push_back(Det);
-        TVector3 BeamImpact = TVector3(0, 0, 0);
-        TVector3 HitDirection = GetPositionOfInteraction(0) - BeamImpact;
-        double ThetaM2Surface = HitDirection.Angle(-GetTelescopeNormal(0));
+            if ((*TCutGMap)["MUST2"][CutName] != 0 &&
+                (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE, StripXEnergy_O)) {
+                  if(Cal_Pixel[DetN]){
 
-        unsigned int CSIMult = m_PreTreatedData->GetMMCsIEMult();
-
-        for (unsigned int icsi = 0; icsi < CSIMult; ++icsi) {
-
-          unsigned int CSIDetNbr = m_PreTreatedData->GetMMCsIEDetectorNbr(icsi);
-
-          if (Det == CSIDetNbr) {
-
-            unsigned int Cristal = m_PreTreatedData->GetMMCsIECristalNbr(icsi);
-
-            if (Match_Si_CsI(Si_X_Strip, Si_Y_Strip, Cristal, CSIDetNbr)) {
-              MatchingCsI = true;
-              unsigned int CSIE = m_PreTreatedData->GetMMCsIEEnergy(icsi);
-              TString hnameCSIE = Form("hMM%d_CSI_E%d", CSIDetNbr, Cristal);
-              (*TH2Map)["MUST2"][hnameCSIE]->Fill(CSIE, StripXEnergy_O);
-              if (DoCSIFit) {
-                for (unsigned int i = 0; i < ParticleType.size(); i++) {
-                  TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), CSIDetNbr, Cristal);
-
-                  if ((*TCutGMap)["MUST2"][CutName] != 0 &&
-                      (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE, StripXEnergy_O)) {
-                        if(Cal_Pixel[Det]){
-
-//                          if(Match_Pixel(Si_X_Strip, Si_Y_Strip, Cristal)){
+//                       if(Match_Pixel(Si_X_Strip, Si_Y_Strip, Cristal)){
 //
-//                          std::string CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), CSIDetNbr, Cristal);
-//                          }
+//                       std::string CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), CSIDetNbr, Cristal);
+//                       }
 
-                        }
-                        double E_from_delta_E = ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(
-                                  Si_X_E, SiThickness[Det], ThetaM2Surface, 6.0 * MeV, 300.0 * MeV, 0.001 * MeV, 10000);
-                        //if(E_from_delta_E - StripXEnergy > 0){
-                        //double E_after_Al = ParticleAl[ParticleType[i].c_str()]->Slow(E_from_delta_E-StripXEnergy, AlThickness[StripXDetNbr], ThetaM2Surface);
-                        //double E_from_delta_E_no_cor = ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(
-                        //          StripXEnergy, 300*um, ThetaM2Surface, 6.0 * MeV, 300.0 * MeV, 0.001 * MeV, 10000);
-                        //std::cout << "test " << SiThickness[StripXDetNbr] << " " << E_after_Al << " " << E_from_delta_E_no_cor << " " << StripXEnergy << std::endl;
-                        // std::cout << ParticleType[i] << " " << E_after_Al << " " << E_from_delta_E_no_cor-StripXEnergy << std::endl;
-                    (*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_from_delta_E- Si_X_E);
-                    // TString CutName = Form("%s_hMM%u_CSI%u_no_cor", ParticleType[i].c_str(), CSIDetNbr, Cristal);
-                    //(*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_from_delta_E_no_cor -StripXEnergy);
-                    //CutName = Form("%s_hMM%u_CSI%u_cor_diff", ParticleType[i].c_str(), CSIDetNbr, Cristal);
-                    //(*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_after_Al -E_from_delta_E_no_cor);
-                    //TString hnameCSIE = Form("hMM%d_AlThickness_CsIStop", StripXDetNbr);
-                    //(*TH1Map)["MUST2"][hnameCSIE]->Fill(2.55*pow(E_from_delta_E - StripXEnergy, 1.45)*cos(ThetaM2Surface)); // Accounting for the angle to exptrapolate real distances
                   }
-                }
-              }
+              double E_from_delta_E = ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(
+                        SiXE, SiThickness[DetN], ThetaM2Surface, 6.0 * MeV, 300.0 * MeV, 0.001 * MeV, 10000);
+              (*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_from_delta_E- SiXE);
             }
           }
         }
-      if(!MatchingCsI){
-        TString hnameCSIE = Form("hMM%d_SiThickness", Det);
-        (*TH1Map)["MUST2"][hnameCSIE]->Fill(2.97*pow(Si_X_E,1.45)*cos(ThetaM2Surface));
-        hnameCSIE = Form("hMM%d_SiE_SiStop", Det);
-        (*TH1Map)["MUST2"][hnameCSIE]->Fill(Si_X_E*pow(cos(ThetaM2Surface),1./1.45)); // Accounting for the angle to exptrapolate real distances
-        // std::cout << ThetaM2Surface << " " <<2.97*pow(StripXEnergy,1.45)*cos(ThetaM2Surface) << std::endl; 
-        }
+      }
+    else{
+      TString hnameCSIE = Form("hMM%d_SiThickness", DetN);
+      (*TH1Map)["MUST2"][hnameCSIE]->Fill(2.97*pow(SiXE,1.45)*cos(ThetaM2Surface));
+      hnameCSIE = Form("hMM%d_SiE_SiStop", DetN);
+      (*TH1Map)["MUST2"][hnameCSIE]->Fill(SiXE*pow(cos(ThetaM2Surface),1./1.45)); // Accounting for the angle to exptrapolate real distances
+      // std::cout << ThetaM2Surface << " " <<2.97*pow(StripXEnergy,1.45)*cos(ThetaM2Surface) << std::endl; 
       }
     }
   }
-  // TString hnameCSIE, hnameCSIE;
-  // for(UShort_t i = 0; i < m_EventData->GetMMCsIEMult(); i++){
-  //   unsigned int DetectorNbr = m_EventData->GetMMCsIEDetectorNbr(i);
-  //   unsigned int CristalNbr = m_EventData->GetMMCsIECristalNbr(i);
-  //   unsigned int Energy = m_EventData->GetMMCsIEEnergy(i);
-  //   if(DoCalibrationCsI[DetectorNbr] && CalibFile[DetectorNbr] != "" && SiEThreshold[DetectorNbr] < )
-  //   {
-  //   hnameXE = Form("hMM%d_STRX_E%d", DetectorNbr, StripNbr);
-  //   (*TH1Map)["MUST2"][hnameXE]->Fill(Energy);
-  //   }
-  // }
-  // for(UShort_t i = 0; i < m_EventData->GetMMStripYEMult(); i++){
-  //   unsigned int DetectorNbr = m_EventData->GetMMStripYEDetectorNbr(i);
-  //   unsigned int StripNbr = m_EventData->GetMMStripYEStripNbr(i);
-  //   unsigned int Energy = m_EventData->GetMMStripYEEnergy(i);
-  //   if(DoCalibrationEnergy[DetectorNbr] && EnergyYThreshold[DetectorNbr] > Energy)
-  //   {
-  //   hnameYE = Form("hMM%d_STRY_E%d", DetectorNbr, StripNbr);
-  //   (*TH1Map)["MUST2"][hnameYE]->Fill(Energy);
-  //   }
-  // }
 }
+  
+
+
+
+  
 
 void TMust2Physics::DoCalibrationCSIPreTreat() {
   ClearPreTreatedData();
@@ -1881,7 +1822,8 @@ void TMust2Physics::DoCalibrationCSIPreTreat() {
     if (m_EventData->GetMMStripXEEnergy(i) > CSIEnergyXThreshold[m_EventData->GetMMStripXEDetectorNbr(i)] &&
         IsValidChannel(0, m_EventData->GetMMStripXEDetectorNbr(i), m_EventData->GetMMStripXEStripNbr(i))) {
       double EX = fSi_X_E(m_EventData, i);
-      m_PreTreatedData->SetStripXE(m_EventData->GetMMStripXEDetectorNbr(i), m_EventData->GetMMStripXEStripNbr(i), EX);
+      if(EX > 0)
+        m_PreTreatedData->SetStripXE(m_EventData->GetMMStripXEDetectorNbr(i), m_EventData->GetMMStripXEStripNbr(i), EX);
     }
   }
   //   Y
@@ -1890,7 +1832,8 @@ void TMust2Physics::DoCalibrationCSIPreTreat() {
     if (m_EventData->GetMMStripYEEnergy(i) < CSIEnergyYThreshold[m_EventData->GetMMStripYEDetectorNbr(i)] &&
         IsValidChannel(1, m_EventData->GetMMStripYEDetectorNbr(i), m_EventData->GetMMStripYEStripNbr(i))) {
       double EY = fSi_Y_E(m_EventData, i);
-      m_PreTreatedData->SetStripYE(m_EventData->GetMMStripYEDetectorNbr(i), m_EventData->GetMMStripYEStripNbr(i), EY);
+      if(EY > 0)
+        m_PreTreatedData->SetStripYE(m_EventData->GetMMStripYEDetectorNbr(i), m_EventData->GetMMStripYEStripNbr(i), EY);
     }
   }
   for (unsigned int i = 0; i < m_CsIEMult; ++i) {
@@ -1945,8 +1888,6 @@ void TMust2Physics::WriteHistogramsCSIF() {
       (*TH1Map)["MUST2"][hnameCSIE]->Write();
       hnameCSIE = Form("hMM%d_SiE_SiStop", it->first);
       (*TH1Map)["MUST2"][hnameCSIE]->Write();
-      hnameCSIE = Form("hMM%d_AlThickness_CsIStop", it->first);
-      (*TH1Map)["MUST2"][hnameCSIE]->Write();
       for (Int_t j = 1; j <= NbCSI; j++) {
         TString hnameCSIE = Form("hMM%d_CSI_E%d", it->first, j);
         (*TH2Map)["MUST2"][hnameCSIE]->Write();
@@ -1954,23 +1895,9 @@ void TMust2Physics::WriteHistogramsCSIF() {
           for (unsigned int i = 0; i < ParticleType.size(); i++) {
             TString CutName = Form("%s_hMM%u_CSI%u", ParticleType[i].c_str(), it->first, j);
             (*TH2Map)["MUST2"][CutName]->Write();
-            CutName = Form("%s_hMM%u_CSI%u_no_cor", ParticleType[i].c_str(), it->first, j);
-            (*TH2Map)["MUST2"][CutName]->Write();
-            CutName = Form("%s_hMM%u_CSI%u_cor_diff", ParticleType[i].c_str(), it->first, j);
-            (*TH2Map)["MUST2"][CutName]->Write();
-            //(*TH1Map)["MUST2"][CutName + "_0"]->Write();
-            //(*TH1Map)["MUST2"][CutName + "_1"]->Write();
-            //(*TH1Map)["MUST2"][CutName + "_2"]->Write();
           }
         }
-        //(*TGraphMap)["MUST2"][hnameFITXE]->Write();
-        //(*TGraphMap)["MUST2"][hnameFITYE]->Write();
       }
-      //(*TH1Map)["MUST2"][Form("Dispersion_T%d", it->first)]->Write();
-      //(*TGraphMap)["MUST2"][Form("coeffX_a_T%d",it->first)]->Write();
-      //(*TGraphMap)["MUST2"][Form("coeffY_a_T%d",it->first)]->Write();
-      //(*TGraphMap)["MUST2"][Form("coeffX_b_T%d",it->first)]->Write();
-      //(*TGraphMap)["MUST2"][Form("coeffY_b_T%d",it->first)]->Write();
     }
     File->cd("MUST2");
   }
