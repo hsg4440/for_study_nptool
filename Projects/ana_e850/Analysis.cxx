@@ -43,10 +43,17 @@ void Analysis::Init(){
   Tracking = new TVamosReconstruction();
   Tracking->ReadMatrix("MRec.mat");
 
+  m_XTarget_offset = 0;
+  m_YTarget_offset = 0;
+  m_ZTarget_offset = 0;
+  m_Beam_ThetaX = 0;
+  m_Beam_ThetaY = 0;
+
   InitInputBranch();
   InitOutputBranch();
   Rand = TRandom3();
   LoadCalibParameter();
+  ReadAnalysisConfig();
 
   TargetThickness = 0.44*micrometer;
 
@@ -91,7 +98,11 @@ void Analysis::TreatEvent(){
     Exogam_Crystal = Exo_Crystal->at(0);
     Exogam_Energy = Exo_Energy->at(0);
   }
-  PositionOnTarget = TVector3(0,0,0);
+
+  XTarget = m_XTarget_offset;
+  YTarget = m_YTarget_offset;
+  ZTarget = m_ZTarget_offset;
+  PositionOnTarget = TVector3(XTarget,YTarget,ZTarget);
   BeamEnergy = 1417.;
   //BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer10Be->SetBeamEnergy(BeamEnergy);
@@ -109,8 +120,8 @@ void Analysis::TreatEvent(){
       Tracking->CalculateReconstruction(FPMW->Xf, 1000*FPMW->Thetaf, Brho_ref, FF_Brho, Theta, FF_Path);
       // FF_Path is in cm ! 
       
-      PositionOnTarget.SetX(FPMW->Xt);
-      PositionOnTarget.SetX(FPMW->Yt);
+      PositionOnTarget.SetX(FPMW->Xt + m_XTarget_offset);
+      PositionOnTarget.SetY(FPMW->Yt + m_YTarget_offset);
 
       // T13 //
       double Toff13[20] = {0,0,0,0,1.3,1.7,1.2,0.6,0.5,2.5,2.1,0.9,1.2,1.7,1.1,1.1,1.2,0,0,0};
@@ -204,11 +215,8 @@ void Analysis::TreatEvent(){
     FPMW_Section = -1;
   }
 
-
   //cout << PISTA->EventMultiplicity << endl;
   double Energy = 0;
-  int strip_DE = 0;
-  int strip_E = 0;
   if(PISTA->EventMultiplicity==1){
     DeltaE = PISTA->DE[0];
     Eres = PISTA->back_E[0];
@@ -217,6 +225,7 @@ void Analysis::TreatEvent(){
     strip_DE = PISTA->DE_StripNbr[0];
     strip_E = PISTA->E_StripNbr[0];
     Telescope = PISTA->DetectorNumber[0];
+    Time_E = PISTA->back_E_Time[0];
   }
   else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
     DeltaE = PISTA->DE[0] + PISTA->DE[1];
@@ -230,16 +239,20 @@ void Analysis::TreatEvent(){
       strip_DE = PISTA->DE_StripNbr[1];
 
     strip_E = PISTA->E_StripNbr[0];
+    Time_E = PISTA->back_E_Time[0];
   }
   if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
-    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, strip_E, strip_DE);
+    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, 58-strip_E, strip_DE);
     TVector3 HitDirection = PISTA_pos - PositionOnTarget;
     PhiLab = PISTA_pos.Phi();
     Xcalc  = PISTA_pos.X();
     Ycalc  = PISTA_pos.Y();
     Zcalc  = PISTA_pos.Z();
 
-    ThetaLab = HitDirection.Angle(TVector3(0,0,1));
+    TVector3 BeamDirection = TVector3(0,0,1);
+    BeamDirection.RotateX(m_Beam_ThetaX*3.1415/180);
+    BeamDirection.RotateY(m_Beam_ThetaY*3.1415/180);
+    ThetaLab = HitDirection.Angle(BeamDirection);
     ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(0));
 
     DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
@@ -354,11 +367,15 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("PID",&PID,"PID/D");
   RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab,"Elab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
+  RootOutput::getInstance()->GetTree()->Branch("ThetaDetectorSurface",&ThetaDetectorSurface,"ThetaDetectorSurface/D");
   RootOutput::getInstance()->GetTree()->Branch("PhiLab",&PhiLab,"PhiLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("Xcalc",&Xcalc,"Xcalc/D");
   RootOutput::getInstance()->GetTree()->Branch("Ycalc",&Ycalc,"Ycalc/D");
   RootOutput::getInstance()->GetTree()->Branch("Zcalc",&Zcalc,"Zcalc/D");
+  RootOutput::getInstance()->GetTree()->Branch("strip_DE",&strip_DE,"strip_DE/I");
+  RootOutput::getInstance()->GetTree()->Branch("strip_E",&strip_E,"strip_E/I");
+  RootOutput::getInstance()->GetTree()->Branch("Time_E",&Time_E,"Time_E/D");
 
   RootOutput::getInstance()->GetTree()->Branch("FF_Brho",&FF_Brho,"FF_Brho/D");
   RootOutput::getInstance()->GetTree()->Branch("FF_Path",&FF_Path,"FF_Path/D");
@@ -455,6 +472,7 @@ void Analysis::ReInitValue(){
   Eres = -1000;
   Elab = -1000;
   ThetaLab = -1000;
+  ThetaDetectorSurface = -1000;
   PhiLab = -1000;
   ThetaCM = -1000;
   XTarget = -1000;
@@ -465,6 +483,9 @@ void Analysis::ReInitValue(){
   Zcalc = -1000;
   PID = -1000;
   Telescope = -1;
+  strip_DE = -1;
+  strip_E = -1;
+  Time_E = -1000;
 
   FF_Brho = -1;
   FF_Path = -1;
@@ -514,6 +535,85 @@ void Analysis::ReInitValue(){
   m_2alpha = 0;
   Elab1.clear();
   Elab2.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ReadAnalysisConfig(){
+  bool ReadingStatus = false;
+
+  string filename = "AnalysisConfig.dat";
+  
+  // open analysis config file
+  ifstream AnalysisConfigFile;
+  AnalysisConfigFile.open(filename.c_str());
+
+  if (!AnalysisConfigFile.is_open()) {
+    cout << " No AnalysisConfig.dat found: Default parameter loaded for Analayis " << filename << endl;
+    return;
+  }
+  cout << "**** Loading user parameter for Analysis from AnalysisConfig.dat " << endl;
+
+  // Save it in a TAsciiFile
+  TAsciiFile* asciiConfig = RootOutput::getInstance()->GetAsciiFileAnalysisConfig();
+  asciiConfig->AppendLine("%%% AnalysisConfig.dat %%%");
+  asciiConfig->Append(filename.c_str());
+  asciiConfig->AppendLine("");
+  // read analysis config file
+  string LineBuffer,DataBuffer,whatToDo;
+  while (!AnalysisConfigFile.eof()) {
+    // Pick-up next line
+    getline(AnalysisConfigFile, LineBuffer);
+
+    // search for "header"
+    string name = "AnalysisConfig";
+    if (LineBuffer.compare(0, name.length(), name) == 0) 
+      ReadingStatus = true;
+
+    // loop on tokens and data
+    while (ReadingStatus ) {
+      whatToDo="";
+      AnalysisConfigFile >> whatToDo;
+
+      // Search for comment symbol (%)
+      if (whatToDo.compare(0, 1, "%") == 0) {
+        AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
+      }
+
+      else if (whatToDo=="XTARGET_OFFSET") {
+        AnalysisConfigFile >> DataBuffer;
+        m_XTarget_offset = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_XTarget_offset << endl;
+      }
+      else if (whatToDo=="YTARGET_OFFSET") {
+        AnalysisConfigFile >> DataBuffer;
+        m_YTarget_offset = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_YTarget_offset << endl;
+      }
+      else if (whatToDo=="ZTARGET_OFFSET") {
+        AnalysisConfigFile >> DataBuffer;
+        m_ZTarget_offset = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_ZTarget_offset << endl;
+      }
+      else if (whatToDo=="BEAM_THETAX") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Beam_ThetaX = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_Beam_ThetaX << endl;
+      }
+      else if (whatToDo=="BEAM_THETAY") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Beam_ThetaY = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_Beam_ThetaY << endl;
+      }
+
+
+
+
+
+      else {
+        ReadingStatus = false;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

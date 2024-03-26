@@ -24,7 +24,7 @@ CalibrationFilePath
  ./Calibration/Energy/PISTA7_DE.cal
  ./Calibration/Energy/PISTA8_DE.cal
  ./Calibration/Energy/PISTA_BACK_DE.cal
- ./Calibration/Energy/PISTA_BACK_E.cal
+ ./Calibration/Energy/PISTA_BACK_E_min.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec5.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec6.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec7.cal
