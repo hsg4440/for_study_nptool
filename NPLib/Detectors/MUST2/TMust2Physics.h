@@ -62,8 +62,8 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // Returns an array of good X,Y pairs (matching in energy)
   std::vector<std::pair<unsigned int, unsigned int>> Match_X_Y(); //!
   
-  // Returns a pair <CsI,pixel> if a good match is found
-  std::pair<unsigned int, unsigned int> Match_Pixel(std::pair <unsigned int, unsigned int> XY_couple,unsigned int CsI_size);//!
+  // Returns a pair <CsI,pixel> giving the corresponding pixel matching
+  std::pair<unsigned int, unsigned int> GetPixel(std::pair<int,std::pair <unsigned int, unsigned int>> match);//!
   
   bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr); //!
   std::vector<std::pair<int, std::pair<unsigned int, unsigned int>>> 
@@ -278,7 +278,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // center position of the pad on Y
   vector<int> m_SiLi_MatchingY; //!
   // size in strip of a cristal
-  int m_CsI_Size; //!
+  unsigned int m_CsI_Size; //!
   // center position of the cristal on X
   vector<int> m_CsI_MatchingX;                                   //!
   std::map<int, std::pair<int, int>> m_ZeroDegree_CsI_MatchingX; //!
@@ -402,6 +402,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   bool IsCalibCSI = false;                                          //!
   bool IsCalibEnergy = false;                                       //!
   map<int,bool> Cal_Pixel; //!
+  unsigned int PixelSize; //!
   std::map<TString, std::map<unsigned int, unsigned int>> BadStrip; //!
   std::map<unsigned int,std::vector<double>> AlphaSigma;                                    //!
   std::map<unsigned int,std::vector<double>> AlphaMean;                                    //!
@@ -428,6 +429,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   std::map<TString, NPL::EnergyLoss*> ParticleAl;   //!
   // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
   std::vector<string> ParticleType{"proton", "deuteron", "triton", "alpha"}; //!
+  std::vector<string> ParticleTypePixel{"proton", "alpha"}; //!
   // map<int,std::string> CalibFile;//!
   NPL::EnergyLoss* Alpha_Al = nullptr;//!
 
