@@ -2570,7 +2570,7 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
   gErrorIgnoreLevel = kWarning;
   TF1* Gaus = new TF1("Gaus", "gaus", 0, 200);
   // TF1* f3 = new TF1("f3","[0] + [1]*(x-8192) + [2]*(x-[3])*(x-[3])/(1+exp([3] - x)/[4])", 8192, 16384);
-  TF1* f4 = new TF1("f4", "pol5", 8192, 16384);
+  TF1* f4 = new TF1("f4", "pol4", 8192, 16384);
   
   auto File = new TFile("./FitSlices.root", "RECREATE");
   auto TH2Map = RootHistogramsCalib::getInstance()->GetTH2Map();
@@ -2591,7 +2591,8 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
       double d = 0;
       double e = 0;
       double f = 0;
-      if ((*TH2Map)["MUST2"][CutName] != 0) {
+      if ((*TH2Map)["MUST2"][CutName] != 0&& (*TH2Map)["MUST2"][CutName]->Integral() > 1000) {
+        // f4->SetParameters()
         std::cout << "Fit on CSI " << i << " Detector " << DetectorNumber << " with particle " << ParticleType[j] << std::endl;
         int Res = -1;
         Res = (*TH2Map)["MUST2"][CutName]->Fit(f4,"BFM");
@@ -2619,7 +2620,7 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
           d = 0;
           e = 0;
           f = 0;
-          if ((*TH2Map)["MUST2"][CutName] != 0) {
+          if ((*TH2Map)["MUST2"][CutName] != 0 && (*TH2Map)["MUST2"][CutName]->Integral() > 1000) {
             std::cout << "Fit on CSI " << i << " Pixel " << k << " Detector " << DetectorNumber << " with particle " << ParticleType[j] << std::endl;
             int Res = -1;
             Res = (*TH2Map)["MUST2"][CutName]->Fit(f4,"BFM");
