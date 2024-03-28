@@ -300,6 +300,7 @@ class Analysis: public NPL::VAnalysis{
   double Si_E_M2 ;
   double CsI_E_M2  ;
   std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
+  std::vector<string> ParticleTypePixel{"proton", "alpha"};
   std::map<TString, double> Energy ;
   std::map<TString, NPL::EnergyLoss> LightAl ;
   std::map<TString, NPL::EnergyLoss> LightTarget ;
@@ -408,7 +409,6 @@ class Analysis: public NPL::VAnalysis{
 
   /////////////Exogam
   // Clover_struc Exogam_Clovers_struc[12];
-
 
   TCutG* proton_cut[4];
   TCutG* deuteron_cut[4];

@@ -112,6 +112,8 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // Physical Value
   vector<double> TotalEnergy;
 
+  std::vector<int> Pixel;
+
  public: //   Innherited from VDetector Class
   //   Read stream at ConfigFile to pick-up parameters of detector
   //   (Position,...) using Token
@@ -159,9 +161,6 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   // Method related to the TSpectra classes, aimed at providing a framework for
   // online applications
   // Instantiate the Spectra class and the histogramm throught it
-
-  bool UnallocateBeforeBuild();
-  bool UnallocateBeforeTreat();
 
   void InitSpectra();
   // Fill the spectra hold by the spectra class
@@ -234,6 +233,8 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
 
   TVector3 GetPositionOfInteraction(const int i) const;
   TVector3 GetTelescopeNormal(const int i) const;
+  bool GetCalPixel(){return Cal_Pixel;};
+  unsigned int GetPixelSize(){return PixelSize;};
 
  private: //   Parameter used in the analysis
   // By default take EX and TY.
@@ -401,7 +402,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   map<int, bool> DoCalibrationCsI;                                  //!
   bool IsCalibCSI = false;                                          //!
   bool IsCalibEnergy = false;                                       //!
-  map<int,bool> Cal_Pixel; //!
+  bool Cal_Pixel; //!
   unsigned int PixelSize; //!
   std::map<TString, std::map<unsigned int, unsigned int>> BadStrip; //!
   std::map<unsigned int,std::vector<double>> AlphaSigma;                                    //!
@@ -427,10 +428,9 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
   bool DoCSIFit;                                    //!
   std::map<TString, NPL::EnergyLoss*> ParticleSi;   //!
   std::map<TString, NPL::EnergyLoss*> ParticleAl;   //!
-  // std::vector<string> ParticleType{"proton","deuteron","triton","3He","alpha"};
   std::vector<string> ParticleType{"proton", "deuteron", "triton", "alpha"}; //!
   std::vector<string> ParticleTypePixel{"proton", "alpha"}; //!
-  // map<int,std::string> CalibFile;//!
+  
   NPL::EnergyLoss* Alpha_Al = nullptr;//!
 
  private:                   // Spectra Class

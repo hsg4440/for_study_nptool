@@ -308,24 +308,26 @@ void TMust2Physics::BuildPhysicalEvent() {
   // detector, m_match_type is set to 1, else it is
   // set to 2
 
-  std::vector<std::pair<unsigned int, unsigned int>> couple = Match_X_Y();
+  auto couple = Match_X_Y();
   auto match = Match_Si_CsI(couple);
 
       /////////////////////////////////////////////////
       for(auto event: match){
       unsigned int Xindex = event.second.first;
       unsigned int Yindex = event.second.second;
-      unsigned int CsIindex = event.first;
+      int CsIindex = event.first;
       
       int N = m_PreTreatedData->GetMMStripXEDetectorNbr(Xindex);
       int X = m_PreTreatedData->GetMMStripXEStripNbr(Xindex);
       int Y = m_PreTreatedData->GetMMStripYEStripNbr(Yindex);
+      int PixelN;
       
       if(CsIindex >= 0){
         CsI_N.push_back(m_PreTreatedData->GetMMCsIECristalNbr(CsIindex));
         CsI_E_Raw.push_back(m_PreTreatedData->GetMMCsIEEnergy(CsIindex));
         CsI_E.push_back(fCsI_E(m_PreTreatedData,CsIindex));
         CsI_T.push_back(-1000);
+        PixelN = GetPixel(event).second;
       
          //Look for associate Time
         for (unsigned int k = 0; k < m_CsITMult; ++k) {
@@ -341,6 +343,7 @@ void TMust2Physics::BuildPhysicalEvent() {
         CsI_E_Raw.push_back(-1000);
         CsI_E.push_back(-1000);
         CsI_T.push_back(-1000);
+        PixelN = -1;
       }
       double Si_X_T = -1000;
       for (unsigned int t = 0; t < m_StripXTMult; ++t) {
@@ -371,6 +374,8 @@ void TMust2Physics::BuildPhysicalEvent() {
 
       Si_EY.push_back(Si_Y_E);
       Si_TY.push_back(Si_Y_T);
+      if(Cal_Pixel)
+        Pixel.push_back(PixelN);
 
       if (m_Take_E_Y)
         Si_E.push_back(Si_Y_E);
@@ -749,6 +754,15 @@ void TMust2Physics::ReadAnalysisConfig() {
         m_CsI_E_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_CsI_E_Threshold << endl;
       }
+      else if (whatToDo == "CAL_PIXEL") {
+        Cal_Pixel = true;
+        cout << whatToDo << endl;
+      }
+      else if (whatToDo == "PIXEL_SIZE") {
+        AnalysisConfigFile >> DataBuffer;
+        PixelSize = (atoi(DataBuffer.c_str()));
+        cout << "PIXEL SIZE " << PixelSize << endl;
+      }
 
       else {
         ReadingStatus = false;
@@ -851,7 +865,6 @@ TMust2Physics::Match_Si_CsI(std::vector<std::pair<unsigned int, unsigned int>> A
     }
   }
   for(auto it: Wrong_matches){
-      //std::cout << "test 1" << std::endl;
       Array_of_matches.erase(it);
   }
   // However, when we deleted all these wrong matches, we removed events that we cant match well to a CsI (double matches) or events that stop in the Si
@@ -882,7 +895,6 @@ std::pair<unsigned int, unsigned int> TMust2Physics::GetPixel(std::pair<int,std:
   double FirstPixelX = CsIPosX - m_CsI_Size/2.;
   double FirstPixelY = CsIPosY - m_CsI_Size/2.;
   unsigned int PixelNumber = (int)((StripX - FirstPixelX)/((double)PixelSize)) + (m_CsI_Size/PixelSize)*(int)((StripY - FirstPixelY)/((double)PixelSize));
-  // std::cout << CsINbr << " " << PixelNumber << " " << StripX << " " << StripY << " " << CsINbr << std::endl;
   return std::make_pair(CsINbr,PixelNumber);
 }
 
@@ -926,6 +938,7 @@ void TMust2Physics::Clear() {
   Si_TY.clear();
   TelescopeNumber_X.clear();
   TelescopeNumber_Y.clear();
+  Pixel.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -1046,7 +1059,7 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
 
   vector<string> calibs = {"TelescopeNumber", "Time", "Energy", "CSI"};
   vector<string> EnergyParameters = {"TelescopeNumber", "XThreshold", "YThreshold", "AlphaFitType"};
-  vector<string> CSIParameters = {"TelescopeNumber", "CsIEnergyXThreshold", "CsIEnergyYThreshold", "CSIEThreshold","SiThickness","AlThickness","X1_Y1", "X1_Y128", "X128_Y1", "X128_Y128","CalPixel","PixelSize"};
+  vector<string> CSIParameters = {"TelescopeNumber", "CsIEnergyXThreshold", "CsIEnergyYThreshold", "CSIEThreshold","SiThickness","AlThickness","X1_Y1", "X1_Y128", "X128_Y1", "X128_Y128"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(calibs)) {
@@ -1112,7 +1125,6 @@ void TMust2Physics::ReadDoCalibration(NPL::InputParser parser) {
       unsigned int TelescopeNumber = CSIblocks[i]->GetInt("TelescopeNumber");
       if (NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  CSI Calibration parameters for MUST2 Telescope " << TelescopeNumber << endl;
-      Cal_Pixel[TelescopeNumber] = (CSIblocks[i]->GetInt("CalPixel") == 1);
       PixelSize = CSIblocks[i]->GetInt("PixelSize"); 
       CSIEnergyXThreshold[TelescopeNumber] = CSIblocks[i]->GetInt("CsIEnergyXThreshold");
       CSIEnergyYThreshold[TelescopeNumber] = CSIblocks[i]->GetInt("CsIEnergyYThreshold");
@@ -1219,26 +1231,37 @@ void TMust2Physics::AddParameterToCalibrationManager() {
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
       Cal->AddParameter("MUST2", "T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
                         "MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      for(auto p: ParticleType){
+        Cal->AddParameter("MUST2", p+"_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+                          p+"_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+        Cal->AddParameter("MUST2", p+"_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+                          p+"_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+        if(Cal_Pixel && std::find(ParticleTypePixel.begin(),ParticleTypePixel.end(),p)!= ParticleTypePixel.end()){
+          unsigned int PixelNumber = (m_CsI_Size/PixelSize)*(m_CsI_Size/PixelSize);
+          for(unsigned int k = 0; k < PixelNumber;k++ ){
+            Cal->AddParameter("MUST2", p+"_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_Pixel" + NPL::itoa(k) + "_E",
+                              p+"_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_Pixel" + NPL::itoa(k) + "_E", standardCsI);
+            Cal->AddParameter("MUST2", p+"_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_Pixel" + NPL::itoa(k) + "_T",
+                              p+"_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_Pixel" + NPL::itoa(k) + "_T", standardT);
+          }
+        }
+      }
 
-      Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
-                        "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
-      Cal->AddParameter("MUST2", "proton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
-                        "proton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
 
-      Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
-                        "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
-      Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
-                        "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      //Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+      //                  "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      //Cal->AddParameter("MUST2", "deuteron_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+      //                  "deuteron_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
 
-      Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
-                        "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
-      Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
-                        "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      //Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+      //                  "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      //Cal->AddParameter("MUST2", "triton_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+      //                  "triton_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
 
-      Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
-                        "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
-      Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
-                        "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
+      //Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E",
+      //                  "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_E", standardCsI);
+      //Cal->AddParameter("MUST2", "alpha_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T",
+      //                  "alpha_MUST2_T" + NPL::itoa(i + 1) + "_CsI" + NPL::itoa(j + 1) + "_T", standardT);
     }
   }
 
@@ -1293,6 +1316,7 @@ void TMust2Physics::InitializeRootInputPhysics() {
     inputChain->SetBranchStatus("CsI_T", true);
     inputChain->SetBranchStatus("CsI_N", true);
     inputChain->SetBranchStatus("TotalEnergy", true);
+    inputChain->SetBranchStatus("Pixel", true);
     inputChain->SetBranchAddress("MUST2", &m_EventPhysics);
   }
 }
@@ -1596,7 +1620,7 @@ void TMust2Physics::InitializeRootHistogramsCSIF(Int_t DetectorNumber) {
         if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
           (*TCutGMap)["MUST2"][CutName] = (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
       }
-      if(Cal_Pixel[DetectorNumber]){
+      if(Cal_Pixel){
         std::cout << "Initializing Pixel Calib for detector " << DetectorNumber << std::endl;
         for (unsigned int i = 0; i < ParticleTypePixel.size(); i++) {
           if(m_CsI_Size%PixelSize != 0)
@@ -1817,7 +1841,7 @@ void TMust2Physics::FillHistogramsCalibCSIF() {
               (*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_from_delta_E- SiXE);
             }
           }
-          if(Cal_Pixel[DetN]){
+          if(Cal_Pixel){
           for (unsigned int i = 0; i < ParticleTypePixel.size(); i++) {
             TString CutName = Form("%s_hMM%u_CSI%u", ParticleTypePixel[i].c_str(), DetN, CSIN);
 
@@ -2590,7 +2614,7 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
       double c = 0;
       double d = 0;
       double e = 0;
-      double f = 0;
+      // double f = 0;
       if ((*TH2Map)["MUST2"][CutName] != 0&& (*TH2Map)["MUST2"][CutName]->Integral() > 1000) {
         // f4->SetParameters()
         std::cout << "Fit on CSI " << i << " Detector " << DetectorNumber << " with particle " << ParticleType[j] << std::endl;
@@ -2605,11 +2629,11 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
         c = f4->GetParameter(2);
         d = f4->GetParameter(3);
         e = f4->GetParameter(4);
-        f = f4->GetParameter(5);
+        // f = f4->GetParameter(5);
         }
       }
-      *calib_file << ParticleType[j].c_str() << "_MUST2_T" << DetectorNumber << "_CsI" << i << "_E " << a << " " << b << " " << c << " " << d << " " << e << " " << f<< endl;
-      if(Cal_Pixel[DetectorNumber] && std::find(ParticleTypePixel.begin(),ParticleTypePixel.end(),ParticleType[j])!=ParticleTypePixel.end()){
+      *calib_file << ParticleType[j].c_str() << "_MUST2_T" << DetectorNumber << "_CsI" << i << "_E " << a << " " << b << " " << c << " " << d << " " << e << " " << endl;
+      if(Cal_Pixel && std::find(ParticleTypePixel.begin(),ParticleTypePixel.end(),ParticleType[j])!=ParticleTypePixel.end()){
         unsigned int PixelNumber = (m_CsI_Size/PixelSize)*(m_CsI_Size/PixelSize);
         for (unsigned int k = 0; k < PixelNumber; k++) {
           CutName = Form("%s_hMM%u_CSI%u_Pixel%u", ParticleType[j].c_str(), DetectorNumber, i,k);
@@ -2619,7 +2643,7 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
           c = 0;
           d = 0;
           e = 0;
-          f = 0;
+          // f = 0;
           if ((*TH2Map)["MUST2"][CutName] != 0 && (*TH2Map)["MUST2"][CutName]->Integral() > 1000) {
             std::cout << "Fit on CSI " << i << " Pixel " << k << " Detector " << DetectorNumber << " with particle " << ParticleType[j] << std::endl;
             int Res = -1;
@@ -2633,15 +2657,15 @@ void TMust2Physics::DoCalibrationCsIF(Int_t DetectorNumber) {
             c = f4->GetParameter(2);
             d = f4->GetParameter(3);
             e = f4->GetParameter(4);
-            f = f4->GetParameter(5);
+            // f = f4->GetParameter(5);
             }
           }
-          *calib_file << ParticleType[j].c_str() << "_MUST2_T" << DetectorNumber << "_CsI" << i << "_Pixel" << k <<  "_E " << a << " " << b << " " << c << " " << d << " " << e << " " << f<< endl;
+          *calib_file << ParticleType[j].c_str() << "_MUST2_T" << DetectorNumber << "_CsI" << i << "_Pixel" << k <<  "_E " << a << " " << b << " " << c << " " << d << " " << e << " " << endl;
           
         }
       }
     }
-    if(Cal_Pixel[DetectorNumber] && std::find(ParticleTypePixel.begin(),ParticleTypePixel.end(),ParticleType[j])!=ParticleTypePixel.end()){
+    if(Cal_Pixel && std::find(ParticleTypePixel.begin(),ParticleTypePixel.end(),ParticleType[j])!=ParticleTypePixel.end()){
       *calib_file << "CsI size used for pixel cal: " << m_CsI_Size<< endl;
       *calib_file << "Pixel size used for pixel cal: " << PixelSize<< endl;
     }
