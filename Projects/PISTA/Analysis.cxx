@@ -96,7 +96,9 @@ void Analysis::TreatEvent(){
       int det = PISTA->DetectorNumber[i];
       int strip_E = PISTA->E_StripNbr[i];
       int strip_DE = PISTA->DE_StripNbr[i];
-      
+     
+      Telescope = det;
+
       TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(det,strip_E,strip_DE);
 
       //TVector3 PISTA_pos = TVector3(Xpista, Ypista, Zpista);
@@ -153,6 +155,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Xcalc",&Xcalc,"Xcalc/D");
   RootOutput::getInstance()->GetTree()->Branch("Ycalc",&Ycalc,"Ycalc/D");
   RootOutput::getInstance()->GetTree()->Branch("Zcalc",&Zcalc,"Zcalc/D");
+  RootOutput::getInstance()->GetTree()->Branch("Telescope",&Telescope,"Telescope/I");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,6 +198,7 @@ void Analysis::ReInitValue(){
   Ycalc = -1000;
   Zcalc = -1000;
   PID = -1000;
+  Telescope = -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

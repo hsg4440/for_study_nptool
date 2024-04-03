@@ -84,7 +84,7 @@ void Analysis::LoadCalibParameter(){
   int i=0;
   while(ifile>>token>>p0>>p1){
     cout << token << " " << p0 << " " << p1 << endl;
-    m_Q_p0[i] = p0 + 0.2;
+    m_Q_p0[i] = p0;
     m_Q_p1[i] = p1;
     i++;
   }

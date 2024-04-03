@@ -98,6 +98,9 @@ void TPISTAPhysics::AddDetector(TVector3 A, TVector3 B, TVector3 C, TVector3 D){
   double norm = n.Mag();
   n = n.Unit();
 
+  A = A + 0.026*norm*n;
+  cout << A.x() << " "  << A.y() << " " << A.z()   << endl;
+
   vector<double> lineX;
   vector<double> lineY;
   vector<double> lineZ;
