@@ -84,6 +84,7 @@ class TMust2Physics : public TObject, public NPL::VDetector, public TMust2Physic
 
   //   Si
   vector<double> Si_E;
+  vector<double> Si_E_Raw;
   vector<double> Si_T;
   vector<int> Si_X;
   vector<int> Si_StripNumberX;

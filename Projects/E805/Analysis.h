@@ -104,6 +104,8 @@ class Analysis: public NPL::VAnalysis{
   std::vector<double> M2_Ex_d;
   std::vector<double> M2_Ex_t;
   std::vector<double> M2_Ex_a;
+  std::vector<double> Si_E_O;
+  std::vector<unsigned int> PID_M2;
   std::vector<double> M2_CsI_E_p;
   std::vector<double> M2_CsI_E_d;
   std::vector<double> M2_CsI_E_t;
@@ -293,13 +295,13 @@ class Analysis: public NPL::VAnalysis{
   double xtarget;
   double ytarget;
   double IncidentTheta = 0;
-  int DetectorNumber  ;
   double ThetaNormalTarget;
   double ThetaM2Surface ;
   double ThetaMGSurface ;
   double Si_E_M2 ;
   double CsI_E_M2  ;
   std::vector<string> ParticleType{"proton","deuteron","triton","alpha"};
+  std::vector<string> ParticleTypeCUT{"proton","deuteron","triton","3He","alpha"};
   std::vector<string> ParticleTypePixel{"proton", "alpha"};
   std::map<TString, double> Energy ;
   std::map<TString, NPL::EnergyLoss> LightAl ;
@@ -424,6 +426,8 @@ class Analysis: public NPL::VAnalysis{
   default_random_engine generator;
   normal_distribution<double> distribution = normal_distribution<double>(0.0,1.0);
   CalibrationManager* Cal;
+  std::map<TString,std::map<TString,TCutG*>>* TCutGMap;
+  std::map<TString,std::map<TString,TFile*>>* TFileMap;
 
 };
 #endif

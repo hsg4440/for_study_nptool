@@ -9,6 +9,16 @@ CalibrationFilePath
     ./data/NPRoot/Calibration/CalAlphaDeadLayer/Cal_Str_Y_E_MM3.cal
     ./data/NPRoot/Calibration/CalAlphaDeadLayer/Cal_Str_Y_E_MM4.cal
     
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_X_E_MM1.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_X_E_MM2.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_X_E_MM3.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_X_E_MM4.cal
+    
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_Y_E_MM1.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_Y_E_MM2.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_Y_E_MM3.cal
+    ./data/NPRoot/Calibration/CalAlpha_r0388_06+/Cal_Str_Y_E_MM4.cal
+    
     ./data/NPRoot/Calibration/Time/Coeff/Cal_Str_X_T_MM1_r0183.cal    
     ./data/NPRoot/Calibration/Time/Coeff/Cal_Str_Y_T_MM1_r0184.cal    
     ./data/NPRoot/Calibration/Time/Coeff/Cal_Str_X_T_MM2_r0183.cal    
@@ -23,22 +33,22 @@ CalibrationFilePath
     ./data/NPRoot/Calibration/Run_CSICalib/CsI_MM3.txt
     ./data/NPRoot/Calibration/Run_CSICalib/CsI_MM4.txt
     
-    ./data/NPRoot/Calibration/test/CsI_MM1_proton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM2_proton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM3_proton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM4_proton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM1_deuteron.txt
-    ./data/NPRoot/Calibration/test/CsI_MM2_deuteron.txt
-    ./data/NPRoot/Calibration/test/CsI_MM3_deuteron.txt
-    ./data/NPRoot/Calibration/test/CsI_MM4_deuteron.txt
-    ./data/NPRoot/Calibration/test/CsI_MM1_triton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM2_triton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM3_triton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM4_triton.txt
-    ./data/NPRoot/Calibration/test/CsI_MM1_alpha.txt
-    ./data/NPRoot/Calibration/test/CsI_MM2_alpha.txt
-    ./data/NPRoot/Calibration/test/CsI_MM3_alpha.txt
-    ./data/NPRoot/Calibration/test/CsI_MM4_alpha.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM1_proton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM2_proton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM3_proton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM4_proton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM1_deuteron.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM2_deuteron.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM3_deuteron.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM4_deuteron.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM1_triton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM2_triton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM3_triton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM4_triton.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM1_alpha.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM2_alpha.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM3_alpha.txt
+    ./data/NPRoot/Calibration/PixelCalAllStat/CsI_MM4_alpha.txt
 
     ./data/NPRoot/Calibration/CATS/CATSLin1X_r0164.txt
     ./data/NPRoot/Calibration/CATS/CATSLin1Y_r0164.txt

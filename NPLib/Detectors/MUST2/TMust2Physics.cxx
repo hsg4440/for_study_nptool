@@ -288,6 +288,31 @@ void TMust2Physics::BuildPhysicalEvent() {
     m_EventData = &(**r_ReaderEventData);
   }
   PreTreat();
+  
+  std::vector<unsigned int> Raw_Si_X_E;
+  std::vector<unsigned int> Raw_Si_Y_E;
+  Raw_Si_X_E.clear();
+  Raw_Si_Y_E.clear();
+
+      // Treating again raw data to get raw Si energy in the data: should be removed at some point
+      // Added because I did cut on wrong calib and now need raw Si to apply CUTS
+  for (unsigned int i = 0; i < m_EventData->GetMMStripXEMult(); ++i) {
+    if (m_EventData->GetMMStripXEEnergy(i) > m_Si_X_E_RAW_Threshold &&
+        IsValidChannel(0, m_EventData->GetMMStripXEDetectorNbr(i), m_EventData->GetMMStripXEStripNbr(i))) {
+      double EX = fSi_X_E(m_EventData, i);
+      if (EX > m_Si_X_E_Threshold)
+        Raw_Si_X_E.push_back(m_EventData->GetMMStripXEEnergy(i));
+    }
+  }
+  
+  for (unsigned int i = 0; i < m_EventData->GetMMStripYEMult(); ++i) {
+    if (m_EventData->GetMMStripYEEnergy(i) < m_Si_Y_E_RAW_Threshold &&
+        IsValidChannel(1, m_EventData->GetMMStripYEDetectorNbr(i), m_EventData->GetMMStripYEStripNbr(i))) {
+      double EY = fSi_Y_E(m_EventData, i);
+      if (EY > m_Si_Y_E_Threshold)
+        Raw_Si_Y_E.push_back(m_EventData->GetMMStripYEEnergy(i));
+    }
+  }
 
   m_multimatch = false;
 
@@ -302,6 +327,12 @@ void TMust2Physics::BuildPhysicalEvent() {
   m_SiLiTMult = m_PreTreatedData->GetMMSiLiTMult();
   m_CsIEMult = m_PreTreatedData->GetMMCsIEMult();
   m_CsITMult = m_PreTreatedData->GetMMCsITMult();
+
+  // Just a sanity check, to be sure that mult is consistent
+  if(m_StripXEMult != Raw_Si_X_E.size())
+    std::cout << "Si_X_E mult not consistent" << std::endl;
+  if(m_StripYEMult != Raw_Si_Y_E.size())
+    std::cout << "Si_Y_E mult not consistent" << std::endl;
 
   // Returns the matching couples and set the type
   // of matching. In case of a multiple match in one
@@ -361,8 +392,12 @@ void TMust2Physics::BuildPhysicalEvent() {
         }
       }
 
+
+
        double Si_X_E = m_PreTreatedData->GetMMStripXEEnergy(Xindex);
        double Si_Y_E = m_PreTreatedData->GetMMStripYEEnergy(Yindex);
+       double Si_X_E_Raw = Raw_Si_X_E[Xindex];
+       double Si_Y_E_Raw = Raw_Si_Y_E[Yindex];
 
       TelescopeNumber.push_back(N);
       Si_X.push_back(X);
@@ -377,11 +412,14 @@ void TMust2Physics::BuildPhysicalEvent() {
       if(Cal_Pixel)
         Pixel.push_back(PixelN);
 
-      if (m_Take_E_Y)
+      if (m_Take_E_Y){
         Si_E.push_back(Si_Y_E);
-      else
+        Si_E_Raw.push_back(Si_Y_E_Raw);
+      }
+      else{
         Si_E.push_back(Si_X_E);
-
+        Si_E_Raw.push_back(Si_X_E_Raw);
+      }
       if (m_Take_T_Y)
         Si_T.push_back(Si_Y_T);
       else
@@ -917,6 +955,7 @@ void TMust2Physics::Clear() {
 
   // Si X
   Si_E.clear();
+  Si_E_Raw.clear();
   Si_T.clear();
   Si_X.clear();
   Si_Y.clear();

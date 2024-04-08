@@ -71,6 +71,27 @@ void Analysis::Init(){
   Reaction_p3He->SetBeamEnergy(BeamTarget["48Cr"].Slow(Reaction_p3He->GetBeamEnergy(),TargetThickness*0.5,0));
   Cal = CalibrationManager::getInstance();
   IsPhysics = NPOptionManager::getInstance()->GetInputPhysicalTreeOption(); 
+  TCutGMap = RootHistogramsCalib::getInstance()->GetTCutGMap();
+  TFileMap = RootHistogramsCalib::getInstance()->GetTFileMap();
+
+  unsigned int NbCsI = 16;
+  unsigned int NbDetectors = 4;
+  for(unsigned int k = 0; k < NbDetectors; k++){
+    for (unsigned int j = 0; j < NbCsI; j++) {
+      string CutsPath = NPOptionManager::getInstance()->GetCutsPath();
+
+      for (unsigned int i = 0; i < ParticleTypeCUT.size(); i++) {
+        std::cout << ParticleTypeCUT[i] << "\n";
+        TString CutName = Form("%s_hMM%u_CSI%u", ParticleTypeCUT[i].c_str(), k+1, j + 1);
+        TString cFileName = CutName + ".root";
+        std::cout << CutName << "  " << cFileName << " " << CutsPath + cFileName << "\n";
+
+
+        if((*TFileMap)["MUST2"][CutName] = new TFile(CutsPath+cFileName))
+          (*TCutGMap)["MUST2"][CutName] = (TCutG*)(*TFileMap)["MUST2"][CutName]->FindObjectAny(CutName);
+      }
+    }
+  }
 }
   ///////////////////////////// Initialize some important parameters //////////////////////////////////
 
@@ -157,7 +178,19 @@ void Analysis::TreatMUST2(){
 
     Si_E_M2 = M2->Si_E[countMust2];
     CsI_E_M2= M2->CsI_E[countMust2];
+    double Si_X = M2->Si_X[countMust2];
     unsigned int Pixel = M2->Pixel[countMust2];
+    unsigned int PID= 0;
+    
+    static string name;
+    name = "MUST2/T";
+    name += NPL::itoa(TelescopeNumber);
+    name += "_Si_X_O";
+    name += NPL::itoa(Si_X);
+    name += "_E";
+    double StripXEnergy_O = Cal->ApplyCalibration(name,M2->Si_E_Raw[countMust2]);
+    // std::cout << Si_E_M2 << " " << StripXEnergy_O << std::endl;
+
     for(unsigned int i = 0; i < ParticleType.size(); i++){
       Energy[ParticleType[i]] = 0;
       CsI_Energy[ParticleType[i]] = 0;
@@ -178,6 +211,14 @@ void Analysis::TreatMUST2(){
       }
       CsI_Energy[ParticleType[i]] =  Cal->ApplyCalibration(name,M2->CsI_E_Raw[countMust2]);
       Energy[ParticleType[i]] = CsI_Energy[ParticleType[i]];
+      
+      }
+    for(unsigned int i = 0; i < ParticleTypeCUT.size(); i++){
+      TString CutName = Form("%s_hMM%u_CSI%u", ParticleTypeCUT[i].c_str(), TelescopeNumber, CristalNb);
+      if ((*TCutGMap)["MUST2"][CutName] != 0 &&
+          (*TCutGMap)["MUST2"][CutName]->IsInside(M2->CsI_E_Raw[countMust2], StripXEnergy_O)) {
+            PID = i+1;
+          }
     }
 
     Energy[ParticleType[i]] += Si_E_M2;
@@ -212,6 +253,8 @@ void Analysis::TreatMUST2(){
     M2_CsI_E_d.push_back(CsI_Energy["deuteron"]);
     M2_CsI_E_t.push_back(CsI_Energy["triton"]);
     M2_CsI_E_a.push_back(CsI_Energy["alpha"]);
+    Si_E_O.push_back(StripXEnergy_O);
+    PID_M2.push_back(PID);
     
     M2_ThetaLab[countMust2]=M2_ThetaLab[countMust2]/deg;
 
@@ -238,6 +281,11 @@ void Analysis::TreatEXO(){
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("GATCONF",&GATCONFMASTER);
   RootOutput::getInstance()->GetTree()->Branch("GATCONFTS",&GATCONFMASTERTS);
+  
+  // Brnch with old alpha calibration: only to make cuts before calib
+  RootOutput::getInstance()->GetTree()->Branch("Si_E_O",&Si_E_O);
+  RootOutput::getInstance()->GetTree()->Branch("PID_M2",&PID_M2);
+
   
   RootOutput::getInstance()->GetTree()->Branch("M2_TelescopeM",&M2_TelescopeM,"M2_TelescopeM/s");
   RootOutput::getInstance()->GetTree()->Branch("M2_CsI_E_p",&M2_CsI_E_p);
@@ -292,7 +340,9 @@ void Analysis::ReInit(){
   M2_Ex_d.clear();
   M2_Ex_t.clear();
   M2_Ex_a.clear();
-  
+
+  PID_M2.clear(); 
+  Si_E_O.clear(); 
   M2_CsI_E_p.clear();
   M2_CsI_E_d.clear();
   M2_CsI_E_t.clear();
