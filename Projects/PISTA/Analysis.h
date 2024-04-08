@@ -69,6 +69,7 @@ class Analysis: public NPL::VAnalysis{
     double Ex;
     double PID;
     double OriginalThetaLab;
+    int Telescope;
     NPL::Reaction* Transfer;
 
     TRandom3 Rand;
