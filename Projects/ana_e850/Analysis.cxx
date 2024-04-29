@@ -71,6 +71,12 @@ void Analysis::Init(){
 
   Exo_Energy = new vector<float>();
   Exo_Crystal = new vector<int>();
+
+  Xmean = 0;
+  Ymean = 0;
+  Xmean_iter = 0;
+  Ymean_iter = 0;
+  iteration = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,23 +100,50 @@ void Analysis::LoadCalibParameter(){
 void Analysis::TreatEvent(){
   ReInitValue();
 
-  if(Exo_Mult==1){
-    Exogam_Crystal = Exo_Crystal->at(0);
-    Exogam_Energy = Exo_Energy->at(0);
-  }
-
-  XTarget = m_XTarget_offset;
-  YTarget = m_YTarget_offset;
-  ZTarget = m_ZTarget_offset;
-  PositionOnTarget = TVector3(XTarget,YTarget,ZTarget);
-  BeamEnergy = 1417.;
+  VAMOS_TS_hour = fVAMOS_TS_sec/3600.;
+  PISTA_TS_hour = fPISTA_TS_sec/3600.;
+  BeamEnergy = 1417;
   //BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer10Be->SetBeamEnergy(BeamEnergy);
   Transfer14C->SetBeamEnergy(BeamEnergy);
   Elastic->SetBeamEnergy(BeamEnergy);
 
+  if(abs(FPMW->Xt)<5 && abs(FPMW->Yt)<5){
+    XTarget = FPMW->Xt*cos(20*deg+FPMW->Theta_in)/cos(FPMW->Theta_in);
+    YTarget = FPMW->Yt;
+    ZTarget = 0;
+
+    Xmean_iter += XTarget;
+    Ymean_iter += YTarget;
+    iteration++;
+    if(iteration%100==0){
+      Xmean = Xmean_iter/iteration;
+      Ymean = Ymean_iter/iteration;
+      
+      iteration = 0;
+      Xmean_iter = 0;
+      Ymean_iter = 0;
+    }
+  }
+  else{
+    XTarget = Xmean;
+    YTarget = Ymean;
+    ZTarget = 0;
+  }
+
+  XTarget += m_XTarget_offset;
+  YTarget += m_YTarget_offset;
+  ZTarget += m_ZTarget_offset;
+
+  PositionOnTarget = TVector3(XTarget,YTarget,ZTarget);
   double Brho_ref = 1.1;
   if(FPMWPat_0RawM==1){
+
+    if(Exo_Mult==1){
+      Exogam_Crystal = Exo_Crystal->at(0);
+      Exogam_Energy = Exo_Energy->at(0);
+    }
+
     UShort_t FPMWPat = FPMWPat_0RawNr[0];
     FPMW_Section = FPMWPat;
     IC->SetFPMWSection(FPMW_Section);
@@ -119,9 +152,6 @@ void Analysis::TreatEvent(){
     if(FPMW->Xf!=-1000){
       Tracking->CalculateReconstruction(FPMW->Xf, 1000*FPMW->Thetaf, Brho_ref, FF_Brho, Theta, FF_Path);
       // FF_Path is in cm ! 
-      
-      PositionOnTarget.SetX(FPMW->Xt + m_XTarget_offset);
-      PositionOnTarget.SetY(FPMW->Yt + m_YTarget_offset);
 
       // T13 //
       double Toff13[20] = {0,0,0,0,1.3,1.7,1.2,0.6,0.5,2.5,2.1,0.9,1.2,1.7,1.1,1.1,1.2,0,0,0};
@@ -219,6 +249,7 @@ void Analysis::TreatEvent(){
   double Energy = 0;
   if(PISTA->EventMultiplicity==1){
     DeltaE = PISTA->DE[0];
+    //Eres = PISTA->E[0];
     Eres = PISTA->back_E[0];
     Energy = DeltaE + Eres;
 
@@ -227,8 +258,9 @@ void Analysis::TreatEvent(){
     Telescope = PISTA->DetectorNumber[0];
     Time_E = PISTA->back_E_Time[0];
   }
-  else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
+  /*else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
     DeltaE = PISTA->DE[0] + PISTA->DE[1];
+    //Eres = PISTA->E[0];
     Eres = PISTA->back_E[0];
     Energy = DeltaE + Eres;
 
@@ -240,9 +272,10 @@ void Analysis::TreatEvent(){
 
     strip_E = PISTA->E_StripNbr[0];
     Time_E = PISTA->back_E_Time[0];
-  }
+  }*/
   if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
-    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, 58-strip_E, strip_DE);
+    //TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, 58-strip_E, strip_DE);
+    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, strip_E, strip_DE);
     TVector3 HitDirection = PISTA_pos - PositionOnTarget;
     PhiLab = PISTA_pos.Phi();
     Xcalc  = PISTA_pos.X();
@@ -338,7 +371,7 @@ void Analysis::TwoAlphaAnalysis(){
 
     ThetaLab = (ThetaLab1 + ThetaLab2)/2.;
 
-  }*/
+    }*/
 
   // *** 8Be construction ** //
   DeltaE = DE;
@@ -423,12 +456,15 @@ void Analysis::InitOutputBranch(){
 
   RootOutput::getInstance()->GetTree()->Branch("Exogam_Energy",&Exogam_Energy,"Exogam_Energy/D");
   RootOutput::getInstance()->GetTree()->Branch("Exogam_Crystal",&Exogam_Crystal,"Exogam_Crystal/I");
-  
+
   RootOutput::getInstance()->GetTree()->Branch("Elab1",&Elab1);
   RootOutput::getInstance()->GetTree()->Branch("Elab2",&Elab2);
   RootOutput::getInstance()->GetTree()->Branch("m_2alpha",&m_2alpha,"m_2alpha/I");
-
   
+  RootOutput::getInstance()->GetTree()->Branch("VAMOS_TS_hour",&VAMOS_TS_hour,"VAMOS_TS_hour/D");
+  RootOutput::getInstance()->GetTree()->Branch("PISTA_TS_hour",&PISTA_TS_hour,"PISTA_TS_hour/D");
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -458,6 +494,10 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchStatus("Exo_Crystal",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("Exo_Crystal",&Exo_Crystal);
 
+  RootInput::getInstance()->GetChain()->SetBranchStatus("fVAMOS_TS_sec",true);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("fVAMOS_TS_sec",&fVAMOS_TS_sec);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("fPISTA_TS_sec",true);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("fPISTA_TS_sec",&fPISTA_TS_sec);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -542,7 +582,7 @@ void Analysis::ReadAnalysisConfig(){
   bool ReadingStatus = false;
 
   string filename = "AnalysisConfig.dat";
-  
+
   // open analysis config file
   ifstream AnalysisConfigFile;
   AnalysisConfigFile.open(filename.c_str());
@@ -604,10 +644,6 @@ void Analysis::ReadAnalysisConfig(){
         m_Beam_ThetaY = atof(DataBuffer.c_str());
         cout << "**** " << whatToDo << " " << m_Beam_ThetaY << endl;
       }
-
-
-
-
 
       else {
         ReadingStatus = false;

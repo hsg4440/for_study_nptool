@@ -8,12 +8,12 @@ void convert(int run=29){
 
   // input tree //
   input_tree = new TChain("AD");
-  input_tree->Add(Form("/run/media/morfouacep/e850/ganil/run/e850/RootA/r00%i*",run));
+  input_tree->Add(Form("/home/morfouacep/Physics/ganil/pista/analysisenv-e850-2023/RootA/r00%i*.root",run));
   InitInputTree();
 
 
   // output tree //
-  TString output_path = "/run/media/morfouacep/e850/ganil/run/e850/np_raw/";
+  TString output_path = "/home/morfouacep/Physics/ganil/pista/analysisenv-e850-2023/np_raw/";
   TString filename = output_path+Form("run_raw_%i.root",run);
   TFile* ofile = TFile::Open(filename,"recreate");
   TTree* output_tree = new TTree("RawTree","RawTree");
@@ -27,7 +27,9 @@ void convert(int run=29){
   output_tree->Branch("T_TMW1_FPMW1",&T_TMW1_FPMW1,"T_TMW1_FPMW1/F");
   output_tree->Branch("FPMWPat_0RawNr",fFPMWPat_0RawNr);
   output_tree->Branch("FPMWPat_0RawM",&fFPMWPat_0RawM);
-  output_tree->Branch("TMWPat_0TS",&TMWPat_0TS);
+  //output_tree->Branch("TMWPat_0TS",&TMWPat_0TS);
+  output_tree->Branch("fVAMOS_TS_sec",&fVAMOS_TS_sec);
+  output_tree->Branch("fPISTA_TS_sec",&fPISTA_TS_sec);
   output_tree->Branch("Exo_Mult",&Exo_Mult,"Exo_Mult/I");
   output_tree->Branch("Exo_Energy",&Exo_Energy);
   output_tree->Branch("Exo_Crystal",&Exo_Crystal);
@@ -37,9 +39,11 @@ void convert(int run=29){
   for(int i=0; i<nentries; i++){
     Clear();
     input_tree->GetEntry(i);
-    if(i%10000==0) cout << "\033[34m\rProcessing tree... " <<(double)i/nentries*100 << "\% done" << flush;
+    if(i%100000==0) cout << "\033[34m\rProcessing tree... " <<(double)i/nentries*100 << "\% done" << flush;
    
 
+    fVAMOS_TS_sec = TMWPat_0TS*1e-8;
+    fPISTA_TS_sec = PISTA_TS*1e-8;
 
     // IC //
     for(int i=0; i<11; i++){
@@ -93,12 +97,16 @@ void convert(int run=29){
       m_fpmw->SetFPMW_Y(3,strip,charge);
     }
 
-    for(int p=0;p<Inner6MVM; p++){
-      Exo_Mult = Inner6MVM;
-      Exo_Energy.push_back(Inner6MV[p]);
-      Exo_Crystal.push_back(Inner6MVN[p]);;
+    if(FPMW0_XVM>0 && FPMW1_XVM>2 ){
+      for(int p=0;p<Inner6MVM; p++){
+        Exo_Mult = Inner6MVM;
+        Exo_Energy.push_back(Inner6MV[p]);
+        Exo_Crystal.push_back(Inner6MVN[p]);;
+      }
     }
-    output_tree->Fill();
+ 
+    if(fPISTA_TS_sec>0 || fVAMOS_TS_sec>0)
+      output_tree->Fill();
   }
 
   output_tree->Write();
@@ -140,8 +148,8 @@ void InitInputTree(){
   input_tree->SetBranchAddress("FPMWPat_0RawM",&fFPMWPat_0RawM);
   input_tree->SetBranchStatus("TMWPat_00TS","true");
   input_tree->SetBranchAddress("TMWPat_00TS",&TMWPat_0TS);
-
-
+  input_tree->SetBranchStatus("PISTA_TS","true");
+  input_tree->SetBranchAddress("PISTA_TS",&PISTA_TS);
 
   // IC
   input_tree->SetBranchStatus("IC","true");

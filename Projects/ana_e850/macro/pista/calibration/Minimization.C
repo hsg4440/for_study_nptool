@@ -121,6 +121,8 @@ double ConstantFactor(const double* parameter){
   double Ycalc;
   double Zcalc;
   int Telescope;
+  double XTarget;
+  double YTarget;
 
 
   chain->SetBranchStatus("DeltaE","true");
@@ -137,6 +139,12 @@ double ConstantFactor(const double* parameter){
 
   chain->SetBranchStatus("Zcalc","true");
   chain->SetBranchAddress("Zcalc",&Zcalc);
+
+  chain->SetBranchStatus("XTarget","true");
+  chain->SetBranchAddress("XTarget",&XTarget);
+
+  chain->SetBranchStatus("YTarget","true");
+  chain->SetBranchAddress("YTarget",&YTarget);
 
   chain->SetBranchStatus("Telescope","true");
   chain->SetBranchAddress("Telescope",&Telescope);
@@ -158,7 +166,7 @@ double ConstantFactor(const double* parameter){
     Elab = DeltaE + Ecal;
 
     if(Xcalc!=-1000 && Ycalc!=-1000 && Zcalc!=-1000){
-      TVector3 PositionOnTarget = TVector3(parameter[24],parameter[25],parameter[26]);
+      TVector3 PositionOnTarget = TVector3(XTarget+parameter[24],YTarget+parameter[25],parameter[26]);
       TVector3 HitPosition = TVector3(Xcalc,Ycalc,Zcalc);
 
       TVector3 BeamDirection = TVector3(0,0,1);

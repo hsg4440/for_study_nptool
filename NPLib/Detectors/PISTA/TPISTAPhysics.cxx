@@ -419,7 +419,7 @@ void TPISTAPhysics::PreTreat() {
       double StripT  = m_EventData->GetPISTA_DE_StripTime(i);
 
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_PEDESTAL",0);
-      double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_ENERGY",StripE-ped);
+      double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_DE_ENERGY",StripE);
 
       if(sizeDE_back==0 && CalStripE > m_E_Threshold){
         m_PreTreatedData->SetPISTA_DE(DetNbr, StripNbr, CalStripE, -100, StripT, -100);
@@ -452,14 +452,14 @@ void TPISTAPhysics::PreTreat() {
       double StripT  = m_EventData->GetPISTA_E_StripTime(i);
 
       double ped = Cal->GetValue("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_PEDESTAL",0);
-      double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_ENERGY",StripE-ped);
-
+      double CalStripE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_STRIP"+NPL::itoa(StripNbr)+"_E_ENERGY",StripE);
+      
       for(UShort_t j = 0; j< sizeE_back; j++){
         double BackE  = m_EventData->GetPISTA_E_BackEnergy(j);
         double BackT  = m_EventData->GetPISTA_E_BackTime(j);
         int BackDet = m_EventData->GetPISTA_E_BackDetector(j);
 
-        double CalBackE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_E",BackE);
+        double CalBackE = Cal->ApplyCalibration("PISTA/T"+NPL::itoa(DetNbr)+"_BACK_E_STRIP"+NPL::itoa(StripNbr),BackE);
 
         if (CalStripE > m_E_Threshold && DetNbr==BackDet) {
           m_PreTreatedData->SetPISTA_E(DetNbr, StripNbr, CalStripE, CalBackE, StripT, BackT);
@@ -727,7 +727,6 @@ void TPISTAPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for(int i=0; i<m_NumberOfDetectors; ++i) {
     Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_BACK_DE","PISTA_T"+ NPL::itoa(i+1)+"_BACK_DE");
-    Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_BACK_E","PISTA_T"+ NPL::itoa(i+1)+"_BACK_E");
 
     for(int j=0; j<m_NumberOfStripsY; j++){
       Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_DE_ENERGY","PISTA_T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_DE_ENERGY");
@@ -737,6 +736,7 @@ void TPISTAPhysics::AddParameterToCalibrationManager() {
     for(int j=0; j<m_NumberOfStripsX; j++){
       Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_E_ENERGY","PISTA_T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_E_ENERGY");
       Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_E_PEDESTAL","PISTA_T"+ NPL::itoa(i+1)+"_STRIP"+NPL::itoa(j+1)+"_E_PEDESTAL");
+    Cal->AddParameter("PISTA", "T"+ NPL::itoa(i+1)+"_BACK_E_STRIP"+NPL::itoa(j+1),"PISTA_T"+ NPL::itoa(i+1)+"_BACK_E_STRIP"+NPL::itoa(j+1));
     }
 
 

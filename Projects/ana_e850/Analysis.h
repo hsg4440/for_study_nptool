@@ -84,6 +84,11 @@ class Analysis: public NPL::VAnalysis{
     double Ex238U;
     double PID;
 
+    ULong64_t fVAMOS_TS_sec;
+    ULong64_t fPISTA_TS_sec;
+    double VAMOS_TS_hour;
+    double PISTA_TS_hour;
+
     int FPMW_Section;
     double FF_Brho;
     double FF_Path;
@@ -157,9 +162,16 @@ class Analysis: public NPL::VAnalysis{
     double Exogam_Energy;
     int Exogam_Crystal;
 
+  private:
+    double Xmean;
+    double Ymean;
+    double Xmean_iter;
+    double Ymean_iter;
+    int iteration;
 
     double m_Q_p0[20];
     double m_Q_p1[20];
+
   private:
     TPISTAPhysics* PISTA;
     TFPMWPhysics* FPMW;

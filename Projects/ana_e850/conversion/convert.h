@@ -20,6 +20,9 @@ vector<int> Exo_Crystal;
 UShort_t fFPMWPat_0RawNr[20];
 Int_t fFPMWPat_0RawM;
 ULong64_t TMWPat_0TS;
+ULong64_t fVAMOS_TS_sec;
+ULong64_t PISTA_TS;
+ULong64_t fPISTA_TS_sec;
 
 // IC //
 float IC[11];

@@ -9,6 +9,8 @@ double Zcalc;
 int Telescope;
 double Brho;
 int m_2alpha;
+double XTarget;
+double YTarget;
 
 TCutG* cut_12C[8];
 
@@ -42,6 +44,11 @@ void LoadRootFile(){
   chain->SetBranchStatus("Zcalc","true");
   chain->SetBranchAddress("Zcalc",&Zcalc);
  
+  chain->SetBranchStatus("XTarget","true");
+  chain->SetBranchAddress("XTarget",&XTarget);
+  chain->SetBranchStatus("YTarget","true");
+  chain->SetBranchAddress("YTarget",&YTarget);
+ 
   chain->SetBranchStatus("Telescope","true");
   chain->SetBranchAddress("Telescope",&Telescope);
  
@@ -59,6 +66,8 @@ void InitOutputTree(){
   otree->Branch("Xcalc",&Xcalc,"Xcalc/D");
   otree->Branch("Ycalc",&Ycalc,"Ycalc/D");
   otree->Branch("Zcalc",&Zcalc,"Zcalc/D");
+  otree->Branch("XTarget",&XTarget,"XTarget/D");
+  otree->Branch("YTarget",&YTarget,"YTarget/D");
   otree->Branch("Telescope",&Telescope,"Telescope/I");
 }
 
