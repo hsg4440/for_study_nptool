@@ -7,14 +7,6 @@ CalibrationFilePath
  ./Calibration/Energy/PISTA6_E.cal
  ./Calibration/Energy/PISTA7_E.cal
  ./Calibration/Energy/PISTA8_E.cal
- ./Calibration/Energy/PISTA1_DE.ped
- ./Calibration/Energy/PISTA2_DE.ped
- ./Calibration/Energy/PISTA3_DE.ped
- ./Calibration/Energy/PISTA4_DE.ped
- ./Calibration/Energy/PISTA5_DE.ped
- ./Calibration/Energy/PISTA6_DE.ped
- ./Calibration/Energy/PISTA7_DE.ped
- ./Calibration/Energy/PISTA8_DE.ped
  ./Calibration/Energy/PISTA1_DE.cal
  ./Calibration/Energy/PISTA2_DE.cal
  ./Calibration/Energy/PISTA3_DE.cal
