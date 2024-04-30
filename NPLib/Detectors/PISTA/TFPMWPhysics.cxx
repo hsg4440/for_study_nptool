@@ -134,14 +134,13 @@ void TFPMWPhysics::BuildPhysicalEvent() {
     //double PosX = FittedHyperbolicSecant(MaxQX[DetN],MapX[DetN]);
     //double PosY = FittedHyperbolicSecant(MaxQY[DetN],MapY[DetN]);
 
-
-    if(DetN==0 || DetN==1){
-      PosX = PosX - DetPosX[DetN];
-      PosY = PosY - DetPosY[DetN];
+    if(DetN==1 || DetN==2){
+      PosX = PosX - DetPosX[DetN-1];
+      PosY = PosY - DetPosY[DetN-1];
     }
-    else if(DetN==2 || DetN==3){
-      PosX = -PosX - DetPosX[DetN];
-      PosY = PosY - DetPosY[DetN];
+    else if(DetN==3 || DetN==4){
+      PosX = -PosX - DetPosX[DetN-1];
+      PosY = PosY - DetPosY[DetN-1];
     }
 
     int sx0 = (int) PosX;
@@ -326,7 +325,14 @@ void TFPMWPhysics::PreTreat() {
     int det = m_EventData->GetFPMW_DetX(i);
     int strip = m_EventData->GetFPMW_StripX(i);
     double QX = m_EventData->GetFPMW_ChargeX(i);
-    double Qcal = Cal->ApplyCalibration("FPMW/DET"+NPL::itoa(det)+"_STRIP"+NPL::itoa(strip),QX);
+    
+    double a0 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPX"+NPL::itoa(strip),0);
+    double a1 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPX"+NPL::itoa(strip),1);
+    double a2 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPX"+NPL::itoa(strip),2);
+    double scale = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPX"+NPL::itoa(strip),3);
+    double Qcal = (QX-a0)*a1 + pow(QX-a0,2)*a2;
+    Qcal = scale*Qcal;
+
     m_PreTreatedData->SetFPMW_DetX(det);
     m_PreTreatedData->SetFPMW_StripX(strip);
     m_PreTreatedData->SetFPMW_ChargeX(Qcal);
@@ -337,7 +343,14 @@ void TFPMWPhysics::PreTreat() {
     int det = m_EventData->GetFPMW_DetY(i);
     int strip = m_EventData->GetFPMW_StripY(i);
     double QY = m_EventData->GetFPMW_ChargeY(i);
-    double Qcal = Cal->ApplyCalibration("FPMW/DET"+NPL::itoa(det)+"_STRIP"+NPL::itoa(strip),QY);
+        
+    double a0 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPY"+NPL::itoa(strip),0);
+    double a1 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPY"+NPL::itoa(strip),1);
+    double a2 = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPY"+NPL::itoa(strip),2);
+    double scale = Cal->GetValue("FPMW/DET"+NPL::itoa(det)+"_STRIPY"+NPL::itoa(strip),3);
+    double Qcal = (QY-a0)*a1 + pow(QY-a0,2)*a2;
+    Qcal = scale*Qcal;
+
     m_PreTreatedData->SetFPMW_DetY(det);
     m_PreTreatedData->SetFPMW_StripY(strip);
     m_PreTreatedData->SetFPMW_ChargeY(Qcal);
@@ -479,7 +492,8 @@ void TFPMWPhysics::AddParameterToCalibrationManager() {
 
   for(int i = 0; i < m_NumberOfDetectors; i++){
     for(int s = 0; s < 996; s++){
-      Cal->AddParameter("FPMW","DET"+NPL::itoa(i)+"_STRIP"+NPL::itoa(s),"FPMW_DET"+NPL::itoa(i)+"_STRIP"+NPL::itoa(s));
+      Cal->AddParameter("FPMW","DET"+NPL::itoa(i+1)+"_STRIPX"+NPL::itoa(s+1),"FPMW_DET"+NPL::itoa(i+1)+"_STRIPX"+NPL::itoa(s+1));
+      Cal->AddParameter("FPMW","DET"+NPL::itoa(i+1)+"_STRIPY"+NPL::itoa(s+1),"FPMW_DET"+NPL::itoa(i+1)+"_STRIPY"+NPL::itoa(s+1));
     }
   }
 }

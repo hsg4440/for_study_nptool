@@ -40,3 +40,12 @@ CalibrationFilePath
  ./Calibration/VAMOS/CHIO/Chio_E_sec17.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec18.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec19.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW1_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW1_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW2_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW2_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW3_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW3_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW4_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW4_Y.cal
+

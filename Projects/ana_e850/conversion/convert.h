@@ -28,36 +28,36 @@ ULong64_t fPISTA_TS_sec;
 float IC[11];
 
 // TW1 //
-int TMW1_XVM;
-float TMW1_XV[92];
-UShort_t TMW1_XVN[92];
-int TMW1_YVM;
-float TMW1_YV[92];
-UShort_t TMW1_YVN[92];
+Int_t TMW1_XRawM;
+UShort_t TMW1_XRawNr[92];
+UShort_t TMW1_XRaw[92];
+Int_t TMW1_YRawM;
+UShort_t TMW1_YRawNr[92];
+UShort_t TMW1_YRaw[92];
 
-// TMW2 //
-int TMW2_XVM;
-float TMW2_XV[92];
-UShort_t TMW2_XVN[92];
-int TMW2_YVM;
-float TMW2_YV[92];
-UShort_t TMW2_YVN[92];
+// TW2 //
+Int_t TMW2_XRawM;
+UShort_t TMW2_XRawNr[92];
+UShort_t TMW2_XRaw[92];
+Int_t TMW2_YRawM;
+UShort_t TMW2_YRawNr[92];
+UShort_t TMW2_YRaw[92];
 
 // FPMW0 //
-int FPMW0_XVM;
-float FPMW0_XV[992];
-UShort_t FPMW0_XVN[992];
-int FPMW0_YVM;
-float FPMW0_YV[160];
-UShort_t FPMW0_YVN[160];
+Int_t FPMW0_XRawM;
+UShort_t FPMW0_XRawNr[992];
+UShort_t FPMW0_XRaw[992];
+Int_t FPMW0_YRawM;
+UShort_t FPMW0_YRawNr[160];
+UShort_t FPMW0_YRaw[160];
 
 // FPMW1 //
-int FPMW1_XVM;
-float FPMW1_XV[992];
-UShort_t FPMW1_XVN[992];
-int FPMW1_YVM;
-float FPMW1_YV[160];
-UShort_t FPMW1_YVN[160];
+Int_t FPMW1_XRawM;
+UShort_t FPMW1_XRawNr[992];
+UShort_t FPMW1_XRaw[992];
+Int_t FPMW1_YRawM;
+UShort_t FPMW1_YRawNr[160];
+UShort_t FPMW1_YRaw[160];
 
 // Exogam //
 Int_t Inner6MVM;
