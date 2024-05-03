@@ -11,6 +11,9 @@ double Brho;
 int m_2alpha;
 double XTarget;
 double YTarget;
+double VAMOS_TS_hour;
+double Pista_Time_Target;
+TPISTAPhysics* pista;
 
 TCutG* cut_12C[8];
 
@@ -26,7 +29,15 @@ void LoadCuts(){
 /////////////////////////////////////////////////////////
 void LoadRootFile(){
   chain = new TChain("PhysicsTree");
-  chain->Add("../../../root/analysis/run_55_Eraw.root");
+  //chain->Add("../../../root/analysis/run_29_calib.root");
+  //chain->Add("../../../root/analysis/run_41_calib.root");
+  chain->Add("../../../root/analysis/run_49_calib.root");
+  //chain->Add("../../../root/analysis/run_55_calib.root");
+
+  pista = new TPISTAPhysics();
+  NPL::InputParser parser("../../../pista_e850_part1.detector");
+  pista->ReadConfiguration(parser);
+  chain->SetBranchAddress("PISTA",&pista);
 
   chain->SetBranchStatus("FF_Brho","true");
   chain->SetBranchAddress("FF_Brho",&Brho);
@@ -55,6 +66,12 @@ void LoadRootFile(){
   chain->SetBranchStatus("m_2alpha","true");
   chain->SetBranchAddress("m_2alpha",&m_2alpha);
  
+  chain->SetBranchStatus("VAMOS_TS_hour","true");
+  chain->SetBranchAddress("VAMOS_TS_hour",&VAMOS_TS_hour);
+ 
+  chain->SetBranchStatus("Pista_Time_Target","true");
+  chain->SetBranchAddress("Pista_Time_Target",&Pista_Time_Target);
+ 
 }
 
 /////////////////////////////////////////////////////////
@@ -69,6 +86,7 @@ void InitOutputTree(){
   otree->Branch("XTarget",&XTarget,"XTarget/D");
   otree->Branch("YTarget",&YTarget,"YTarget/D");
   otree->Branch("Telescope",&Telescope,"Telescope/I");
+  //otree->Branch("PISTA",&pista);
 }
 
 /////////////////////////////////////////////////////////
@@ -89,7 +107,7 @@ void FillSelectTree(){
       cout << "\033[34m\r Processing tree..." << (double)i/nentries*100 << "\% done" << flush;
     }
 
-    if(Telescope>0 && Brho<0 && Xcalc != -1000 ){
+    if(Telescope>0 && Xcalc != -1000 && VAMOS_TS_hour==0 && Pista_Time_Target<800 ){
       if(cut_12C[Telescope-1]->IsInside(Eres,DeltaE)){
         otree->Fill(); 
       }

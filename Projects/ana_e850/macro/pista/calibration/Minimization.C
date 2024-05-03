@@ -1,6 +1,6 @@
 TChain *chain;
 double* parameter;
-const int nb_parameter = 29;
+const int nb_parameter = 27;
 int iteration = 0;
 int m_telescope;
 
@@ -8,15 +8,39 @@ int NumericalMinimization(const char* minName = "Minuit", const char* algoName =
 double ConstantFactor(const double* parameter);
 
 NPL::Reaction* elastic;
+double TargetThickness = 0.44*micrometer;
+double BeamEnergy = 5.955*238;
+
+NPL::EnergyLoss C12C;
+NPL::EnergyLoss C12Si;
+NPL::EnergyLoss C12Al;
+NPL::EnergyLoss U238C;
+TGraph* geloss_C12C;
+TGraph* geloss_C12Al;
 
 TH2F* hEx;
+TH2F* hEx_Tel;
+TH2F* hEx_Theta;
+TH1D* hExmean;
 
 ///////////////////////////////////////////////////
 void Minimization(int telescope=3){
+ 
+  C12C  = EnergyLoss("../../../EnergyLossTable/C12_C.G4table","G4Table",100);
+  C12Si = EnergyLoss("../../../EnergyLossTable/C12_C.G4table","G4Table",100);
+  C12Al = EnergyLoss("../../../EnergyLossTable/C12_C.G4table","G4Table",100);
+  U238C = EnergyLoss("../../../EnergyLossTable/U238_C.G4table","G4Table",100);
+  geloss_C12C = new TGraph("../../../EnergyLossTable/C12_C.dat");
+  geloss_C12Al = new TGraph("../../../EnergyLossTable/C12_Al.dat");
+ 
+  elastic = new NPL::Reaction("238U(12C,12C)238U@1412");
+  BeamEnergy = U238C.Slow(BeamEnergy,0.5*TargetThickness,0);
+  elastic->SetBeamEnergy(BeamEnergy);
 
-  elastic = new NPL::Reaction("238U(12C,12C)238U@1417");
   hEx = new TH2F("hEx","hEx",7000,0,7000,500,-10,10);
-
+  hEx_Tel = new TH2F("hEx_Tel","hEx_Tel",8,1,9,500,-10,10);
+  hEx_Theta = new TH2F("hEx_Theta","hEx_Theta",500,30,60,500,-10,10);
+ 
   m_telescope = telescope;
   chain = new TChain("tree"); 
   chain->Add("SelectTree.root");
@@ -30,8 +54,8 @@ void Minimization(int telescope=3){
   buffer[24] = 0;
   buffer[25] = 0;
   buffer[26] = 0;
-  buffer[27] = 0;
-  buffer[28] = 0;
+  //buffer[27] = 0;
+  //buffer[28] = 0;
 
   parameter = new double[nb_parameter];
   parameter = buffer;
@@ -39,9 +63,16 @@ void Minimization(int telescope=3){
   ConstantFactor(parameter);
   NumericalMinimization("Minuit","Migrad");
 
-  TCanvas* c2 = new TCanvas("c2","c2",800,800);
-  c2->cd();
+  TCanvas* c1 = new TCanvas("c1","c1",600,600);
+  c1->cd();
   hEx->Draw("colz");
+
+  TCanvas* c2 = new TCanvas("c2","c2",1200,600);
+  c2->Divide(2,1);
+  c2->cd(1);
+  hEx_Theta->Draw("colz");
+  c2->cd(2);
+  hEx_Tel->Draw("colz");
 }
 
 
@@ -68,14 +99,14 @@ int NumericalMinimization(const char* minName, const char* algoName){
     string par2_name = "p2_E" + to_string(i+1);
 
     min->SetLimitedVariable(indice,par0_name,0,0.01,-3,3);
-    min->SetLimitedVariable(indice+1,par1_name,0.0029,0.0001,0.97*0.00285,1.03*0.00285);
+    min->SetLimitedVariable(indice+1,par1_name,0.0029,0.0001,0.95*0.0029,1.05*0.0029);
     min->SetLimitedVariable(indice+2,par2_name,0.0,0.0001,0,1e-8);
   }
-  min->SetLimitedVariable(24,"Xt",0,0.01,-5,5);
-  min->SetLimitedVariable(25,"Yt",0,0.01,-5,5);
-  min->SetLimitedVariable(26,"Zt",0,0.01,-1,1);
-  min->SetLimitedVariable(27,"ThetaX",0,0.01,-0.5,0.5);
-  min->SetLimitedVariable(28,"ThetaY",0,0.01,-0.5,0.5);
+  min->SetLimitedVariable(24,"Xt",0,0.01,-2,2);
+  min->SetLimitedVariable(25,"Yt",0,0.01,-2,2);
+  min->SetLimitedVariable(26,"Zt",0,0.01,-2,2);
+  //min->SetLimitedVariable(27,"ThetaX",0,0.01,-0.5,0.5);
+  //min->SetLimitedVariable(28,"ThetaY",0,0.01,-0.5,0.5);
 
   min->Minimize();
 
@@ -99,8 +130,8 @@ int NumericalMinimization(const char* minName, const char* algoName){
   ofile2 <<  " XTARGET_OFFSET " << xs[24] << endl;
   ofile2 <<  " YTARGET_OFFSET " << xs[25] << endl;
   ofile2 <<  " ZTARGET_OFFSET " << xs[26] << endl;
-  ofile2 <<  " BEAM_THETAX " << xs[27] << endl;
-  ofile2 <<  " BEAM_THETAY " << xs[28] << endl;
+  //ofile2 <<  " BEAM_THETAX " << xs[27] << endl;
+  //ofile2 <<  " BEAM_THETAY " << xs[28] << endl;
   ofile2.close();
 
   cout << "MinValue = " << min->MinValue() << endl;
@@ -153,8 +184,8 @@ double ConstantFactor(const double* parameter){
 
   int nentries = 1e5;//chain->GetEntries();
 
-  TH1F* hExmean = new TH1F("hExmean","hExmean",500,-10,10);
-  TH2F* hEx_Theta = new TH2F("hEx_Theta","hEx_Theta",500,30,60,500,-10,10);
+  hEx_Tel->Reset();
+  hEx_Theta->Reset();
   double Elab = 0;
   double ThetaLab = 0;
   double Ecal = 0;
@@ -163,45 +194,62 @@ double ConstantFactor(const double* parameter){
     chain->GetEntry(i);
     int indice = 3*(Telescope-1);
     Ecal = parameter[indice] + parameter[indice+1]*Eres + parameter[indice+2]*Eres*Eres;
-    Elab = DeltaE + Ecal;
+    
+    Elab = geloss_C12Al->Eval(Ecal);
+    Elab = geloss_C12Al->Eval(Elab);
+    Elab += DeltaE;
+    Elab = geloss_C12Al->Eval(Elab);
+    Elab = geloss_C12C->Eval(Elab);
+
 
     if(Xcalc!=-1000 && Ycalc!=-1000 && Zcalc!=-1000){
       TVector3 PositionOnTarget = TVector3(XTarget+parameter[24],YTarget+parameter[25],parameter[26]);
       TVector3 HitPosition = TVector3(Xcalc,Ycalc,Zcalc);
 
       TVector3 BeamDirection = TVector3(0,0,1);
-      BeamDirection.RotateX(parameter[27]*3.1415/180);
-      BeamDirection.RotateY(parameter[28]*3.1415/180);
+      //BeamDirection.RotateX(parameter[27]*3.1415/180);
+      //BeamDirection.RotateY(parameter[28]*3.1415/180);
       TVector3 HitDirection = HitPosition - PositionOnTarget;
       ThetaLab = HitDirection.Angle(BeamDirection);
 
       double Ex = elastic->ReconstructRelativistic(Elab,ThetaLab);
-
       if(abs(Ex)<10){
         hEx->Fill(iteration,Ex);
-        hExmean->Fill(Ex);
         hEx_Theta->Fill(ThetaLab*180./3.1415,Ex);
+        hEx_Tel->Fill(Telescope,Ex);
       }
 
     }
   }
 
-  double Emean = hExmean->GetMean();
-  double Emin = Emean - 3;
-  double Emax = Emean + 3;
-  hExmean->GetXaxis()->SetRangeUser(Emin,Emax);
-  TF1* f1 = new TF1("gaus","gaus",Emin, Emax);
-  Emean = hExmean->GetMean();
-  double sigma = hExmean->GetRMS();
+  double Emean[8];
+  double sigma[8];
+  double AvEmean = 0;
+  for(int i=0; i<8; i++){
+    hExmean = hEx_Tel->ProjectionY(Form("hExmean_%d",i+1),i+1,i+1);
+    Emean[i] = hExmean->GetMean();
+    double Emin = Emean[i]-6;
+    double Emax = Emean[i]+3;
+    hExmean->GetXaxis()->SetRangeUser(Emin,Emax);
+
+    Emean[i] = hExmean->GetMean();
+    sigma[i] = hExmean->GetRMS();
+
+    distance += pow(Emean[i],2) + pow(sigma[i]-0.3, 2);
+    AvEmean += Emean[i]; 
+  }
+
+  AvEmean/=8;
  
-  distance = pow(Emean,2) + pow(sigma-0.3,2);
   if(iteration%1==0){
     cout << "Number of iterations: " << iteration  << endl;
-    cout << "Emean= " << Emean << endl;
+    for(int k=0; k<nb_parameter; k++){
+      cout << parameter[k] << endl;
+    }
+    cout << "Emean= " << AvEmean << endl;
     cout << "distance= " << distance << endl;
   }
 
-  hEx_Theta->Draw("colz");
   //delete hExmean;
   return distance;
 }

@@ -43,11 +43,26 @@ void Analysis::Init(){
   Tracking = new TVamosReconstruction();
   Tracking->ReadMatrix("MRec.mat");
 
+  // Energy loss table
+  C12C = EnergyLoss("EnergyLossTable/C12_C.G4table","G4Table",100);
+  C12Al = EnergyLoss("EnergyLossTable/C12_Al.G4table","G4Table",100);
+  Be10C = EnergyLoss("EnergyLossTable/Be10_C.G4table","G4Table",100);
+  U238C = EnergyLoss("EnergyLossTable/U238_C.G4table","G4Table",100);
+  geloss_C12C   = new TGraph("EnergyLossTable/C12_C.dat");
+  geloss_C12Al  = new TGraph("EnergyLossTable/C12_Al.dat");
+  geloss_Be10C  = new TGraph("EnergyLossTable/Be10_C.dat");
+  geloss_Be10Al = new TGraph("EnergyLossTable/Be10_Al.dat");
+
+
+
+  m_BeamEnergy = 5.955*238;
   m_XTarget_offset = 0;
   m_YTarget_offset = 0;
   m_ZTarget_offset = 0;
   m_Beam_ThetaX = 0;
   m_Beam_ThetaY = 0;
+  
+
 
   InitInputBranch();
   InitOutputBranch();
@@ -57,17 +72,21 @@ void Analysis::Init(){
 
   TargetThickness = 0.44*micrometer;
 
+  m_BeamEnergy = U238C.Slow(m_BeamEnergy,0.5*TargetThickness,0);
   Transfer10Be = new NPL::Reaction("238U(12C,10Be)240Pu@1417");
   Transfer8Be  = new NPL::Reaction("238U(12C,8Be)242Pu@1417");
   Transfer14C  = new NPL::Reaction("238U(12C,14C)236U@1417");
   Elastic      = new NPL::Reaction("238U(12C,12C)238U@1417");
 
-  chain = RootInput::getInstance()->GetChain();
+  Elastic->SetBeamEnergy(m_BeamEnergy);
+  Transfer10Be->SetBeamEnergy(m_BeamEnergy);
+  Transfer8Be->SetBeamEnergy(m_BeamEnergy);
+  Transfer14C->SetBeamEnergy(m_BeamEnergy);
 
-  // Energy loss table
-  C12C = EnergyLoss("EnergyLossTable/C14_C.G4table","G4Table",100);
-  Be10C = EnergyLoss("EnergyLossTable/Be10_C.G4table","G4Table",100);
-  U238C = EnergyLoss("EnergyLossTable/U238_C.G4table","G4Table",100);
+  C12  = new NPL::Particle("12C");
+  Be10 = new NPL::Particle("10Be");
+
+  chain = RootInput::getInstance()->GetChain();
 
   Exo_Energy = new vector<float>();
   Exo_Crystal = new vector<int>();
@@ -102,14 +121,189 @@ void Analysis::TreatEvent(){
 
   VAMOS_TS_hour = fVAMOS_TS_sec/3600.;
   PISTA_TS_hour = fPISTA_TS_sec/3600.;
-  BeamEnergy = 1417;
-  //BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
-  Transfer10Be->SetBeamEnergy(BeamEnergy);
-  Transfer14C->SetBeamEnergy(BeamEnergy);
-  Elastic->SetBeamEnergy(BeamEnergy);
+
+  VamosAnalysis();
+  PistaAnalysis();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::PistaAnalysis(){  
+
+  //cout << PISTA->EventMultiplicity << endl;
+  double Energy = 0;
+  if(PISTA->EventMultiplicity==1){
+    DeltaE = PISTA->DE[0];
+    //Eres = PISTA->E[0];
+    Eres = PISTA->back_E[0];
+    Energy = DeltaE + Eres;
+
+    strip_DE = PISTA->DE_StripNbr[0];
+    strip_E = PISTA->E_StripNbr[0];
+    Telescope = PISTA->DetectorNumber[0];
+    Time_E = PISTA->back_E_Time[0];
+  }
+
+  else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
+    DeltaE = PISTA->DE[0] + PISTA->DE[1];
+    //Eres = PISTA->E[0];
+    Eres = PISTA->back_E[0];
+    Energy = DeltaE + Eres;
+
+    Telescope = PISTA->DetectorNumber[0];
+    if(PISTA->DE[0]>PISTA->DE[1])
+      strip_DE = PISTA->DE_StripNbr[0];
+    else
+      strip_DE = PISTA->DE_StripNbr[1];
+
+    strip_E = PISTA->E_StripNbr[0];
+    Time_E = PISTA->back_E_Time[0];
+  }
+
+  if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
+    //TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, 58-strip_E, strip_DE);
+    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, strip_E, strip_DE);
+    TVector3 HitDirection = PISTA_pos - PositionOnTarget;
+    PhiLab = PISTA_pos.Phi();
+    Xcalc  = PISTA_pos.X();
+    Ycalc  = PISTA_pos.Y();
+    Zcalc  = PISTA_pos.Z();
+
+    TVector3 BeamDirection = TVector3(0,0,1);
+    BeamDirection.RotateX(m_Beam_ThetaX*3.1415/180);
+    BeamDirection.RotateY(m_Beam_ThetaY*3.1415/180);
+    ThetaLab = HitDirection.Angle(BeamDirection);
+    ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(0));
+
+    DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
+    PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
+
+    ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
+    Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
+    
+    C12->SetKineticEnergy(Elab);
+    Be10->SetKineticEnergy(Elab);
+
+    double distance_to_hit = HitDirection.Mag()/1000;
+    double C12_tof = C12->GetTimeOfFlight();
+    double time_to_hit = distance_to_hit*C12_tof*1e9;
+    Pista_Time_Target = Time_E - time_to_hit;
+
+    // 12C case //
+    double Elab_12C;
+    Elab_12C = geloss_C12Al->Eval(Eres);
+    Elab_12C = geloss_C12Al->Eval(Elab_12C);
+    Elab_12C += DeltaE;
+    Elab_12C = geloss_C12Al->Eval(Elab_12C);
+    Elab_12C = geloss_C12C->Eval(Elab_12C);
+
+    // 120Be case //
+    double Elab_10Be;
+    Elab_10Be = geloss_Be10Al->Eval(Eres);
+    Elab_10Be = geloss_Be10Al->Eval(Elab_10Be);
+    Elab_10Be += DeltaE;
+    Elab_10Be = geloss_Be10Al->Eval(Elab_10Be);
+    Elab_10Be = geloss_Be10C->Eval(Elab_10Be);
+
+
+    Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
+    Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
+    Ex238U  = Elastic->ReconstructRelativistic(Elab_12C, ThetaLab);
+    ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
+    ThetaLab = ThetaLab/deg;
+  }
+
+  if(PISTA->EventMultiplicity==4){
+    TwoAlphaAnalysis();
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::TwoAlphaAnalysis(){
+  m_2alpha = 1;
+
+  double DE1 = PISTA->DE[0];
+  double DE2 = PISTA->DE[1];
+  double DE3 = PISTA->DE[2];
+  double DE4 = PISTA->DE[3];
+  double DE = (DE1+DE2+DE3+DE4)/4.;
+
+  double E1 = PISTA->back_E[0];
+  double E2 = PISTA->back_E[1];
+  double E3 = PISTA->back_E[2];
+  double E4 = PISTA->back_E[3];
+  double E = (E1+E2+E3+E4)/4.;
+
+  // couple1 // 
+  Elab1.push_back(DE1+E1);
+  Elab2.push_back(DE3+E2);
+  
+  // couple2 //
+  Elab1.push_back(DE1+E2);
+  Elab2.push_back(DE3+E1);
+
+  int det1 = PISTA->DetectorNumber[0];
+  int det2 = PISTA->DetectorNumber[1];
+  int strip_DE1 = PISTA->DE_StripNbr[0];
+  int strip_DE2 = PISTA->DE_StripNbr[2];
+
+  int strip_E1  = PISTA->E_StripNbr[0];
+  int strip_E2  = PISTA->E_StripNbr[1];
+
+  Telescope=det1;
+
+  TVector3 HitDirection;
+  if(det1==det2){
+    TVector3 PISTA_pos1 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE1);
+    TVector3 PISTA_pos2 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE2);
+    TVector3 PISTA_pos3 = PISTA->GetPositionOfInteraction(det1,strip_E2,strip_DE1);
+    TVector3 PISTA_pos4 = PISTA->GetPositionOfInteraction(det1,strip_E2,strip_DE2);
+
+    TVector3 HitDirection1 = PISTA_pos1 - PositionOnTarget;
+    TVector3 HitDirection2 = PISTA_pos2 - PositionOnTarget;
+    TVector3 HitDirection3 = PISTA_pos3 - PositionOnTarget;
+    TVector3 HitDirection4 = PISTA_pos4 - PositionOnTarget;
+    HitDirection = 1./4*(HitDirection1+HitDirection2+HitDirection3+HitDirection4);
+
+    double ThetaLab1 = HitDirection1.Angle(TVector3(0,0,1));
+    double ThetaLab2 = HitDirection2.Angle(TVector3(0,0,1));
+    double ThetaLab3 = HitDirection3.Angle(TVector3(0,0,1));
+    double ThetaLab4 = HitDirection4.Angle(TVector3(0,0,1));
+
+    ThetaLab = (ThetaLab1 + ThetaLab2 + ThetaLab3 + ThetaLab4)/4.;
+  }
+
+  /*else{
+    TVector3 PISTA_pos1 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE1);
+    TVector3 PISTA_pos2 = PISTA->GetPositionOfInteraction(det2,strip_E2,strip_DE2);
+
+    TVector3 HitDirection1 = PISTA_pos1 - PositionOnTarget;
+    TVector3 HitDirection2 = PISTA_pos2 - PositionOnTarget;
+
+    double ThetaLab1 = HitDirection1.Angle(TVector3(0,0,1));
+    double ThetaLab2 = HitDirection2.Angle(TVector3(0,0,1));
+
+    ThetaLab = (ThetaLab1 + ThetaLab2)/2.;
+
+    }*/
+
+  // *** 8Be construction ** //
+  DeltaE = DE;
+  ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(0));
+  DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
+  Eres = E;
+  Elab = DE + E;
+  Ex242Pu = Transfer8Be->ReconstructRelativistic(Elab, ThetaLab);
+  ThetaCM = Transfer8Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
+  ThetaLab = ThetaLab/deg;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::VamosAnalysis(){
 
   if(abs(FPMW->Xt)<5 && abs(FPMW->Yt)<5){
-    XTarget = FPMW->Xt*cos(20*deg+FPMW->Theta_in)/cos(FPMW->Theta_in);
+    XTarget = FPMW->Xt*cos(FPMW->Theta_in)/cos(FPMW->Theta_in+m_Vamos_Angle*deg);
     YTarget = FPMW->Yt;
     ZTarget = 0;
 
@@ -119,7 +313,7 @@ void Analysis::TreatEvent(){
     if(iteration%100==0){
       Xmean = Xmean_iter/iteration;
       Ymean = Ymean_iter/iteration;
-      
+
       iteration = 0;
       Xmean_iter = 0;
       Ymean_iter = 0;
@@ -136,7 +330,6 @@ void Analysis::TreatEvent(){
   ZTarget += m_ZTarget_offset;
 
   PositionOnTarget = TVector3(XTarget,YTarget,ZTarget);
-  double Brho_ref = 1.1;
   if(FPMWPat_0RawM==1){
 
     if(Exo_Mult==1){
@@ -150,7 +343,7 @@ void Analysis::TreatEvent(){
     IC->BuildSimplePhysicalEvent();
     double Theta = -1000;
     if(FPMW->Xf!=-1000){
-      Tracking->CalculateReconstruction(FPMW->Xf, 1000*FPMW->Thetaf, Brho_ref, FF_Brho, Theta, FF_Path);
+      Tracking->CalculateReconstruction(FPMW->Xf, 1000*FPMW->Thetaf, m_Brho_ref, FF_Brho, Theta, FF_Path);
       // FF_Path is in cm ! 
 
       // T13 //
@@ -172,6 +365,12 @@ void Analysis::TreatEvent(){
       int iQ13 = (int) round(FF_Q13);
       FF_Mass13 = iQ13*FF_AoQ13;
       //FF_Mass = int(FF_Q+0.5)*FF_AoQ;
+
+      Vamos_Time_Target = FF_T13 - FPMW->GetDetectorPositionZ(0)/10./FF_V13;
+
+      //cout << "******************" << endl;
+      //cout << FPMW->GetDetectorPositionZ(0)/10 << " " << FF_V13 << endl;
+      //cout << T13 << " " << Vamos_Time_Target << endl;
 
       // T14 //
       double Toff14[20] = {0,0,0,0,2.2,2.5,2.6,2.2,0,2.2,3.0,2.5,1.5,2.0,1.8,2.0,1.,0,0,0};
@@ -244,144 +443,8 @@ void Analysis::TreatEvent(){
   else{
     FPMW_Section = -1;
   }
-
-  //cout << PISTA->EventMultiplicity << endl;
-  double Energy = 0;
-  if(PISTA->EventMultiplicity==1){
-    DeltaE = PISTA->DE[0];
-    //Eres = PISTA->E[0];
-    Eres = PISTA->back_E[0];
-    Energy = DeltaE + Eres;
-
-    strip_DE = PISTA->DE_StripNbr[0];
-    strip_E = PISTA->E_StripNbr[0];
-    Telescope = PISTA->DetectorNumber[0];
-    Time_E = PISTA->back_E_Time[0];
-  }
-  /*else if(PISTA->EventMultiplicity==2 && abs(PISTA->DE_StripNbr[0]-PISTA->DE_StripNbr[1])==1){
-    DeltaE = PISTA->DE[0] + PISTA->DE[1];
-    //Eres = PISTA->E[0];
-    Eres = PISTA->back_E[0];
-    Energy = DeltaE + Eres;
-
-    Telescope = PISTA->DetectorNumber[0];
-    if(PISTA->DE[0]>PISTA->DE[1])
-      strip_DE = PISTA->DE_StripNbr[0];
-    else
-      strip_DE = PISTA->DE_StripNbr[1];
-
-    strip_E = PISTA->E_StripNbr[0];
-    Time_E = PISTA->back_E_Time[0];
-  }*/
-  if(strip_DE>0 && strip_DE<92 && strip_E>0 && strip_E<58){
-    //TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, 58-strip_E, strip_DE);
-    TVector3 PISTA_pos = PISTA->GetPositionOfInteraction(Telescope, strip_E, strip_DE);
-    TVector3 HitDirection = PISTA_pos - PositionOnTarget;
-    PhiLab = PISTA_pos.Phi();
-    Xcalc  = PISTA_pos.X();
-    Ycalc  = PISTA_pos.Y();
-    Zcalc  = PISTA_pos.Z();
-
-    TVector3 BeamDirection = TVector3(0,0,1);
-    BeamDirection.RotateX(m_Beam_ThetaX*3.1415/180);
-    BeamDirection.RotateY(m_Beam_ThetaY*3.1415/180);
-    ThetaLab = HitDirection.Angle(BeamDirection);
-    ThetaDetectorSurface = HitDirection.Angle(PISTA->GetDetectorNormal(0));
-
-    DeltaEcorr = DeltaE*cos(ThetaDetectorSurface);
-    PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
-
-    ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
-    Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
-    Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
-    Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
-    Ex238U  = Elastic->ReconstructRelativistic(Elab, ThetaLab);
-    ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
-    ThetaLab = ThetaLab/deg;
-  }
-
-  if(PISTA->EventMultiplicity==4){
-    TwoAlphaAnalysis();
-  }
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::TwoAlphaAnalysis(){
-  m_2alpha = 1;
-
-  double DE1 = PISTA->DE[0];
-  double DE2 = PISTA->DE[1];
-  double DE3 = PISTA->DE[2];
-  double DE4 = PISTA->DE[3];
-  double DE = (DE1+DE2+DE3+DE4)/2.;
-
-  double E1 = PISTA->back_E[0];
-  double E2 = PISTA->back_E[1];
-  double E3 = PISTA->back_E[2];
-  double E4 = PISTA->back_E[3];
-  double E = (E1+E2+E3+E4)/4.;
-
-  // couple1 // 
-  Elab1.push_back(DE1+E1);
-  Elab2.push_back(DE3+E2);
-
-  // couple2 //
-  Elab1.push_back(DE1+E2);
-  Elab2.push_back(DE3+E1);
-
-  int det1 = PISTA->DetectorNumber[0];
-  int det2 = PISTA->DetectorNumber[1];
-  int strip_DE1 = PISTA->DE_StripNbr[0];
-  int strip_DE2 = PISTA->DE_StripNbr[2];
-
-  int strip_E1  = PISTA->E_StripNbr[0];
-  int strip_E2  = PISTA->E_StripNbr[1];
-
-  Telescope=det1;
-
-  if(det1==det2){
-    TVector3 PISTA_pos1 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE1);
-    TVector3 PISTA_pos2 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE2);
-    TVector3 PISTA_pos3 = PISTA->GetPositionOfInteraction(det1,strip_E2,strip_DE1);
-    TVector3 PISTA_pos4 = PISTA->GetPositionOfInteraction(det1,strip_E2,strip_DE2);
-
-    TVector3 HitDirection1 = PISTA_pos1 - PositionOnTarget;
-    TVector3 HitDirection2 = PISTA_pos2 - PositionOnTarget;
-    TVector3 HitDirection3 = PISTA_pos3 - PositionOnTarget;
-    TVector3 HitDirection4 = PISTA_pos4 - PositionOnTarget;
-
-    double ThetaLab1 = HitDirection1.Angle(TVector3(0,0,1));
-    double ThetaLab2 = HitDirection2.Angle(TVector3(0,0,1));
-    double ThetaLab3 = HitDirection3.Angle(TVector3(0,0,1));
-    double ThetaLab4 = HitDirection4.Angle(TVector3(0,0,1));
-
-    ThetaLab = (ThetaLab1 + ThetaLab2 + ThetaLab3 + ThetaLab4)/4.;
-  }
-
-  /*else{
-    TVector3 PISTA_pos1 = PISTA->GetPositionOfInteraction(det1,strip_E1,strip_DE1);
-    TVector3 PISTA_pos2 = PISTA->GetPositionOfInteraction(det2,strip_E2,strip_DE2);
-
-    TVector3 HitDirection1 = PISTA_pos1 - PositionOnTarget;
-    TVector3 HitDirection2 = PISTA_pos2 - PositionOnTarget;
-
-    double ThetaLab1 = HitDirection1.Angle(TVector3(0,0,1));
-    double ThetaLab2 = HitDirection2.Angle(TVector3(0,0,1));
-
-    ThetaLab = (ThetaLab1 + ThetaLab2)/2.;
-
-    }*/
-
-  // *** 8Be construction ** //
-  DeltaE = DE;
-  Eres = E;
-  Elab = DE + E;
-  Ex242Pu = Transfer8Be->ReconstructRelativistic(Elab, ThetaLab);
-  ThetaCM = Transfer8Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
-  ThetaLab = ThetaLab/deg;
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch(){
@@ -409,6 +472,9 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("strip_DE",&strip_DE,"strip_DE/I");
   RootOutput::getInstance()->GetTree()->Branch("strip_E",&strip_E,"strip_E/I");
   RootOutput::getInstance()->GetTree()->Branch("Time_E",&Time_E,"Time_E/D");
+
+  RootOutput::getInstance()->GetTree()->Branch("Pista_Time_Target",&Pista_Time_Target,"Pista_Time_Target/D");
+  RootOutput::getInstance()->GetTree()->Branch("Vamos_Time_Target",&Vamos_Time_Target,"Vamos_Time_Target/D");
 
   RootOutput::getInstance()->GetTree()->Branch("FF_Brho",&FF_Brho,"FF_Brho/D");
   RootOutput::getInstance()->GetTree()->Branch("FF_Path",&FF_Path,"FF_Path/D");
@@ -460,7 +526,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Elab1",&Elab1);
   RootOutput::getInstance()->GetTree()->Branch("Elab2",&Elab2);
   RootOutput::getInstance()->GetTree()->Branch("m_2alpha",&m_2alpha,"m_2alpha/I");
-  
+
   RootOutput::getInstance()->GetTree()->Branch("VAMOS_TS_hour",&VAMOS_TS_hour,"VAMOS_TS_hour/D");
   RootOutput::getInstance()->GetTree()->Branch("PISTA_TS_hour",&PISTA_TS_hour,"PISTA_TS_hour/D");
 
@@ -526,6 +592,8 @@ void Analysis::ReInitValue(){
   strip_DE = -1;
   strip_E = -1;
   Time_E = -1000;
+  Pista_Time_Target = -1000;
+  Vamos_Time_Target = -1000;
 
   FF_Brho = -1;
   FF_Path = -1;
@@ -643,6 +711,16 @@ void Analysis::ReadAnalysisConfig(){
         AnalysisConfigFile >> DataBuffer;
         m_Beam_ThetaY = atof(DataBuffer.c_str());
         cout << "**** " << whatToDo << " " << m_Beam_ThetaY << endl;
+      }
+      else if (whatToDo=="BRHO_REF") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Brho_ref = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_Brho_ref << endl;
+      }
+      else if (whatToDo=="VAMOS_ANGLE") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Vamos_Angle = atof(DataBuffer.c_str());
+        cout << "**** " << whatToDo << " " << m_Vamos_Angle << endl;
       }
 
       else {
