@@ -35,7 +35,7 @@ void convert(int run=29){
   output_tree->Branch("Exo_Crystal",&Exo_Crystal);
 
 
-  int nentries = 1e7;//input_tree->GetEntries();
+  int nentries = input_tree->GetEntries();
   for(int i=0; i<nentries; i++){
     Clear();
     input_tree->GetEntry(i);
