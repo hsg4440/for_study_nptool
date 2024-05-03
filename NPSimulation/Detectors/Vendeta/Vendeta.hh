@@ -61,11 +61,13 @@ class Vendeta : public NPS::VDetector{
     G4AssemblyVolume* BuildMecanicalStructure();
   
   private:
+    
     G4AssemblyVolume* m_VendetaDetector;
     G4LogicalVolume* m_SensitiveCell;
     G4AssemblyVolume* m_MecanicalStructure;
     G4LogicalVolume* m_MecanicalStructure_Al;
     G4LogicalVolume* m_MecanicalStructure_Steel;
+    G4LogicalVolume* m_LeadShield;
 
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -107,7 +109,8 @@ class Vendeta : public NPS::VDetector{
     vector<double>  m_R; 
     vector<double>  m_Theta;
     vector<double>  m_Phi; 
-   
+    bool m_BuildLeadShield;
+
     int m_Build_MecanicalStructure;
 
     // Visualisation Attribute
@@ -117,6 +120,7 @@ class Vendeta : public NPS::VDetector{
     G4VisAttributes* m_VisMuMetal;
     G4VisAttributes* m_VisPyrex;
     G4VisAttributes* m_VisEJ560;
+    G4VisAttributes* m_VisLeadShield;
 
     G4Material* m_Vacuum;
     G4Material* m_Al;
