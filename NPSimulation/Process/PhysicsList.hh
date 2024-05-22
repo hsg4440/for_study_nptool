@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2023   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -9,7 +9,7 @@
  * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
  * Creation Date  : January 2009                                             *
- * Last update    : October 2015                                             *
+ * Last update    : October 2023                                             *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  Modular Physics list calling Geant4 reference list                       *
@@ -25,6 +25,7 @@
 #define PhysicsList_h 1
 
 #include "G4VUserPhysicsList.hh"
+#include "G4VModularPhysicsList.hh"
 #include "G4EmConfigurator.hh"
 
 #include "globals.hh"
@@ -47,6 +48,7 @@
 #include "G4EmStandardPhysics_option2.hh"
 #include "G4EmStandardPhysics_option3.hh"
 #include "G4EmStandardPhysics_option4.hh"
+#include "G4EmStandardPhysics.hh"    
 #include "G4EmExtraPhysics.hh"
 #include "G4StoppingPhysics.hh"
 
@@ -57,7 +59,6 @@
 #include "G4DriftElectronPhysics.hh"
 
 //Hadronique
-
 #include "G4IonElasticPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
 #include "G4HadronInelasticQBBC.hh"
@@ -67,13 +68,14 @@
 #if NPS_GEANT4_VERSION_MAJOR > 9
 #include "G4HadronPhysicsQGSP_BIC_HP.hh"
 #include "G4HadronPhysicsQGSP_BERT_HP.hh"
-#endif
 #include "G4HadronPhysicsQGSP_BIC.hh"
+#include "INCLXXPhysicsListHelper.hh"
+#endif
 #include "G4HadronPhysicsQGSP_BERT.hh"
 
 class G4VPhysicsConstructor;
 
-class PhysicsList: public G4VUserPhysicsList{
+class PhysicsList: public G4VModularPhysicsList{
   public:
     PhysicsList();
     virtual ~PhysicsList();
@@ -84,11 +86,11 @@ class PhysicsList: public G4VUserPhysicsList{
     void ConstructProcess();
     void AddStepMax();
     void AddParametrisation();
-    void AddPackage(const G4String& name);
     void BiasCrossSectionByFactor(double factor);
     void AddIonGasModels();
     void AddPAIModel(const G4String& modname);
     void NewPAIModel(const G4ParticleDefinition* part, const G4String& modname,const G4String& procname);
+    void AddPackage(const G4String& name);
     void AddLevelData();
   private:
     std::map<std::string,G4VPhysicsConstructor*>  m_PhysList;
@@ -115,6 +117,11 @@ class PhysicsList: public G4VUserPhysicsList{
     double m_HadronPhysicsQGSP_BIC_HP;
     double m_HadronPhysicsQGSP_BERT_HP;
     double m_HadronPhysicsINCLXX;
+    bool   m_INCLXXPhysics;
+    double m_HadronPhysicsQGSP_INCLXX_HP;
+    double m_HadronPhysicsQGSP_INCLXX;
+    double m_HadronPhysicsFTFP_INCLXX_HP;
+    double m_HadronPhysicsFTFP_INCLXX;
     double m_Decay;
     double m_IonGasModels;
     double m_pai;

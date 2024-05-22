@@ -73,6 +73,7 @@ class NPOptionManager{
       void CheckArguments();
       void CheckEventGenerator();
       void CheckDetectorConfiguration();
+      void CheckDoCalibrationConfiguration();
       void CheckG4Macro();
       void CreateRunToTreatFile(std::string file, std::string tree );
    public:
@@ -94,6 +95,7 @@ class NPOptionManager{
       std::string GetDetectorFile()             {return fDetectorFileName;}
       std::string GetRunToReadFile()            {return fRunToReadFileName;}
       std::string GetCalibrationFile()          {return fCalibrationFileName;}
+      std::string GetDoCalibrationFile()        {return fDoCalibrationFileName;}
       std::string GetOutputFile()               {return fOutputFileName;}
       std::string GetOutputTreeName()           {return fOutputTreeName;}
       std::string GetG4MacroPath()              {return fG4MacroPath;}     
@@ -107,6 +109,8 @@ class NPOptionManager{
       bool   GetCircularTree()             {return fCircularTree;}
       bool   IsAnalysis()                  {return fIsAnalysis;};
       bool   IsSimulation()                {return fIsSimulation;}
+      bool   IsCalibration()               {return fIsCalibration;}
+      bool   IsReader()                    {return fReader;}
       bool   IsSplit()                     {return fIsSplit;}
 
       int    GetVerboseLevel()             {return fVerboseLevel;}
@@ -119,14 +123,19 @@ class NPOptionManager{
       std::string GetLastFile();                 
       std::string GetAnalysisOutputPath(){return m_AnalysisOutputPath;};
       std::string GetSimulationOutputPath(){return m_SimulationOutputPath;};
+      std::string GetCalibrationOutputPath(){return m_CalibrationOutputPath;};
       std::string GetEnergyLossPath(){return m_EnergyLossPath;};
+      std::string GetCutsPath(){return m_CutsPath;};
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
+      void SetDoCalibrationFile(const std::string& name)  {fDoCalibrationFileName = name;CheckDoCalibrationConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
       void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
       void SetIsSimulation(bool val=true){fIsSimulation=val;}
+      void SetIsCalibration(bool val=true){fIsCalibration=val;}
+      void SetReader(bool reader=false){fReader=reader;}
 
    public: // user definition
       bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
@@ -137,6 +146,7 @@ class NPOptionManager{
       std::string fDefaultDetectorFileName;
       std::string fDefaultRunToReadFileName;
       std::string fDefaultCalibrationFileName;
+      std::string fDefaultDoCalibrationFileName;
       std::string fDefaultOutputFileName;
       std::string fDefaultOutputTreeName;
       std::string fDefaultG4MacroPath;
@@ -146,6 +156,7 @@ class NPOptionManager{
       std::string fDetectorFileName;
       std::string fRunToReadFileName;
       std::string fCalibrationFileName;
+      std::string fDoCalibrationFileName;
       std::string fOutputFileName;
       std::string fOutputTreeName;
       bool   fIsSplit; // One tree per detector
@@ -161,6 +172,8 @@ class NPOptionManager{
       bool   fCircularTree;
       bool   fIsAnalysis;
       bool   fIsSimulation;
+      bool   fIsCalibration;
+      bool   fReader;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)
@@ -173,7 +186,9 @@ class NPOptionManager{
       std::set<std::string> fDefinition; // a set of user defined definition 
       std::string m_AnalysisOutputPath;// output path of analysed tree
       std::string m_SimulationOutputPath;// output path of simulated tree
+      std::string m_CalibrationOutputPath;// output path of calibration histograms
       std::string m_EnergyLossPath;// input/output path of energy loss table
+      std::string m_CutsPath;// CutsPath
 
 };
 

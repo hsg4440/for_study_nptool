@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/jacob-l/nptool_gitlab_bis/nptool/Projects/MUST_AND_ZDD/build",
+  "command": "/usr/bin/c++  -DNPAnalysis_EXPORTS -I/home/jacob-l/nptool_gitlab_bis/nptool/NPLib/include -isystem /usr/physics/root/root_v6.26.10/root_install/include  -O3 -DNDEBUG -pthread -std=c++17 -m64 -I/usr/physics/root/root_v6.26.10/root_install/include -fdiagnostics-color=always -O3 -DNDEBUG -fPIC   -o CMakeFiles/NPAnalysis.dir/Analysis.cxx.o -c /home/jacob-l/nptool_gitlab_bis/nptool/Projects/MUST_AND_ZDD/Analysis.cxx",
+  "file": "/home/jacob-l/nptool_gitlab_bis/nptool/Projects/MUST_AND_ZDD/Analysis.cxx"
+}
+]

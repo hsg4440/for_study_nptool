@@ -24,89 +24,28 @@ using namespace std;
 
 #include "TExogamData.h"
 
-
 ClassImp(TExogamData)
 
-TExogamData::TExogamData()
-{
-   // Default constructor
-   Clear();
+    TExogamData::TExogamData() {
+  // Default constructor
+  Clear();
 }
 
+TExogamData::~TExogamData() {}
 
-
-TExogamData::~TExogamData()
-{
+void TExogamData::Clear() {
+  fExo_Crystal.clear();
+  fExo_E.clear();
+  fExo_E_HG.clear(); // High gain x20
+  fExo_TS.clear();
+  fExo_TDC.clear();
+  fExo_BGO.clear();
+  fExo_CsI.clear();
+  fExo_Outer1.clear();
+  fExo_Outer2.clear();
+  fExo_Outer3.clear();
+  fExo_Outer4.clear();
 }
 
+void TExogamData::Dump() const {}
 
-
-void TExogamData::Clear()
-{
-   fEXO_Clover.clear();
-   fEXO_Cristal.clear();
-   fEXO_Energy.clear();
-   fEXO_Time.clear();
-   // ECC / E
-   fEXO_ECC_E_Clover.clear();
-   fEXO_ECC_E_Cristal.clear();
-   fEXO_ECC_E_Energy.clear();
-   // ECC / T
-   fEXO_ECC_T_Clover.clear();
-   fEXO_ECC_T_Cristal.clear();
-   fEXO_ECC_T_Time.clear();
-   // GOCCE / E
-   fEXO_GOCCE_E_Clover.clear();
-   fEXO_GOCCE_E_Cristal.clear();
-   fEXO_GOCCE_E_Segment.clear();
-   fEXO_GOCCE_E_Energy.clear();
-   // GOCCE / T
-   fEXO_GOCCE_T_Clover.clear();
-   fEXO_GOCCE_T_Cristal.clear();
-   fEXO_GOCCE_T_Segment.clear();
-   fEXO_GOCCE_T_Time.clear();
-
-   //GeFill
-   fEXO_Fill = -1;
-}
-
-
-
-void TExogamData::Dump() const
-{
-   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event XXXXXXXXXXXXXXXXX" << endl;
-
-   // RealValues (for simulation purposes)
-   cout << "EXO_Mult = " << fEXO_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_Clover[i] << " CristalE: " << fEXO_Cristal[i]; 
-      cout << " Energy: " << fEXO_Energy[i];
-      cout << " Time: " <<  fEXO_Energy[i] << endl;
-   }
-
-   // ECC
-   // Energy
-   cout << "EXO_ECC_MultE = " << fEXO_ECC_E_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_ECC_E_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_ECC_E_Clover[i] << " CristalE: " << fEXO_ECC_E_Cristal[i] << " Energy: " << fEXO_ECC_E_Energy[i] << endl;
-   }
-   // Time
-   cout << "EXO_ECC_MultT = " << fEXO_ECC_T_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_ECC_T_Clover.size(); i++) {
-      cout << "CloverT: " << fEXO_ECC_T_Clover[i] << " CristalT: " << fEXO_ECC_T_Cristal[i] << " Time: " << fEXO_ECC_T_Time[i] << endl;
-   }
-   // GOCCE
-   // Energy
-   cout << "EXO_GOCCE_MultE = " << fEXO_GOCCE_E_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_GOCCE_E_Clover.size(); i++) {
-      cout << "CloverE: " << fEXO_GOCCE_E_Clover[i] << " CristalE: " << fEXO_GOCCE_E_Cristal[i] << " SegmentE: " << fEXO_GOCCE_E_Segment[i] << " Energy: " << fEXO_GOCCE_E_Energy[i] << endl;
-   }
-   // Time
-   cout << "EXO_GOCCE_MultT = " << fEXO_GOCCE_T_Clover.size() << endl;
-   for (UShort_t i = 0; i < fEXO_GOCCE_T_Clover.size(); i++) {
-      cout << "CloverT: " << fEXO_GOCCE_T_Clover[i] << " CristalT: " << fEXO_GOCCE_T_Cristal[i] << " SegmentT: " << fEXO_GOCCE_T_Segment[i] << " Time: " << fEXO_GOCCE_T_Time[i] << endl;
-   }
-
-   //GeFill
-   cout << "EXO_GeFill =" << fEXO_Fill << endl;
-}

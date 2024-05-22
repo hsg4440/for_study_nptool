@@ -49,6 +49,12 @@ class Analysis: public NPL::VAnalysis{
     double OriginalEx;
     double BeamEnergy;
     double R;
+    double Xpista;
+    double Ypista;
+    double Zpista;
+    double Xcalc;
+    double Ycalc;
+    double Zcalc;
     double XTarget;
     double YTarget;
     double ZTarget;
@@ -57,11 +63,13 @@ class Analysis: public NPL::VAnalysis{
     double DeltaE;
     double Eres;
     double ThetaLab;
+    double PhiLab;
     double ThetaCM;
     double OptimumEx;
     double Ex;
     double PID;
     double OriginalThetaLab;
+    int Telescope;
     NPL::Reaction* Transfer;
 
     TRandom3 Rand;
@@ -70,6 +78,7 @@ class Analysis: public NPL::VAnalysis{
     double TargetThickness;
 
     NPL::EnergyLoss Be10C;
+    NPL::EnergyLoss C12C;
     NPL::EnergyLoss U238C;
 
   private:

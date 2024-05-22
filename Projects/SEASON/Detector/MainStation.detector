@@ -1,0 +1,25 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+  THICKNESS= 90 nm
+  RADIUS= 9 mm
+  Material= C
+  ANGLE= 0 deg
+  X= 0 mm
+  Y= 0 mm
+  Z= 45 nm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SEASON
+  DSSD1Dist= 3 mm
+  TunnelDist= 3 mm
+  EnergyThreshold= 20 keV
+  FoilRadius= 9 mm
+  FoilThickness= 20
+  UseDelocStation= False
+  UseWheel= False
+  UseChamber= False
+
+%FoilThickness: Must be given in ug/cm2, is converted in nm in the simulation code using rho=2.26 g/cm3
+%UseDelocStation: True to include delocalized station in simulation or False for no delocalized station
+%UseWheel: Either True for a wheel in normal position, Rotated for a wheel in position for source calibration or False for no wheel
+%UseChamber: True to include the aluminium chamber in between the setup and the germanium (5mm behind the back of DSSD1) or False for no chamber
+% For the EXOGAM, the Z distance should be set to 13 mm + DSSD1Dist (9 mm  between the back of DSSD1 and the aluminium window, 1.5 mm aluminium window, 1.5 mm between the aluminium window and the front of the exogam detector)

@@ -40,6 +40,7 @@
 
 // NPTool header
 #include "Vendeta.hh"
+#include "ProcessScorers.hh"
 #include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
@@ -59,11 +60,18 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Vendeta_NS{
   // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
+  const double EnergyThreshold = 0.01*MeV;
+  const double ResoTime = 0.454*ns ; // reso Cf
+  /* const double ResoTime = 0.61*ns ; // reso U8 */
+  /* const double ResoTime = 0.*ns ; // reso U8 */
+  const double ResoEnergyLG = 0.43*MeV ;
+  const double ResoEnergyHG = 0.255*MeV ;
   const double Thickness = 51.*mm ;
   const double Radius = 127./2*mm ;
+  
+  // Lead shield
+  const double Lead_Radius = 9*cm;
+  const double Lead_Thickness = 9*mm;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -74,14 +82,19 @@ Vendeta::Vendeta(){
   m_VendetaScorer = 0;
   m_VendetaDetector = 0;
   m_SensitiveCell = 0;
+  m_MecanicalStructure = 0;  
+  m_Build_MecanicalStructure = 0;
+  m_LeadShield = 0;
+  m_BuildLeadShield = 1;
 
   // RGB Color + Transparency
-  m_VisAl      = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.8));   
+  m_VisAl      = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));   
   m_VisEJ309   = new G4VisAttributes(G4Colour(0.2, 0.85, 0.85, 1));   
   m_VisMuMetal = new G4VisAttributes(G4Colour(0.55, 0.5, 0.5, 0.7));   
   m_VisPyrex   = new G4VisAttributes(G4Colour(0.1, 0.5, 0.7, 1));   
   m_VisEJ560   = new G4VisAttributes(G4Colour(0.6, 0.6, 0.2, 1));   
   m_VisInox    = new G4VisAttributes(G4Colour(0.6, 0.5, 0.6, 1));   
+  m_VisLeadShield    = new G4VisAttributes(G4Colour(0.2, 0.2, 0.2, 1));   
 
   // Material definition
   m_Vacuum  = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
@@ -137,6 +150,7 @@ G4AssemblyVolume* Vendeta::BuildVendetaDetector(){
   Rot->rotateX(90*deg);
 
   if(!m_VendetaDetector){
+
     m_VendetaDetector = new G4AssemblyVolume();
 
     // *** Sensitive Volume *** //
@@ -196,11 +210,61 @@ G4AssemblyVolume* Vendeta::BuildVendetaDetector(){
     LogicVolume->SetVisAttributes(m_VisPyrex);
     m_VendetaDetector->AddPlacedVolume(LogicVolume,Pos,Rot);
  
+
+    if(m_BuildLeadShield){
+      G4Tubs* lead = new G4Tubs("lead_shield", 0, Vendeta_NS::Lead_Radius, Vendeta_NS::Lead_Thickness*0.5, 0, 360*deg);
+      G4Material* LeadMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Pb");
+      m_LeadShield = new G4LogicalVolume(lead, LeadMaterial, "logic_lead_shield",0,0,0);
+      m_LeadShield->SetVisAttributes(m_VisLeadShield);
+      Pos.setX(0);
+      Pos.setY(0);
+      Pos.setZ( Vendeta_NS::Lead_Thickness*0.5-5*mm);
+      m_VendetaDetector->AddPlacedVolume(m_LeadShield, Pos, 0);
+    }
+
   }
   return m_VendetaDetector;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4AssemblyVolume* Vendeta::BuildMecanicalStructure()
+{
+  if(!m_MecanicalStructure){
+    m_MecanicalStructure = new G4AssemblyVolume();
+
+    G4RotationMatrix* Rot = new G4RotationMatrix();
+    G4ThreeVector Pos = G4ThreeVector(0,0,0);
+
+    string basepath = getenv("NPTOOL");
+    // *** Steel part of the strucutre *** //
+    string path = basepath + "/NPSimulation/Detectors/Vendeta/Structure_meca_stl/Structure_Acier.stl";
+
+    auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+    mesh->SetScale(mm);
+
+    auto cad_solid = mesh->GetSolid();
+    m_MecanicalStructure_Steel = new G4LogicalVolume(cad_solid,m_Inox,"Structure_Steel",0,0,0);
+    m_MecanicalStructure_Steel->SetVisAttributes(m_VisInox);
+
+    m_MecanicalStructure->AddPlacedVolume(m_MecanicalStructure_Steel,Pos,Rot);
+
+
+    // *** Aluminium part *** //
+    path = basepath + "/NPSimulation/Detectors/Vendeta/Structure_meca_stl/Structure_Alu.stl";
+    mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+    mesh->SetScale(mm);
+
+    cad_solid = mesh->GetSolid();
+    m_MecanicalStructure_Al = new G4LogicalVolume(cad_solid,m_Al,"Structure_Al",0,0,0);
+    m_MecanicalStructure_Al->SetVisAttributes(m_VisAl);
+
+    m_MecanicalStructure->AddPlacedVolume(m_MecanicalStructure_Al,Pos,Rot);
+
+  }
+
+  return m_MecanicalStructure;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
@@ -219,7 +283,7 @@ void Vendeta::ReadConfiguration(NPL::InputParser parser){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Vendeta " << i+1 <<  endl;
-    
+
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       AddDetector(Pos);
     }
@@ -267,6 +331,22 @@ void Vendeta::ConstructDetector(G4LogicalVolume* world){
 
     BuildVendetaDetector()->MakeImprint(world,Det_pos,Rot,i+1);
   }
+
+  if(m_Build_MecanicalStructure==1){
+    G4RotationMatrix* RotMeca = new G4RotationMatrix();
+    G4ThreeVector PosMeca = G4ThreeVector(0,0,0);
+
+    BuildMecanicalStructure()->MakeImprint(world,PosMeca,RotMeca);
+  }
+
+  G4double platformWidth = 3.0 * m;
+  G4double platformLength = 3.0 * m;
+  G4double platformThickness = 1.2 * cm;
+  G4ThreeVector *platformPosition = new G4ThreeVector(0,0,-1000);
+  G4Box* platformSolid = new G4Box("PlatformSolid", platformWidth / 2.0, platformThickness / 2.0, platformLength / 2.0);
+  G4LogicalVolume* platformLogical = new G4LogicalVolume(platformSolid, m_Al, "PlatformLogical");
+  G4PVPlacement* platformPhysical = new G4PVPlacement(0, G4ThreeVector(0,-1000,0), platformLogical, "PlatformPhysical",world,0,false);
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
@@ -293,15 +373,57 @@ void Vendeta::ReadSensitive(const G4Event* ){
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Vendeta_NS::ResoEnergy);
-    if(Energy>Vendeta_NS::EnergyThreshold){
+    /* double Energy =Scorer->GetEnergy(i); */
+    double EnergyLG = RandGauss::shoot(Scorer->GetEnergy(i),Vendeta_NS::ResoEnergyLG);
+    double EnergyHG = RandGauss::shoot(Scorer->GetEnergy(i),Vendeta_NS::ResoEnergyHG);
+    //Convert enrgy deposit to Light Output thanks the F. Pino et al. formula 
+    double LightOutHG = 0.62*EnergyHG-1.3*(1-exp(-0.39*pow(EnergyHG,0.97))); // F. Pino et al
+    double LightOutLG = 0.62*EnergyLG-1.3*(1-exp(-0.39*pow(EnergyLG,0.97))); // F. Pino et al
+    // Apply Resolution on Charge measured on Vendeta data
+    /* LightOut = RandGauss::shoot(LightOut, Vendeta_NS::ResoEnergy); */
+    if( EnergyHG > Vendeta_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Vendeta_NS::ResoTime);
       int DetectorNbr = level[0]-1;
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
+
+      // Filling HG
+      m_Event->SetHGDetectorNbr(DetectorNbr);
+      m_Event->SetHGQ1(LightOutHG*50000);
+      m_Event->SetHGQ2(LightOutHG*50000);
+      m_Event->SetHGTime(Time); 
+      m_Event->SetHGQmax(0); 
+
+      // Filling LG
+      m_Event->SetLGDetectorNbr(DetectorNbr);
+      m_Event->SetLGQ1(LightOutLG*20000);
+      m_Event->SetLGQ2(LightOutLG*20000);
+      m_Event->SetLGTime(Time); 
+      m_Event->SetLGQmax(0); 
+
     }
   }
+
+  ///////////
+  // Process scorer
+  ProcessScorers::PS_Process* Process_scorer = (ProcessScorers::PS_Process*) m_VendetaScorer->GetPrimitive(2);
+  unsigned int ProcessMult = Process_scorer->GetMult();
+  if(ProcessMult>0){
+    string particle_name = Process_scorer->GetParticleName(0);
+    if(particle_name=="gamma"){
+      m_Event->SetHGIsSat(1); 
+      m_Event->SetLGIsSat(1); 
+    }
+
+    if(particle_name=="neutron"){
+      m_Event->SetHGIsSat(0); 
+      m_Event->SetLGIsSat(0); 
+    }
+
+  }
+  //for(unsigned int i=0; i<ProcessMult; i++){
+  //  string particle_name = Process_scorer->GetParticleName(i);
+  //}
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
@@ -317,9 +439,11 @@ void Vendeta::InitializeScorers() {
   vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* Process= new ProcessScorers::PS_Process("Process", 0) ;
   //and register it to the multifunctionnal detector
   m_VendetaScorer->RegisterPrimitive(Calorimeter);
   m_VendetaScorer->RegisterPrimitive(Interaction);
+  m_VendetaScorer->RegisterPrimitive(Process);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_VendetaScorer) ;
 }
 

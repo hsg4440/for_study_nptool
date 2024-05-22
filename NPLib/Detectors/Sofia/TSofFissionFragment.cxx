@@ -52,21 +52,36 @@ void TSofFissionFragment::Clear() {
   fFF_TOF.clear();
   fFF_Gamma.clear();
   fFF_Brho.clear();
+  fFF_Brho_X.clear();
+  fFF_Brho_Z.clear();
+  fFF_Rho.clear();
+  fFF_Omega.clear();
   fFF_DT.clear();
   fFF_Section.clear();
   fFF_ThetaIn.clear();
   fFF_ThetaOut.clear();
   fFF_TofPosX.clear();
   fFF_TofPosY.clear();
-  fFF_PosX1.clear();
-  fFF_PosX2.clear();
-  fFF_PosX3.clear();
-  fFF_PosY1.clear();
-  fFF_PosY2.clear();
-  fFF_PosY3.clear();
+  fFF_FlightPath.clear();
+  fFF_Leff.clear();
+  fFF_XB.clear();
+  fFF_XC.clear();
+  fFF_XD.clear();
+  fFF_ZB.clear();
+  fFF_ZC.clear();
+  fFF_ZD.clear();
+  fFF_X1.clear();
+  fFF_Y1.clear();
+  fFF_X2.clear();
+  fFF_Y2.clear();
+  fFF_X3lab.clear();
+  fFF_Z3lab.clear();
+  fFF_deff1.clear();
+  fFF_deff2.clear();
 
   fFF_Zsum = -1;
   fFF_iZsum = -1;
+  fFF_Cathode = -1;
 }
 
 

@@ -36,6 +36,7 @@
 #include "RootOutput.h"
 #include "NPNucleus.h"
 #include "NPOptionManager.h"
+#include "NPFunction.h"
 using namespace CLHEP;
 
 
@@ -43,6 +44,8 @@ using namespace CLHEP;
 EventGeneratorIsotropic::EventGeneratorIsotropic(){
   m_ParticleStack = ParticleStack::getInstance();
   event_ID=0;
+
+  m_EnergyDistributionHist   = NULL;
 }
 
 
@@ -82,6 +85,10 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
       it->m_EnergyHigh        =blocks[i]->GetDouble("EnergyHigh","MeV");
       if(blocks[i]->HasToken("EnergyDistribution"))
         it->m_EnergyDistribution=blocks[i]->GetString("EnergyDistribution");
+      if(blocks[i]->HasToken("EnergyDistributionHist")){
+        vector<string> file = blocks[i]->GetVectorString("EnergyDistributionHist");
+        m_EnergyDistributionHist = NPL::Read1DProfile(file[0],file[1]);
+      }
       it->m_HalfOpenAngleMin  =blocks[i]->GetDouble("HalfOpenAngleMin","deg");
       it->m_HalfOpenAngleMax  =blocks[i]->GetDouble("HalfOpenAngleMax","deg");
       it->m_x0                =blocks[i]->GetDouble("x0","mm");
@@ -98,6 +105,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         else if(particleName[j]=="mu+") { it->m_particleName.push_back("mu+") ;}
         else if(particleName[j]=="mu-") { it->m_particleName.push_back("mu-") ;}
         else if(particleName[j]=="neutron") {it->m_particleName.push_back("neutron") ;}
+        else if(particleName[j]=="electron" || particleName[j]=="e-") {it->m_particleName.push_back("e-");}
         else it->m_particleName.push_back(particleName[j]);
       }
 
@@ -122,7 +130,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
     if(par.m_Multiplicty.size()==0)
       par.m_Multiplicty.resize(par.m_particleName.size(),1);
 
-    if(par.m_EnergyDistribution!="flat"){
+    if(par.m_EnergyDistribution!="flat" && par.m_EnergyDistribution!="FromHisto"){
       if(par.m_EnergyDistribution=="Watt"){
         fEnergyDist = new TF1("fWatt","0.4865*TMath::SinH(sqrt(2*x))*TMath::Exp(-x)",par.m_EnergyLow,par.m_EnergyHigh);
       }
@@ -143,7 +151,7 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
         par.m_particle=NULL;
         if(par.m_particle==NULL){
 
-          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" ||  par.m_particleName[p]=="mu-"){
+          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" ||  par.m_particleName[p]=="mu-" || par.m_particleName[p]=="e-"){
             par.m_particle =  G4ParticleTable::GetParticleTable()->FindParticle(par.m_particleName[p].c_str());
           }
           else{
@@ -164,12 +172,15 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
           particle_energy = par.m_EnergyLow + RandFlat::shoot() * (par.m_EnergyHigh - par.m_EnergyLow)    ;
           event_ID++;
         }
-        else if(par.m_EnergyDistribution=="Watt"){
-          particle_energy = fEnergyDist->GetRandom();
+        else if(par.m_EnergyDistribution=="FromHisto"){
+          if(m_EnergyDistributionHist){
+            particle_energy = m_EnergyDistributionHist->GetRandom();
+          }
         }
         else{
           particle_energy = fEnergyDist->GetRandom();
         }
+
 
 
         // Direction of particle, energy and laboratory angle

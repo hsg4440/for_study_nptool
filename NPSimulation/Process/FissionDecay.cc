@@ -95,6 +95,7 @@ G4bool FissionDecay::IsApplicable( const G4ParticleDefinition& particleType) {
 
   // Strip name from excitation energy
   m_CurrentName = m_CurrentName.substr(0,m_CurrentName.find("["));
+
   if (m_CompoundName==m_CurrentName) {
     return true;
   }
@@ -110,7 +111,7 @@ G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
   m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
 
   m_FissionConditions->Clear();
-  if(Parent_ID>=0){
+  if(Parent_ID>0){
     Trigger = true;
   }
   
@@ -182,12 +183,13 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     if(Zsum == m_CompoundParticle.GetZ())
       m_FissionConditions->SetNeutronMultiplicity(m_CompoundParticle.GetA()-Asum);
 
-    for(unsigned int i = 0 ; i < size ; i++){
+    //for(int i=size-1; i>=0; --i){
+    for(unsigned int i=0; i<size; i++){
       // Get the decaying particle
       int FFZ = FissionFragment[i].GetZ();
       int FFA = FissionFragment[i].GetA();
       FissionFragmentDef=NULL;
-      
+
       // Set the momentum direction
       G4ThreeVector Momentum (DPx[i],DPy[i],DPz[i]);
       Momentum=Momentum.unit();

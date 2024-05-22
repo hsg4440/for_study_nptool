@@ -48,7 +48,7 @@
 using namespace std;
 
 
-void GeometricalEfficiency(const char * fname = "myResult"){
+void GeometricalEfficiency(const char * fname = "test"){
     // Open output ROOT file from NPTool simulation run
     TString path = gSystem->Getenv("NPTOOL");
     path += "/Outputs/Simulation/";
@@ -96,7 +96,8 @@ void GeometricalEfficiency(const char * fname = "myResult"){
     
     TCanvas *c0 = new TCanvas("c0", "Distrib",800,800);
     hEmittTheta->Draw("");
-    hDetecTheta->SetMarkerColor(kAzure+7);
+    hDetecTheta->SetMarkerColor(2);
+    hDetecTheta->SetLineColor(2);
     hDetecTheta->Draw("same");
     // efficiency in lab frame in %
     TCanvas *c = new TCanvas("c", "efficiency",800,800);
@@ -122,5 +123,10 @@ void GeometricalEfficiency(const char * fname = "myResult"){
     TF1* f = new TF1("f",Form("2 * %f * sin(x*%f/180.) *1*%f/180.",M_PI,M_PI,M_PI),0,180);
     f->Draw("SAME");
     c4->Update();
-    
+
+    int iInit = hEmittTheta->GetEntries();
+    int iDetect = hDetecTheta->GetEntries();
+
+    double efficiency = (double)iDetect/(double)iInit;
+    cout << "Total efficiency = " << efficiency*100 << " %" << endl;
 }

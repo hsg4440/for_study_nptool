@@ -27,38 +27,41 @@
 #include "NPCalibrationManager.h"
 #include "NPInputParser.h"
 #include "NPVDetector.h"
+#include "NPVTreeReader.h"
 #include "TMugastData.h"
+#include "TMugastPhysicsReader.h"
 #include "TMugastSpectra.h"
 // ROOT
 #include "TH1.h"
 #include "TObject.h"
+#include "TRandom3.h"
 #include "TVector2.h"
 #include "TVector3.h"
-#include "TRandom3.h"
 
 using namespace std;
 
 // Forward Declaration
 class TMugastSpectra;
 
-class TMugastPhysics : public TObject, public NPL::VDetector {
-  public:
+class TMugastPhysics : public TObject, public NPL::VDetector, public TMugastPhysicsReader {
+ public:
   TMugastPhysics();
   ~TMugastPhysics();
 
-  public:
+ public:
   void Clear();
   void Clear(const Option_t*){};
 
-  public:
+ public:
   vector<TVector2> Match_X_Y();
   bool Match_SecondLayer(int X, int Y, int StripNbr);
   bool ResolvePseudoEvent();
-  int  CheckEvent();
+  int CheckEvent();
+  bool m_reader = true;
 
   TRandom3* m_random; //!
 
-  public:
+ public:
   //   Provide Physical Multiplicity
   Int_t EventMultiplicity;
 
@@ -67,11 +70,11 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
 
   // Telescope
   vector<int> TelescopeNumber;
-   //   DSSD
+  //   DSSD
   vector<double> DSSD_E;
   vector<double> DSSD_T;
-  vector<int>    DSSD_X;
-  vector<int>    DSSD_Y;
+  vector<int> DSSD_X;
+  vector<int> DSSD_Y;
 
   vector<double> PosX;
   vector<double> PosY;
@@ -81,16 +84,15 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
   //   Second Layer
   vector<double> SecondLayer_E;
   vector<double> SecondLayer_T;
-  vector<int>    SecondLayer_N;
+  vector<int> SecondLayer_N;
 
   // Physical Value
   vector<double> TotalEnergy;
 
-  private:
-  map<int,MG_DetectorType> DetectorType;//!
- 
+ private:
+  map<int, MG_DetectorType> DetectorType; //!
 
-  public: //   Innherited from VDetector Class
+ public: //   Innherited from VDetector Class
   //   Read stream at ConfigFile to pick-up parameters of detector
   //   (Position,...) using Token
   void ReadConfiguration(NPL::InputParser parser);
@@ -144,7 +146,9 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
   // Used for Online only, clear all the spectra hold by the Spectra class
   void ClearSpectra();
 
-  public: //   Specific to MUGAST Array
+  void SetTreeReader(TTreeReader* TreeReader);
+
+ public: //   Specific to MUGAST Array
   //   Clear The PreTeated object
   void ClearPreTreatedData() { m_PreTreatedData->Clear(); }
 
@@ -153,33 +157,30 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
 
   //   Return false if the channel is disabled by user
   //   Frist argument is either 0 for X,1 Y,2 SecondLayer 3
-  bool IsValidChannel(const int& Type, const int& telescope,
-                      const int& channel);
+  bool IsValidChannel(const int& Type, const int& telescope, const int& channel);
 
   //   Initialize the standard parameter for analysis
   //   ie: all channel enable, maximum multiplicity for strip = number of
   //   telescope
   void InitializeStandardParameter();
-  
+
   //   Read the user configuration file; if no file found, load standard one
   void ReadAnalysisConfig();
 
   //   Add a Telescope using Corner Coordinate information
-  void AddTelescope(MG_DetectorType type,TVector3 C_X1_Y1, TVector3 C_X128_Y1, TVector3 C_X1_Y128,
+  void AddTelescope(MG_DetectorType type, TVector3 C_X1_Y1, TVector3 C_X128_Y1, TVector3 C_X1_Y128,
                     TVector3 C_X128_Y128);
 
   //   Add a Telescope using R Theta Phi of Si center information
-  void AddTelescope(MG_DetectorType type,double theta, double phi, double distance, double beta_u,
-                    double beta_v, double beta_w);
+  void AddTelescope(MG_DetectorType type, double theta, double phi, double distance, double beta_u, double beta_v,
+                    double beta_w);
 
- //   Special Method for Annular S1
-  void AddTelescope(MG_DetectorType type,TVector3 C_Center);
+  //   Special Method for Annular S1
+  void AddTelescope(MG_DetectorType type, TVector3 C_Center);
 
   // Give and external TMustData object to TMugastPhysics. Needed for online
   // analysis for example.
-  void SetRawDataPointer(void* rawDataPointer) {
-    m_EventData = (TMugastData*)rawDataPointer;
-  }
+  void SetRawDataPointer(void* rawDataPointer) { m_EventData = (TMugastData*)rawDataPointer; }
   // Retrieve raw and pre-treated data
   TMugastData* GetRawData() const { return m_EventData; }
   TMugastData* GetPreTreatedData() const { return m_PreTreatedData; }
@@ -187,14 +188,15 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
   // Use to access the strip position
   double GetStripPositionX(const int N, const int X, const int Y) {
     // if (N==9)
-    // cout << N << " " << X << " " << Y << " " << m_DetectorNumberIndex[N] << " " << m_StripPositionX[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1] << endl; 
-    return m_StripPositionX[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
+    // cout << N << " " << X << " " << Y << " " << m_DetectorNumberIndex[N] << " " << m_StripPositionX[
+    // m_DetectorNumberIndex[N] - 1][X - 1][Y - 1] << endl;
+    return m_StripPositionX[m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
   };
   double GetStripPositionY(const int N, const int X, const int Y) {
-    return m_StripPositionY[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
+    return m_StripPositionY[m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
   };
   double GetStripPositionZ(const int N, const int X, const int Y) {
-    return m_StripPositionZ[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
+    return m_StripPositionZ[m_DetectorNumberIndex[N] - 1][X - 1][Y - 1];
   };
 
   double GetNumberOfTelescope() const { return m_NumberOfTelescope; };
@@ -204,12 +206,12 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
 
   double GetEnergyDeposit(const int i) const { return TotalEnergy[i]; };
 
-  TVector3 GetPositionOfInteraction(const int i,bool random=false) ;
-  TVector3 GetTelescopeNormal(const int i) ;
+  TVector3 GetPositionOfInteraction(const int i, bool random = false);
+  TVector3 GetTelescopeNormal(const int i);
 
-  private: //   Parameter used in the analysis
+ private: //   Parameter used in the analysis
   // Shape of the detector Trapezoid or Square
-  map<int, int> m_DetectorNumberIndex; 
+  map<int, int> m_DetectorNumberIndex;
 
   // By default take EX and TY.
   bool m_Take_E_Y; //!
@@ -222,47 +224,48 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
   double m_StripEnergyMatching; //!
 
   // Raw Threshold
-  int m_DSSD_X_E_RAW_Threshold; //!
-  int m_DSSD_Y_E_RAW_Threshold; //!
+  int m_DSSD_X_E_RAW_Threshold;      //!
+  int m_DSSD_Y_E_RAW_Threshold;      //!
   int m_SecondLayer_E_RAW_Threshold; //!
 
   // Calibrated Threshold
-  double m_DSSD_X_E_Threshold; //!
-  double m_DSSD_Y_E_Threshold; //!
+  double m_DSSD_X_E_Threshold;      //!
+  double m_DSSD_Y_E_Threshold;      //!
   double m_SecondLayer_E_Threshold; //!
 
-  private: //   Root Input and Output tree classes
-  TMugastData*    m_EventData; //!
-  TMugastData*    m_PreTreatedData; //!
+ private:                         //   Root Input and Output tree classes
+  TMugastData* m_EventData;       //!
+  TMugastData* m_PreTreatedData;  //!
   TMugastPhysics* m_EventPhysics; //!
 
-  private: //   Map of activated channel
-  map<int, vector<bool>> m_XChannelStatus; //!
-  map<int, vector<bool>> m_YChannelStatus; //!
+ private:                                            //   Map of activated channel
+  map<int, vector<bool>> m_XChannelStatus;           //!
+  map<int, vector<bool>> m_YChannelStatus;           //!
   map<int, vector<bool>> m_SecondLayerChannelStatus; //!
 
-  private: // Spatial Position of Strip Calculated on bases of detector position
+ private:                  // Spatial Position of Strip Calculated on bases of detector position
   int m_NumberOfTelescope; //!
 
   vector<vector<vector<double>>> m_StripPositionX; //!
   vector<vector<vector<double>>> m_StripPositionY; //!
   vector<vector<vector<double>>> m_StripPositionZ; //!
 
-  private:
-  map<int, int>    m_HitDSSDX; //!
-  map<int, int>    m_HitDSSDY; //!
+ private:
+  map<int, int> m_HitDSSDX; //!
+  map<int, int> m_HitDSSDY; //!
 
-  private: // Spectra Class
+ private:                    // Spectra Class
   TMugastSpectra* m_Spectra; //!
 
-  public:
+ public:
   void WriteSpectra(); //!
 
-  public: // Spectra Getter
+ public: // Spectra Getter
   map<string, TH1*> GetSpectra();
 
-  public: // Static constructor to be passed to the Detector Factory
+ public: // Static constructor to be passed to the Detector Factory
   static NPL::VDetector* Construct();
+  static NPL::VTreeReader* ConstructReader();
   ClassDef(TMugastPhysics, 1) // MugastPhysics structure
 };
 
@@ -276,9 +279,9 @@ namespace MUGAST_LOCAL {
   double fDSSD_Y_E(const TMugastData* Data, const int& i);
   double fDSSD_Y_T(const TMugastData* Data, const int& i);
 
-  //  Second Layer 
+  //  Second Layer
   double fSecondLayer_E(const TMugastData* Data, const int& i);
   double fSecondLayer_T(const TMugastData* Data, const int& i);
-}
+} // namespace MUGAST_LOCAL
 
 #endif

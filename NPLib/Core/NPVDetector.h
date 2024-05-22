@@ -34,13 +34,15 @@
 #include <string>
 #include <vector>
 
+
 // NPL
 #include "NPCore.h"
 #include "NPInputParser.h"
+#include "NPVTreeReader.h"
 
 namespace NPL {
 
-  class VDetector {
+  class VDetector: public VTreeReader {
    public:
     //  Default Constructor and destructor
     VDetector();
@@ -48,6 +50,9 @@ namespace NPL {
 
     //  Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
     virtual void ReadConfiguration(NPL::InputParser){};
+    
+    //  Read stream at DoCalibration to pick-up which parameters to calibrate (Position,...) using Token
+    virtual void ReadDoCalibration(NPL::InputParser){};
 
     //  Add Parameter to the CalibrationManger
     virtual void AddParameterToCalibrationManager(){};
@@ -62,6 +67,18 @@ namespace NPL {
 
     //  Create associated branches and associated private member DetectorPhysics address
     virtual void InitializeRootOutput(){};
+    
+    //  Create folders and histograms for calibration
+    virtual void InitializeRootHistogramsCalib(){};
+    
+    //  Fill histograms for calibration
+    virtual void FillHistogramsCalib(){};
+    
+    //  Write histograms for calibration
+    virtual void WriteHistogramsCalib(){};
+    
+    
+    virtual void DoCalibration(){};
 
     //  This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract
     //  physical parameter.
@@ -79,6 +96,8 @@ namespace NPL {
     // Method related to the TSpectra classes, aimed at providing a framework for online applications
     // Instantiate the Spectra class and the histogramm throught it
     virtual void InitSpectra(){};
+    
+    virtual void SetTreeReader(TTreeReader* Reader){};
     // Fill the spectra hold by the spectra class
     virtual void FillSpectra(){};
     // Write the spectra to a file
@@ -87,6 +106,7 @@ namespace NPL {
     virtual void CheckSpectra(){};
     // Used for Online only, clear all the spectra hold by the Spectra class
     virtual void ClearSpectra(){};
+    virtual TObject* GetRawData(){return NULL;};
     // Used for Online only, get all the spectra hold by the Spectra class
     virtual std::map<std::string, TH1*> GetSpectra() {
       std::map<std::string, TH1*> x;

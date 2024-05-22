@@ -7,6 +7,21 @@ set(NPTOOL_LIB_DIR "${NPLIB}/lib")
 # Look for Root   
 include("${NPLIB}/ressources/CMake/Root.cmake")  
 
+# Look for Cubix
+string(COMPARE EQUAL "${CUBIX}" "1" CUBIX)
+if(CUBIX)
+  message("Compilation with Cubix")
+  include("${NPLIB}/ressources/CMake/Cubix.cmake")  
+  else()
+  message("Compilation without Cubix")
+endif()
+
+if(CUBIX)
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCUBIX=1")
+ else()
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCUBIX=0")
+endif()
+
 # Setting the policy to match Cmake version
 cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 

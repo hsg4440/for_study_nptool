@@ -1,0 +1,14 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= n 
+ Energy= 194 MeV
+ SigmaEnergy= 0.0 MeV
+ SigmaThetaX= 0.1 deg
+ SigmaPhiY= 0.1 deg
+ SigmaX= 0 cm
+ SigmaY= 0 cm
+ MeanThetaX= 0 deg
+ MeanPhiY= 0 deg
+ MeanX= 0 mm
+ MeanY= 0 mm
+ ZEmission= 0 mm

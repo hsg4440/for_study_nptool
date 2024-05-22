@@ -22,10 +22,12 @@
  *****************************************************************************/
 //   NPL
 #include "NPVDetector.h"
+#include "NPVTreeReader.h"
 #include "NPSpectraServer.h"
 #include "RootOutput.h"
 // ROOT
 #include "TH1.h"
+#include "TTreeReader.h"
 
 //   STL
 #include <string>
@@ -39,6 +41,10 @@
 
 
 typedef void(NPL::VDetector::*VDetector_FuncPtr)(void);
+typedef void(NPL::VTreeReader::*VTreeReader_FuncPtr)(void);
+typedef void(NPL::VDetector::*VDetector_SetReader)(TTreeReader*);
+typedef bool(NPL::VDetector::*VDetector_Unallocate)(void);
+//typedef void(NPL::VTreeReader::*VTreeReader_SetReader)(TTreeReader*);
 // This class manage a std::map of virtual detector
 namespace NPL{
   class DetectorManager{
@@ -48,10 +54,17 @@ namespace NPL{
 
     public:
       void        ReadConfigurationFile(std::string Path);
+      void        ReadDoCalibrationFile(std::string Path);
       void        BuildPhysicalEvent();
       void        InitializeRootInput();
       void        InitializeRootOutput();
+      void        InitializeRootHistogramsCalib();
+      void        FillHistogramsCalib();
+      void        WriteHistogramsCalib();
+      void        DoCalibration();
+      void        SetTreeReader(TTreeReader* TreeReader);
       void        AddDetector(std::string,VDetector*);
+      void        AddDetectorReader(std::string,VTreeReader*);
       VDetector*  GetDetector(std::string);
       void        ClearEventPhysics();
       void        ClearEventData();
@@ -79,11 +92,22 @@ namespace NPL{
       // The std::map containning all detectors
       // Using a Map one can access to any detector using its name
       std::map<std::string,VDetector*> m_Detector;
+      std::map<std::string,VTreeReader*> m_DetectorReader;
 
     private: // Function pointer to accelerate the code execution
+      VDetector_Unallocate m_UnallocateBeforeBuildPtr;
+      VDetector_Unallocate m_UnallocateBeforeTreatPtr;
       VDetector_FuncPtr m_BuildPhysicalPtr;
       VDetector_FuncPtr m_ClearEventPhysicsPtr;
       VDetector_FuncPtr m_ClearEventDataPtr;
+      VDetector_FuncPtr m_InitializeRootInputPhysicsPtr;
+      VDetector_FuncPtr m_InitializeRootInputRawPtr;
+      VDetector_FuncPtr m_InitializeRootOutputPtr;
+      VDetector_FuncPtr m_InitializeRootHistogramsCalibPtr;
+      VDetector_FuncPtr m_FillHistogramsCalibPtr;
+      VDetector_FuncPtr m_WriteHistogramsCalibPtr;
+      VDetector_FuncPtr m_DoCalibrationPtr;
+      VDetector_SetReader m_SetTreeReaderPtr;
       VDetector_FuncPtr m_FillSpectra;
       VDetector_FuncPtr m_CheckSpectra;
       
@@ -97,6 +121,7 @@ namespace NPL{
     public: // Init the Thread Pool
       void StopThread();
       void StartThread(NPL::VDetector*,unsigned int);
+      //void StartThread(NPL::VTreeReader*,unsigned int);
       void InitThreadPool(); 
       bool IsDone();
 

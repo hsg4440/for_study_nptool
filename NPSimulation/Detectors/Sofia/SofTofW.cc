@@ -72,11 +72,6 @@ namespace SofTofW_NS{
   const double tof_plastic_width     = 32*mm;
   const double tof_plastic_thickness = 0.5*mm;
   const string Material              = "BC400";
-
-  const double GLAD_height           = 1.5*m;
-  const double GLAD_width            = 10*m;
-  const double GLAD_Leff             = 2*m;
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -86,25 +81,15 @@ SofTofW::SofTofW(){
   m_Event = new TSofTofWData() ;
   m_TofScorer = 0;
   m_PlasticTof = 0;
-  m_GLAD= 0;
-  m_GLAD_STL= 0;
   m_VacuumPipe= 0;
   m_TofWall = 0;
 
-  m_Build_GLAD= 0;
-  m_Build_MagneticField= 0;
-  m_Build_VacuumPipe= 0;
   m_VacuumPipeX= 0;
   m_VacuumPipeY= 0;
   m_VacuumPipeZ= 0;
-  m_GLAD_MagField = 0;
-  m_GLAD_DistanceFromTarget= 0;
-  m_GLAD_TiltAngle= 7.;
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0.53, 0.81, 0.98, 1));   
-  m_VisGLAD = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.9));   
-  m_VisField = new G4VisAttributes(G4Colour(0.1, 0.6, 0.9, 0.9));   
   m_VisKapton = new G4VisAttributes(G4Colour(1, 0.4, 0., 0.6));   
 
 }
@@ -190,57 +175,6 @@ G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* SofTofW::BuildGLADFromSTL()
-{
-  if(!m_GLAD_STL){
-    string basepath = getenv("NPTOOL");
-    string path = basepath + "/NPSimulation/Detectors/Sofia/stl/GLAD_only.stl";
-
-    auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
-    mesh->SetScale(mm);
-
-    G4Material* GLAD_Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Inox");
-
-    auto cad_solid = mesh->GetSolid();
-    m_GLAD_STL = new G4LogicalVolume(cad_solid,GLAD_Material,"GLAD_Magnet",0,0,0);
-
-    m_GLAD_STL->SetVisAttributes(m_VisGLAD);
-  }
-
-  return m_GLAD_STL;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* SofTofW::BuildMagneticField()
-{
-  if(!m_GLAD){
-    m_GLAD = new G4AssemblyVolume;
-
-    // *** GLAD field *** //    
-    G4Box* box = new G4Box("glad_Box",SofTofW_NS::GLAD_width*0.5,SofTofW_NS::GLAD_height*0.5,SofTofW_NS::GLAD_Leff*0.5);
-    G4Material* vac = MaterialManager::getInstance()->GetMaterialFromLibrary("Vaccuum");
-    G4LogicalVolume* vol_field = new G4LogicalVolume(box,vac,"logic_GLAD_field",0,0,0);
-    vol_field->SetVisAttributes(m_VisField);
-    //vol_field->SetVisAttributes(G4VisAttributes::Invisible);
-
-    G4UniformMagField* magField = new G4UniformMagField(G4ThreeVector(0,m_GLAD_MagField,0));
-    //G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    G4FieldManager* fieldMgr = new G4FieldManager(magField);
-
-    //fieldMgr->SetDetectorField(magField);
-
-    fieldMgr->CreateChordFinder(magField);
-
-    vol_field->SetFieldManager(fieldMgr,true);
-
-    G4ThreeVector Pos_field = G4ThreeVector(0,0,1*m);
-    G4RotationMatrix* Rot_field = new G4RotationMatrix();
-    Rot_field->rotateY(-m_GLAD_TiltAngle);
-    m_GLAD->AddPlacedVolume(vol_field,Pos_field,Rot_field);
-
-  }
-  return m_GLAD;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
@@ -252,8 +186,8 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Build_GLAD","Build_VacuumPipe"};
-  vector<string> sphe = {"R","Theta","Phi","Build_GLAD","Build_VacuumPipe"};
+  vector<string> cart = {"POS","Build_VacuumPipe"};
+  vector<string> sphe = {"R","Theta","Phi","Build_VacuumPipe"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -261,8 +195,6 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
         cout << endl << "////  SofTofW " << i+1 <<  endl;
 
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
-      m_Build_MagneticField = blocks[i]->GetInt("Build_MagneticField");
       m_Build_VacuumPipe = blocks[i]->GetInt("Build_VacuumPipe");
       AddDetector(Pos);
     }
@@ -272,12 +204,7 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
-      m_GLAD_TiltAngle = blocks[i]->GetDouble("GLAD_TiltAngle","deg");
       m_Build_VacuumPipe = blocks[i]->GetInt("Build_VacuumPipe");
-      m_Build_MagneticField = blocks[i]->GetInt("Build_MagneticField");
-      m_GLAD_MagField = blocks[i]->GetDouble("GLAD_MagField","T");
-      m_GLAD_DistanceFromTarget = blocks[i]->GetDouble("GLAD_DistanceFromTarget", "m");
       m_VacuumPipeX = blocks[i]->GetDouble("VacuumPipeX","m");
       m_VacuumPipeY = blocks[i]->GetDouble("VacuumPipeY","m");
       m_VacuumPipeZ = blocks[i]->GetDouble("VacuumPipeZ","m");
@@ -318,30 +245,11 @@ void SofTofW::ConstructDetector(G4LogicalVolume* world){
     u = u.unit();
 
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
-    //G4ThreeVector Z_translation = G4ThreeVector(0,0,4*m);
-    G4ThreeVector Z_translation = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget);
-    Det_pos += Z_translation;
     BuildTOFDetector()->MakeImprint(world,Det_pos,Rot);
   }
 
-  G4ThreeVector GLAD_pos = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget);
-  if(m_Build_MagneticField==1){ 
-    BuildMagneticField()->MakeImprint(world,GLAD_pos,0);
-  }
 
-  if(m_Build_GLAD==1){
-    G4RotationMatrix* RotGLAD = new G4RotationMatrix();
-    RotGLAD->rotateX(90*deg);
-    //RotGLAD->rotateZ(-(90-m_GLAD_TiltAngle)*deg);
-    RotGLAD->rotateZ(-90*deg);
-    RotGLAD->rotateZ(m_GLAD_TiltAngle);
-    new G4PVPlacement(RotGLAD, GLAD_pos,
-      BuildGLADFromSTL(),
-      "GLAD",
-      world, false, 0);
-     
-  }
-  
+ 
   if(m_Build_VacuumPipe==1){
     G4ThreeVector Tube_Pos = G4ThreeVector(m_VacuumPipeX,m_VacuumPipeY,m_VacuumPipeZ);
     BuildVacuumPipe()->MakeImprint(world,Tube_Pos,0);

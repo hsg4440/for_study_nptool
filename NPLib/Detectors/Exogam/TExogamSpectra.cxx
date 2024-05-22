@@ -133,7 +133,7 @@ void TExogamSpectra::FillRawSpectra(TExogamData* RawData){
   string family;
 
   // Energy 
-  for (unsigned int i = 0; i < RawData->GetECCEMult(); i++){
+  /*for (unsigned int i = 0; i < RawData->GetECCEMult(); i++){
     name = Form("ExogamEnergyRaw_Clover%d_ECC%d", RawData->GetECCEClover(i)+1,RawData->GetECCECristal(i)+1);
     family = "Exogam/ERAW/ECC";
     FillSpectra(family,name
@@ -156,11 +156,12 @@ void TExogamSpectra::FillRawSpectra(TExogamData* RawData){
     FillSpectra(family,name
       ,RawData->GetECCTTime(i));
   }
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void TExogamSpectra::FillPreTreatedSpectra(TExogamData* PreTreatedData){
-  string name ;
+/*  string name ;
   string family;
   // Energy 
   for (unsigned int i = 0; i < PreTreatedData->GetECCEMult(); i++) {
@@ -187,7 +188,7 @@ void TExogamSpectra::FillPreTreatedSpectra(TExogamData* PreTreatedData){
       ,PreTreatedData->GetECCTTime(i));
 
   }
-   
+*/   
 }
 
 ////////////////////////////////////////////////////////////////////////////////

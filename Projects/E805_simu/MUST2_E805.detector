@@ -1,0 +1,55 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ %THICKNESS= 53.5 micrometer
+ THICKNESS= 0.000001 micrometer
+ ANGLE= 0 deg
+ RADIUS=  15 mm
+ MATERIAL= CH2
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%% Telescope 1 %%%%%%% 		
+M2Telescope  		
+ X1_Y1= 	-13.57	-104.78	299.83 mm
+ X1_Y128= -25.1	    -12.62	328.63 mm
+ X128_Y1= -104.01	-104.85	263.88 mm
+ X128_Y128= -115.53	-12.71	292.67 mm
+ SI= 1		
+ SILI= 0		
+ CSI= 1		
+ VIS= all  
+%%%%%%% Telescope 2 %%%%%%% 		
+M2Telescope  		
+ X1_Y1= -114.9	9.68	291.84 mm
+ X1_Y128= -24.56	9.8	327.88 mm
+ X128_Y1= -103.58	101.8	262.73 mm
+ X128_Y128= 	-13.24	102.09	298.75 mm
+ SI= 1		
+ SILI= 0		
+ CSI= 1		
+ VIS= all  
+
+%%%%%%% Telescope 3 %%%%%%% 		
+M2Telescope  		
+ X1_Y1= 	11.84	101.72	299.05 mm
+ X1_Y128= 23.44	9.68	328.38 mm
+ X128_Y1= 102.16	101.57	263.01 mm
+ X128_Y128= 113.81	9.57	292.3 mm
+ SI= 1		
+ SILI= 0		
+ CSI= 1		
+ VIS= all  
+
+
+%%%%%%% Telescope 4 %%%%%%% 		
+M2Telescope  		
+ X1_Y1= 113.56	-13.18	292.11 mm
+ X1_Y128= 23.23	-13.37	328.15 mm
+ X128_Y1= 102.39	-105.49	263.59 mm
+ X128_Y128= 	12.04	-105.69	299.63 mm
+ SI= 1		
+ SILI= 0		
+ CSI= 1		
+ VIS= all  
+

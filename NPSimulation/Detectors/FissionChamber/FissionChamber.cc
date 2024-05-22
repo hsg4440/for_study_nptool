@@ -173,8 +173,7 @@ void FissionChamber::ConstructDetector(G4LogicalVolume* world){
     G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
     G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*FissionChamber_NS::Thickness*0.5;
+    
     // Building Detector reference frame
     G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
     G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
@@ -373,7 +372,6 @@ void FissionChamber::BuildAnode(double Zpos){
   Tv.setZ(Zpos+0.5*FissionChamber_NS::Kapton_Thickness+0.5*FissionChamber_NS::Cu_Thickness);
   m_FissionChamberVolume->AddPlacedVolume(Cu_vol, Tv, Rv);
 
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
@@ -404,8 +402,13 @@ void FissionChamber::ReadSensitive(const G4Event* ){
     if(Energy>FissionChamber_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),FissionChamber_NS::ResoTime);
       int DetectorNbr = level[0];
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
+      m_Event->SetAnodeNbr(DetectorNbr);
+      m_Event->SetQ1(Energy);
+      m_Event->SetQ2(Energy);
+      m_Event->SetTime(Time); 
+      m_Event->SetQmax(Energy); 
+      m_Event->SetTimeHF(0); 
+      m_Event->SetFakeFissionStatus(0); 
     }
   }
 }
@@ -423,10 +426,10 @@ void FissionChamber::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  //G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_FissionChamberScorer->RegisterPrimitive(Calorimeter);
-  m_FissionChamberScorer->RegisterPrimitive(Interaction);
+  //m_FissionChamberScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_FissionChamberScorer) ;
 }
 

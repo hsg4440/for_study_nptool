@@ -1,0 +1,459 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target 
+  THICKNESS= 10 micrometer
+  RADIUS= 20 mm
+  MATERIAL= 238U 
+  ANGLE= 0 deg 
+  X= 0 mm 
+  Y= 0 mm 
+  Z= 0 mm 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 0 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 20 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 40 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 140 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 160 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 20 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 30 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 40 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 50 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 60 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 70 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 80 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 90 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 100 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 110 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 120 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 130 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 140 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 150 deg
+  PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+  R= 2500 mm
+  THETA= 160 deg
+  PHI= 180 deg

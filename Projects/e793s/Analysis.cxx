@@ -32,6 +32,7 @@ using namespace std;
 #include "NPAnalysisFactory.h"
 #include "NPDetectorManager.h"
 #include "NPOptionManager.h"
+#include "macro/DefineColours.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
@@ -56,6 +57,7 @@ void Analysis::Init() {
   } else {
     cout << " == == == == PHASE SPACE == == == ==" << endl;
       isSim=false;
+      //isSim=true;
       isPhaseSpace=true;
   }
 
@@ -76,8 +78,8 @@ void Analysis::Init() {
       if (i==6){int j=7;}
       string name1 = base1 + to_string(j);	  
       string name2 = base2 + to_string(j);	  
-      ThetaCM_detected_MGX[i] = new TH1F(name1.c_str(),name1.c_str(),180,0,180);
-      ThetaLab_detected_MGX[i] = new TH1F(name2.c_str(),name2.c_str(),180,0,180);
+      ThetaCM_detected_MGX[i] = new TH1F(name1.c_str(),name1.c_str(),NumThetaAngleBins,0,180); //900 bins for 0.2 angular bin width
+      ThetaLab_detected_MGX[i] = new TH1F(name2.c_str(),name2.c_str(),NumThetaAngleBins,0,180);
     }
 
     // Initilize MMX histograms
@@ -87,8 +89,8 @@ void Analysis::Init() {
       int j=i+1;
       string name1 = base3 + to_string(j);	  
       string name2 = base4 + to_string(j);	  
-      ThetaCM_detected_MMX[i] = new TH1F(name1.c_str(),name1.c_str(),180,0,180);
-      ThetaLab_detected_MMX[i] = new TH1F(name2.c_str(),name2.c_str(),180,0,180);
+      ThetaCM_detected_MMX[i] = new TH1F(name1.c_str(),name1.c_str(),NumThetaAngleBins,0,180);
+      ThetaLab_detected_MMX[i] = new TH1F(name2.c_str(),name2.c_str(),NumThetaAngleBins,0,180);
     }
   }
 
@@ -126,15 +128,23 @@ void Analysis::Init() {
   // energy losses
   string light = NPL::ChangeNameToG4Standard(reaction.GetParticle3()->GetName());
   string beam = NPL::ChangeNameToG4Standard(reaction.GetParticle1()->GetName());
+  string heavy = NPL::ChangeNameToG4Standard(reaction.GetParticle4()->GetName());
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table" ,"G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table" ,"G4Table",100);
   BeamTargetELoss = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",100);
+  //HeavyTargetELoss = NPL::EnergyLoss(heavy+"_"+TargetMaterial+".G4table","G4Table",100);
 
   FinalBeamEnergy = BeamTargetELoss.Slow(OriginalBeamEnergy, 0.5*TargetThickness, 0);
   reaction.SetBeamEnergy(FinalBeamEnergy); 
 
-  cout << "Beam energy at mid-target: " << FinalBeamEnergy << endl;
+  cout << "\033[91m Running for reaction "
+       << reaction.GetParticle1()->GetName() << "("
+       << reaction.GetParticle2()->GetName() << ","
+       << reaction.GetParticle3()->GetName() << ")"
+       << reaction.GetParticle4()->GetName() << endl;
+
+  cout << "\033[36m Beam energy at mid-target: " << FinalBeamEnergy << "\033[37m"<< endl;
 
   // initialize various parameters
   Rand = TRandom3();
@@ -217,14 +227,31 @@ void Analysis::TreatEvent(){
     // MUST2
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
+    /**/
     if(isSim && !isPhaseSpace){
-      ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
-      ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
+    if(M2->TelescopeNumber[countMust2]<5){
+      if(M2->Si_E[countMust2]>0 &&   // DSSD count
+    	 M2->CsI_E[countMust2]<=0 && // No CsI count
+    	 M2->Si_T[countMust2]<460    // Triton kinematic line, not punch through
+    	){
+        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
 
-      int MMX = TelescopeNumber-1;
-      ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
-      ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
+        int MMX = TelescopeNumber-1;
+        ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
+      }
+    } else {
+        //No triton requirement for MM5
+        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
+
+        int MMX = TelescopeNumber-1;
+        ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
     }
+    }
+    /**/
 
     /************************************************/
     // Part 1 : Impact Angle
@@ -266,9 +293,19 @@ void Analysis::TreatEvent(){
 
 //    if(!isSim){
       // Evaluate energy using the thickness
-      elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
+      elab_tmp = LightAl.EvaluateInitialEnergy(
+		      Energy, 
+		      0.4*micrometer, 
+		      ThetaM2Surface);
+      ELoss_Al.push_back(Energy-elab_tmp);
+      double elab_tmp2 = elab_tmp;
       // Target Correction
-      elab_tmp = LightTarget.EvaluateInitialEnergy(elab_tmp, 0.5*TargetThickness, ThetaNormalTarget);
+      elab_tmp = LightTarget.EvaluateInitialEnergy(
+		      elab_tmp, 
+		      0.5*TargetThickness, 
+		      ThetaNormalTarget);
+      ELoss_Target.push_back(elab_tmp2-elab_tmp);
+      ELoss.push_back(Energy-elab_tmp);
 //    } else {elab_tmp = Energy;}
 
     ELab.push_back(elab_tmp);
@@ -277,7 +314,8 @@ void Analysis::TreatEvent(){
 
     /************************************************/
     // Part 3 : Excitation Energy Calculation
-    Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+    //Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+    Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp, philab_tmp));
     Ecm.push_back(Energy*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     /************************************************/
 
@@ -289,7 +327,20 @@ void Analysis::TreatEvent(){
 
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
-//cout << "here_EndMustLoop" << endl;
+
+    //if(isSim && !isPhaseSpace){
+    //  ThetaCM_detected_MM->Fill(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //  ThetaLab_detected_MM->Fill(thetalab_tmp/deg);
+
+    //  int MMX = TelescopeNumber-1;
+    //  ThetaCM_detected_MMX[MMX]->Fill(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //  ThetaLab_detected_MMX[MMX]->Fill(thetalab_tmp/deg);
+    //}
+
+
+
+
+    //cout << "here_EndMustLoop" << endl;
   }
 
 //cout << "here_BeforeMugastLoop" << endl;
@@ -346,10 +397,14 @@ void Analysis::TreatEvent(){
 		    Energy,              //particle energy after Al
 		    0.4*micrometer,      //thickness of Al
 		    ThetaMGSurface);     //angle of impingement
+      ELoss_Al.push_back(Energy-elab_tmp);
+      double elab_tmp2 = elab_tmp;
       elab_tmp = LightTarget.EvaluateInitialEnergy(
 		    elab_tmp,            //particle energy after leaving target
 		    TargetThickness*0.5, //distance passed through target
 		    ThetaNormalTarget);  //angle of exit from target
+      ELoss_Target.push_back(elab_tmp2-elab_tmp);
+      ELoss.push_back(Energy-elab_tmp);
     } else { //TESTING DIFFERENT ENERGY LOSSES IN SIMULATION
       elab_tmp = Energy; //so I can add and remove sections
       //elab_tmp = LightSi.EvaluateInitialEnergy(
@@ -368,9 +423,18 @@ void Analysis::TreatEvent(){
 
     ELab.push_back(elab_tmp);
 
+    //cout << "===============" << endl;
+    //cout << "RawE:\t" << RawEnergy.back() << endl;
+    //cout << "ELAl:\t" << ELoss_Al.back() << endl;
+    //cout << "ELCD:\t" << ELoss_Target.back() << endl;
+    //cout << "ELTt:\t" << ELoss.back() << endl;
+    //cout << "ELab:\t" << ELab.back() << endl;
+
+
     // Part 3 : Excitation Energy Calculation
     //if(!isSim){ //TESTING!!!!
-      Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+      //Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+      Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp, philab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     //}
 
@@ -481,6 +545,7 @@ void Analysis::TreatEvent(){
     AGATA_OrigBetaX.push_back(beta.X());
     AGATA_OrigBetaY.push_back(beta.Y());
     AGATA_OrigBetaZ.push_back(beta.Z());
+    AGATA_OrigBetaMag.push_back(beta.Mag());
 
     /* Other fills */
     double ThetaGamma = GammaDirection.Angle(BeamDirection)/deg;
@@ -493,7 +558,14 @@ void Analysis::TreatEvent(){
     GammaLV.Boost(beta);
     // Get EDC
     AddBack_EDC.push_back(GammaLV.Energy());
-    AddBack_EDC2.push_back(GammaLV.Energy());
+
+    if(i==0){
+      //First event in loop
+      AddBack_EDC_Event1.push_back(GammaLV.Energy());
+    } else {
+      //second, third, fourth...
+      AddBack_EDC_Event2.push_back(GammaLV.Energy());
+    }
 
   }
 
@@ -512,16 +584,44 @@ void Analysis::TreatEvent(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void FillSolidAngles(TH1F* hSA, TH1F* hDet, TH1F* hEmm){
+  if(!filledCline){
+    cout << RED << "FILLING CLINE VECTOR! SHOULD ONLY OCCUR ONCE!" << RESET << endl;
+    for(int t=0; t<NumThetaAngleBins; t++){
+      double angleMin = (t)*(180./NumThetaAngleBins);
+      double angleMax = (t+1)*(180./NumThetaAngleBins);
+      cout << " Angle " << angleMin 
+	      << " to " << angleMax
+	      << endl; 
+      clineVal.push_back(2.0*M_PI*(cos(angleMin*degtorad) - cos(angleMax*degtorad)));
+      clineX.push_back(angleMin+((angleMax-angleMin)/2.0));
+      filledCline=true;
+    }
+  }
+
   for (int i = 0; i < hSA->GetNbinsX(); ++i){
     double val = hDet->GetBinContent(i) / hEmm->GetBinContent(i);
     double valerr = val * sqrt( 
       pow(hDet->GetBinError(i) / hDet->GetBinContent(i), 2) +
       pow(hEmm->GetBinError(i) / hEmm->GetBinContent(i), 2) );
     if (isnan(val)) { val = 0; valerr = 0; }
+    val *= clineVal.at(i);
+    valerr *= clineVal.at(i);
+
     hSA->SetBinContent(i, val);
     hSA->SetBinError(i, valerr);
   }
 }
+
+
+//void DivideByCline(TH1F* histo){
+//
+//  for(int b=0; b<NumThetaAngleBins; b++){
+//    int store = histo->GetBinContent(b);
+//    histo->SetBinContent(b,(int) store/clineVal.at(b));
+///  }
+//}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::End(){
@@ -532,7 +632,7 @@ void Analysis::End(){
   cout << endl ;
 
   if(isSim && !isPhaseSpace){
-
+    
     //TObjArray HistList(0);
     TList *HistList = new TList();
 
@@ -556,14 +656,19 @@ void Analysis::End(){
     Efficiency_CM_MM->Divide(ThetaCM_emmitted);
     Efficiency_Lab_MM->Divide(ThetaLab_emmitted);
 
-    double dt_MM = 180./Efficiency_Lab_MM->GetNbinsX();
-    cout << "Angular infinitesimal (MM) = " << dt_MM << "deg " << endl;
-    auto Cline_MM = new TF1("Cline_MM",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MM,M_PI),0,180);
+    //double dt_MM = 180./Efficiency_Lab_MM->GetNbinsX();
+    //cout << "Angular infinitesimal (MM) = " << dt_MM << "deg " << endl;
+    //auto Cline_MM = new TF1("Cline_MM",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MM,M_PI),0,180);
 
-    SolidAngle_CM_MM->Divide(ThetaCM_emmitted);
-    SolidAngle_CM_MM->Divide(Cline_MM,1);
-    SolidAngle_Lab_MM->Divide(ThetaLab_emmitted);
-    SolidAngle_Lab_MM->Divide(Cline_MM,1);
+    FillSolidAngles(SolidAngle_CM_MM, ThetaCM_detected_MM, ThetaCM_emmitted);
+    FillSolidAngles(SolidAngle_Lab_MM, ThetaLab_detected_MM, ThetaLab_emmitted);
+    
+    //SolidAngle_CM_MM->Divide(ThetaCM_emmitted);
+    //SolidAngle_CM_MM->Divide(Cline_MM,1);
+    //SolidAngle_CM_MM->Divide(Cline);
+    //SolidAngle_Lab_MM->Divide(ThetaLab_emmitted);
+    //SolidAngle_Lab_MM->Divide(Cline_MM,1);
+    //SolidAngle_Lab_MM->Divide(Cline);
 
     HistList->Add(ThetaCM_emmitted);
     HistList->Add(ThetaLab_emmitted);
@@ -573,7 +678,8 @@ void Analysis::End(){
     HistList->Add(Efficiency_Lab_MM);
     HistList->Add(SolidAngle_CM_MM);
     HistList->Add(SolidAngle_Lab_MM);
-    HistList->Add(Cline_MM);
+    //HistList->Add(Cline_MM);
+    //HistList->Add(Cline);
 
 
     // MUGAST
@@ -596,16 +702,17 @@ void Analysis::End(){
     Efficiency_CM_MG->Divide(ThetaCM_emmitted);
     Efficiency_Lab_MG->Divide(ThetaLab_emmitted);
 
-    double dt_MG = 180./Efficiency_Lab_MG->GetNbinsX();
-    cout << "Angular infinitesimal (MG) = " << dt_MG << "deg " << endl;
-    auto Cline_MG = new TF1("Cline_MG",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MG,M_PI),0,180);
+    //double dt_MG = 180./Efficiency_Lab_MG->GetNbinsX();
+    //cout << "Angular infinitesimal (MG) = " << dt_MG << "deg " << endl;
+    //auto Cline_MG = new TF1("Cline_MG",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MG,M_PI),0,180);
 
     /* Testing method for better errors in SolidAngle histograms */
     FillSolidAngles(SolidAngle_CM_MG, ThetaCM_detected_MG, ThetaCM_emmitted);
-    SolidAngle_CM_MG->Divide(Cline_MG,1);
-
+    //SolidAngle_CM_MG->Divide(Cline_MG,1);
+    //SolidAngle_CM_MG->Divide(Cline);
     FillSolidAngles(SolidAngle_Lab_MG, ThetaLab_detected_MG, ThetaLab_emmitted);
-    SolidAngle_Lab_MG->Divide(Cline_MG,1);
+    //SolidAngle_Lab_MG->Divide(Cline_MG,1);
+    //SolidAngle_Lab_MG->Divide(Cline);
 
     HistList->Add(ThetaCM_detected_MG);
     HistList->Add(ThetaLab_detected_MG);
@@ -613,7 +720,7 @@ void Analysis::End(){
     HistList->Add(Efficiency_Lab_MG);
     HistList->Add(SolidAngle_CM_MG);
     HistList->Add(SolidAngle_Lab_MG);
-    HistList->Add(Cline_MG);
+    //HistList->Add(Cline_MG);
 
     // MUGAST INDIVIDUAL
     TH1F *SolidAngle_CM_MGX[6];
@@ -626,7 +733,8 @@ void Analysis::End(){
       SolidAngle_CM_MGX[i]->SetName(name.c_str());
       SolidAngle_CM_MGX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_CM_MGX[i], ThetaCM_detected_MGX[i], ThetaCM_emmitted);
-      SolidAngle_CM_MGX[i]->Divide(Cline_MG,1);
+      //SolidAngle_CM_MGX[i]->Divide(Cline_MG,1);
+      //SolidAngle_CM_MGX[i]->Divide(Cline);
     }
 
     TH1F *SolidAngle_Lab_MGX[6];
@@ -639,7 +747,8 @@ void Analysis::End(){
       SolidAngle_Lab_MGX[i]->SetName(name.c_str());
       SolidAngle_Lab_MGX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_Lab_MGX[i], ThetaLab_detected_MGX[i], ThetaLab_emmitted);
-      SolidAngle_Lab_MGX[i]->Divide(Cline_MG,1);
+      //SolidAngle_Lab_MGX[i]->Divide(Cline_MG,1);
+      //SolidAngle_Lab_MGX[i]->Divide(Cline);
     }
 
     // MUST2 INDIVIDUAL
@@ -652,7 +761,8 @@ void Analysis::End(){
       SolidAngle_CM_MMX[i]->SetName(name.c_str());
       SolidAngle_CM_MMX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_CM_MMX[i], ThetaCM_detected_MMX[i], ThetaCM_emmitted);
-      SolidAngle_CM_MMX[i]->Divide(Cline_MM,1);
+      //SolidAngle_CM_MMX[i]->Divide(Cline_MM,1);
+      //SolidAngle_CM_MMX[i]->Divide(Cline);
     }
 
     TH1F *SolidAngle_Lab_MMX[6];
@@ -664,7 +774,8 @@ void Analysis::End(){
       SolidAngle_Lab_MMX[i]->SetName(name.c_str());
       SolidAngle_Lab_MMX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_Lab_MMX[i], ThetaLab_detected_MMX[i], ThetaLab_emmitted);
-      SolidAngle_Lab_MMX[i]->Divide(Cline_MM,1);
+      //SolidAngle_Lab_MMX[i]->Divide(Cline_MM,1);
+      //SolidAngle_Lab_MMX[i]->Divide(Cline);
     }
 
     for(int i=0; i<6; i++){HistList->Add(ThetaCM_detected_MGX[i]);}
@@ -677,6 +788,14 @@ void Analysis::End(){
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_CM_MMX[i]);}
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_Lab_MMX[i]);}
     
+    auto clineValGraph = new TGraph(NumThetaAngleBins);
+    clineValGraph->SetName("clineValGraph");
+    clineValGraph->SetTitle("clineValGraph");
+    for(int b=0; b<NumThetaAngleBins; b++){
+      clineValGraph->SetPoint(b,clineX.at(b),clineVal.at(b));
+    }
+    HistList->Add(clineValGraph);
+
     auto HistoFile = new TFile("~/Programs/nptool/Projects/e793s/SolidAngle_HistFile_New.root","RECREATE");
     HistList->Write();
     HistoFile->Close();
@@ -694,7 +813,8 @@ void Analysis::InitOutputBranch(){
   //RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC,"EDC/D");
   RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC);
   RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC",&AddBack_EDC);
-  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC2",&AddBack_EDC2);
+  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC_Event1",&AddBack_EDC_Event1);
+  RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC_Event2",&AddBack_EDC_Event2);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPx",&AGATA_GammaPx);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPy",&AGATA_GammaPy);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPz",&AGATA_GammaPz);
@@ -702,10 +822,14 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaX",&AGATA_OrigBetaX);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaY",&AGATA_OrigBetaY);
   RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaZ",&AGATA_OrigBetaZ);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaMag",&AGATA_OrigBetaMag);
   RootOutput::getInstance()->GetTree()->Branch("EAgata",&EAgata,"EAgata/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
   RootOutput::getInstance()->GetTree()->Branch("Ecm",&Ecm);
   RootOutput::getInstance()->GetTree()->Branch("RawEnergy",&RawEnergy);
+  RootOutput::getInstance()->GetTree()->Branch("ELoss_Al",&ELoss_Al);
+  RootOutput::getInstance()->GetTree()->Branch("ELoss_Target",&ELoss_Target);
+  RootOutput::getInstance()->GetTree()->Branch("ELoss",&ELoss);
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("PhiLab",&PhiLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM);
@@ -955,8 +1079,8 @@ void Analysis::ReInitValue(){
   Ex.clear();
   Ecm.clear();
   AddBack_EDC.clear();
-  AddBack_EDC2.clear();
-  AddBack_EDC2.push_back(-1.0); //offset by 1
+  AddBack_EDC_Event1.clear();
+  AddBack_EDC_Event2.clear();
   AGATA_GammaPx.clear();
   AGATA_GammaPy.clear();
   AGATA_GammaPz.clear();
@@ -964,9 +1088,13 @@ void Analysis::ReInitValue(){
   AGATA_OrigBetaX.clear();
   AGATA_OrigBetaY.clear();
   AGATA_OrigBetaZ.clear();
+  AGATA_OrigBetaMag.clear();
   EAgata = -1000;
   ELab.clear();
   RawEnergy.clear(); 
+  ELoss_Al.clear();
+  ELoss_Target.clear();
+  ELoss.clear();
   ThetaLab.clear();
   PhiLab.clear();
   ThetaCM.clear();
@@ -990,6 +1118,8 @@ void Analysis::ReInitValue(){
   elab_tmp = 0;
   thetalab_tmp = 0;
   philab_tmp = 0;
+
+  filledCline=false;
 
   MG_T=-1000;
   MG_E=-1000;
@@ -1021,3 +1151,4 @@ extern "C"{
 
   proxy_analysis p_analysis;
 }
+

@@ -188,12 +188,14 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     p1_2[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_BETA",1);
     p1_3[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_BETA",1);
 
-    double norm1 = p0_1[i] + p1_1[i]*TMath::Power(m_BetaNorm, -5./3.);
-    double norm2 = p0_2[i] + p1_2[i]*TMath::Power(m_BetaNorm, -5./3.);
-    double norm3 = p0_3[i] + p1_3[i]*TMath::Power(m_BetaNorm, -5./3.);
-    Ep1[i] = norm1 * Ep1[i] / (p0_1[i] + p1_1[i]*TMath::Power(m_Beta, -5./3.));
-    Ep2[i] = norm2 * Ep2[i] / (p0_2[i] + p1_2[i]*TMath::Power(m_Beta, -5./3.));
-    Ep3[i] = norm3 * Ep3[i] / (p0_3[i] + p1_3[i]*TMath::Power(m_Beta, -5./3.));
+    if(p0_1[i]!=0 && p0_2[i]!=0 && p0_3[i]!=0 && p1_1[i]!=0 && p1_2[i]!=0 && p1_3[i]!=0){
+      double norm1 = p0_1[i] + p1_1[i]*TMath::Power(m_BetaNorm, -5./3.);
+      double norm2 = p0_2[i] + p1_2[i]*TMath::Power(m_BetaNorm, -5./3.);
+      double norm3 = p0_3[i] + p1_3[i]*TMath::Power(m_BetaNorm, -5./3.);
+      Ep1[i] = norm1 * Ep1[i] / (p0_1[i] + p1_1[i]*TMath::Power(m_Beta, -5./3.));
+      Ep2[i] = norm2 * Ep2[i] / (p0_2[i] + p1_2[i]*TMath::Power(m_Beta, -5./3.));
+      Ep3[i] = norm3 * Ep3[i] / (p0_3[i] + p1_3[i]*TMath::Power(m_Beta, -5./3.));
+    }
 
     // Angle correction per pair: spline
     /*Ep1[i] = Ep1[i] / fcorr_EvsA[i][0]->Eval(Ddt) * fcorr_EvsA[i][0]->Eval(0);

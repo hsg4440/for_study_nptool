@@ -55,9 +55,16 @@ void CrossTalk::AddHitVector(const vector<double>& X, const vector<double>& Y, c
   sizeHit = X.size();
 }
 
-bool cmp(pair<int,double>& a, pair<int,double>&b){
+
+#if __cplusplus > 201103L 
+bool cmp(pair<int,double> & a, pair<int,double>&b){
   return a.second < b.second;
 }
+#else
+bool cmp(pair<int,double>a, pair<int,double>b){
+  return a.second < b.second;
+}
+#endif
 
 vector<int> CrossTalk::ComputeCrossTalk(const double& Causality, const double& DistMin, const int& Option, TCutG* TCut1, TCutG* TCut2){
 

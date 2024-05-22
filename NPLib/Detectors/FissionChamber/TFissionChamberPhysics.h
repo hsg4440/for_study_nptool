@@ -62,16 +62,24 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Energy;
+    vector<int>      AnodeNumber;
+    vector<double>   Q1;
+    vector<double>   Q2;
+    vector<double>   Qmax;
     vector<double>   Time;
+    vector<bool>     isFakeFission;
+    vector<double>   Time_HF;
+    vector<double>   DT_FC;				
 
-  /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS); 
-  void AddDetector(double R, double Theta, double Phi); 
-  
-  //////////////////////////////////////////////////////////////
-  // methods inherited from the VDetector ABC class
+    /// A usefull method to bundle all operation to add a detector
+    void AddDetector(TVector3 POS); 
+    void AddDetector(double R, double Theta, double Phi); 
+
+    TVector3 GetVectorDetectorPosition(){ return m_DetectorPosition[0];}  
+    TVector3 GetVectorAnodePosition(int AnodeNbr){ return m_AnodePosition[AnodeNbr-1];}  
+
+    //////////////////////////////////////////////////////////////
+    // methods inherited from the VDetector ABC class
   public:
     // read stream from ConfigFile to pick-up detector parameters
     void ReadConfiguration(NPL::InputParser);
@@ -126,8 +134,8 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     void WriteSpectra();
 
 
-  //////////////////////////////////////////////////////////////
-  // specific methods to FissionChamber array
+    //////////////////////////////////////////////////////////////
+    // specific methods to FissionChamber array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -141,37 +149,41 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     // give and external TFissionChamberData object to TFissionChamberPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TFissionChamberData* rawDataPointer) {m_EventData = rawDataPointer;}
-    
-  // objects are not written in the TTree
+
+    // objects are not written in the TTree
   private:
     TFissionChamberData*         m_EventData;        //!
     TFissionChamberData*         m_PreTreatedData;   //!
     TFissionChamberPhysics*      m_EventPhysics;     //!
 
-  // getters for raw and pre-treated data object
+    // getters for raw and pre-treated data object
   public:
     TFissionChamberData* GetRawData()        const {return m_EventData;}
     TFissionChamberData* GetPreTreatedData() const {return m_PreTreatedData;}
 
-  // parameters used in the analysis
+    // parameters used in the analysis
   private:
     // thresholds
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
-
-  // number of detectors
+    double CurrentTime[12];   //!
+    double LastTime[12];      //!
+    int counter[12];          //!
+    // number of detectors
   private:
     int m_NumberOfDetectors;  //!
+    vector<TVector3> m_DetectorPosition; //!
+    vector<TVector3> m_AnodePosition; //!
 
-  // spectra class
+    // spectra class
   private:
     TFissionChamberSpectra* m_Spectra; // !
 
-  // spectra getter
+    // spectra getter
   public:
     map<string, TH1*>   GetSpectra(); 
 
-  // Static constructor to be passed to the Detector Factory
+    // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 

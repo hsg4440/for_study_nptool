@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Pierre Morfouace  contact address: pierre.morfouace2@cea.fr                        *
+ * Original Author: P. Morfouace contact address: pierre.morfouace@cea.fr    *
  *                                                                           *
- * Creation Date  : May 2020                                           *
+ * Creation Date  : May 2020                                                 *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold PISTA Raw data                                    *
+ *  This class hold PISTA Raw data                                           *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -44,40 +44,24 @@ TPISTAData::~TPISTAData() {
 
 //////////////////////////////////////////////////////////////////////
 void TPISTAData::Clear() {
-  // Energy X
-  fFirstStage_XE_DetectorNbr.clear();
-  fFirstStage_XE_StripNbr.clear();
-  fFirstStage_XE_Energy.clear();
-  // Energy Y
-  fFirstStage_YE_DetectorNbr.clear();
-  fFirstStage_YE_StripNbr.clear();
-  fFirstStage_YE_Energy.clear();
-  // Time X
-  fFirstStage_XT_DetectorNbr.clear();
-  fFirstStage_XT_StripNbr.clear();
-  fFirstStage_XT_Time.clear();
-  // Time Y
-  fFirstStage_YT_DetectorNbr.clear();
-  fFirstStage_YT_StripNbr.clear();
-  fFirstStage_YT_Time.clear();
-
-  // Energy X
-  fSecondStage_XE_DetectorNbr.clear();
-  fSecondStage_XE_StripNbr.clear();
-  fSecondStage_XE_Energy.clear();
-  // Energy Y
-  fSecondStage_YE_DetectorNbr.clear();
-  fSecondStage_YE_StripNbr.clear();
-  fSecondStage_YE_Energy.clear();
-  // Time X
-  fSecondStage_XT_DetectorNbr.clear();
-  fSecondStage_XT_StripNbr.clear();
-  fSecondStage_XT_Time.clear();
-  // Time Y
-  fSecondStage_YT_DetectorNbr.clear();
-  fSecondStage_YT_StripNbr.clear();
-  fSecondStage_YT_Time.clear();
-
+  // DE //
+  fPISTA_DE_DetectorNbr.clear();
+  fPISTA_DE_StripNbr.clear();
+  fPISTA_DE_StripEnergy.clear();
+  fPISTA_DE_BackEnergy.clear();
+  fPISTA_DE_StripTime.clear();
+  fPISTA_DE_BackTime.clear();
+  fPISTA_DE_BackDetector.clear();
+ 
+  // E //
+  fPISTA_E_DetectorNbr.clear();
+  fPISTA_E_StripNbr.clear();
+  fPISTA_E_StripEnergy.clear();
+  fPISTA_E_BackEnergy.clear();
+  fPISTA_E_StripTime.clear();
+  fPISTA_E_BackTime.clear();
+  fPISTA_E_BackDetector.clear();
+  
 }
 
 
@@ -87,21 +71,23 @@ void TPISTAData::Dump() const {
   // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TPISTAData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  // Energy
-  size_t mysize = fFirstStage_XE_DetectorNbr.size();
-  cout << "First Stage PISTA_XE_Mult: " << mysize << endl;
+  // DE
+  size_t mysize = fPISTA_DE_DetectorNbr.size();
+  cout << "PISTA_DE_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "X-DetNbr: " << fFirstStage_XE_DetectorNbr[i]
-         << " X-Energy: " << fFirstStage_XE_Energy[i];
+    cout << "DE-DetNbr: " << fPISTA_DE_DetectorNbr[i] << endl;
+    cout << " DE-Strip: " << fPISTA_DE_StripNbr[i] << endl;
+    cout << " DE-Energy: " << fPISTA_DE_StripEnergy[i] << endl;
   }
-  
-  // Time
-  mysize = fFirstStage_XT_DetectorNbr.size();
-  cout << "First Stage PISTA_XT_Mult: " << mysize << endl;
+ 
+  // E
+  mysize = fPISTA_E_DetectorNbr.size();
+  cout << "PISTA_E_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "X-DetNbr: " << fFirstStage_XT_DetectorNbr[i]
-         << " X-Time: " << fFirstStage_XT_Time[i];
+    cout << "E-DetNbr: " << fPISTA_E_DetectorNbr[i] << endl;
+    cout << " E-Strip: " << fPISTA_E_StripNbr[i] << endl;
+    cout << " E-Energy: " << fPISTA_E_BackEnergy[i] << endl;
   }
 }

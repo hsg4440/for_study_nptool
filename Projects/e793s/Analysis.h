@@ -42,21 +42,26 @@
 #include <TMath.h>
 #include <bitset>
 
-auto ThetaCM_emmitted = new TH1F("ThetaCM_emmitted","ThetaCM_emmitted",180,0,180);
-auto ThetaCM_detected_MM = new TH1F("ThetaCM_detected_MM","ThetaCM_detected_MM",180,0,180);
-auto ThetaCM_detected_MG = new TH1F("ThetaCM_detected_MG","ThetaCM_detected_MG",180,0,180);
+int NumThetaAngleBins = 1800;// 180 = 1 deg, 360 = 0.5 deg, 900 = 0.2 deg, 1800 = 0.1 deg
 
-auto ThetaLab_emmitted = new TH1F("ThetaLab_emmitted","ThetaLab_emmitted",180,0,180);
-auto ThetaLab_detected_MM = new TH1F("ThetaLab_detected_MM","ThetaLab_detected_MM",180,0,180);
-auto ThetaLab_detected_MG = new TH1F("ThetaLab_detected_MG","ThetaLab_detected_MG",180,0,180);
+auto ThetaCM_emmitted = new TH1F("ThetaCM_emmitted","ThetaCM_emmitted",NumThetaAngleBins,0,180);
+auto ThetaCM_detected_MM = new TH1F("ThetaCM_detected_MM","ThetaCM_detected_MM",NumThetaAngleBins,0,180);
+auto ThetaCM_detected_MG = new TH1F("ThetaCM_detected_MG","ThetaCM_detected_MG",NumThetaAngleBins,0,180);
+
+auto ThetaLab_emmitted = new TH1F("ThetaLab_emmitted","ThetaLab_emmitted",NumThetaAngleBins,0,180);
+auto ThetaLab_detected_MM = new TH1F("ThetaLab_detected_MM","ThetaLab_detected_MM",NumThetaAngleBins,0,180);
+auto ThetaLab_detected_MG = new TH1F("ThetaLab_detected_MG","ThetaLab_detected_MG",NumThetaAngleBins,0,180);
+//auto HistCline_MM = new TH1F("HistCline_MM","HistClint_MM",NumThetaAngleBins,0,180);
+//auto HistCline_MG = new TH1F("HistCline_MG","HistClint_MG",NumThetaAngleBins,0,180);
+
+double degtorad = M_PI/180.;
+vector<double> clineVal, clineX;
+bool filledCline;
 
 TH1F *ThetaCM_detected_MGX[6];
 TH1F *ThetaCM_detected_MMX[5];
 TH1F *ThetaLab_detected_MGX[6];
 TH1F *ThetaLab_detected_MMX[5];
-
-
-
 
 class Analysis: public NPL::VAnalysis{
   public:
@@ -81,7 +86,8 @@ class Analysis: public NPL::VAnalysis{
     //double EDC;
     std::vector<double> EDC;
     vector<double> AddBack_EDC;
-    vector<double> AddBack_EDC2;
+    vector<double> AddBack_EDC_Event1;
+    vector<double> AddBack_EDC_Event2;
     vector<double> AGATA_GammaPx;
     vector<double> AGATA_GammaPy;
     vector<double> AGATA_GammaPz;
@@ -89,11 +95,15 @@ class Analysis: public NPL::VAnalysis{
     vector<double> AGATA_OrigBetaX;
     vector<double> AGATA_OrigBetaY;
     vector<double> AGATA_OrigBetaZ;
+    vector<double> AGATA_OrigBetaMag;
     double EAgata;
     std::vector<double> ELab;
     std::vector<double> Ex;
     std::vector<double> Ecm;
     std::vector<double> RawEnergy;
+    std::vector<double> ELoss_Al;
+    std::vector<double> ELoss_Target;
+    std::vector<double> ELoss;
     std::vector<double> ThetaLab;
     std::vector<double> PhiLab;
     std::vector<double> ThetaCM;
@@ -110,6 +120,7 @@ class Analysis: public NPL::VAnalysis{
     NPL::EnergyLoss LightAl;
     NPL::EnergyLoss LightSi;
     NPL::EnergyLoss BeamTargetELoss;
+    NPL::EnergyLoss HeavyTargetELoss;
 
     double TargetThickness ;
     double WindowsThickness;
@@ -191,7 +202,7 @@ class Analysis: public NPL::VAnalysis{
     float DC3_X;
     float DC3_Y;
 
-    float Xf;
+    //float Xf;
     float Tf;
 
     float Brho;
@@ -259,6 +270,7 @@ class Analysis: public NPL::VAnalysis{
     //Simulation Stuff
     bool isSim;
     bool isPhaseSpace;
+    bool excludePoor;
     bool writetoscreen;
     TInitialConditions* Initial;
     TInteractionCoordinates* Interaction;

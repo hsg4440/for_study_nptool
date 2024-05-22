@@ -48,9 +48,11 @@ TSofTwimPhysics::TSofTwimPhysics()
   m_PreTreatedData(new TSofTwimData),
   m_EventPhysics(this),
   m_NumberOfDetectors(0), 
-  m_Beta(-1), 
+  m_Beta(-1),
+  m_AnodeWidth(25.),
   m_BetaNorm(0.838), 
-  m_NumberOfSections(4), 
+  m_NumberOfSections(4),
+  m_SPLINE_CORRECTION(0),
   m_NumberOfAnodesPerSection(16) {
   }
 
@@ -168,14 +170,30 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   }
 
   static CalibrationManager* Cal = CalibrationManager::getInstance();
+
   if(Esec1>0){
     Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
     EnergySection.push_back(Esec1);
     DriftTime.push_back(DTsec1);
     SectionNbr.push_back(1);
 
-    Theta1 = atan((AnodeDriftTime[0][11]-AnodeDriftTime[0][3])/(7*31.));
-    Theta.push_back(-Theta1);
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
+      double X = AnodeDriftTime[0][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta1 = atan(p1);
+    Theta.push_back(Theta1);
   }
   if(Esec2>0){
     Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
@@ -183,8 +201,23 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec2);
     SectionNbr.push_back(2);
 
-    Theta2 = atan((AnodeDriftTime[1][11]-AnodeDriftTime[1][3])/(7*31.));
-    Theta.push_back(-Theta2);
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
+      double X = AnodeDriftTime[1][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta2 = atan(p1); 
+    Theta.push_back(Theta2);
   }
   if(Esec3>0){
     Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
@@ -192,8 +225,23 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec3);
     SectionNbr.push_back(3);
 
-    Theta3 = atan((AnodeDriftTime[2][11]-AnodeDriftTime[2][3])/(7*31.));
-    Theta.push_back(-Theta3);
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
+      double X = AnodeDriftTime[2][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta3 = atan(p1);
+    Theta.push_back(Theta3);
   }
   if(Esec4>0){
     Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
@@ -201,8 +249,23 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec4);
     SectionNbr.push_back(4);
 
-    Theta4 = atan((AnodeDriftTime[3][11]-AnodeDriftTime[3][3])/(7*31.));
-    Theta.push_back(-Theta4);
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
+      double X = AnodeDriftTime[3][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta4 = atan(p1);
+    Theta.push_back(Theta4);
   }
 
   m_Beta = -1;
@@ -224,6 +287,12 @@ void TSofTwimPhysics::PreTreat() {
     if(m_EventData->GetPileUp(i) != 1 && m_EventData->GetOverflow(i) != 1){
       double Energy = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
       double DT = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
+
+      int section = m_EventData->GetSectionNbr(i);
+      int anode = m_EventData->GetAnodeNbr(i);
+      if(m_SPLINE_CORRECTION){
+        DT = DT - fcorr_dt[section-1][anode-1]->Eval(DT);
+      }
 
       m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
       m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
@@ -280,11 +349,11 @@ void TSofTwimPhysics::ReadAnalysisConfig() {
         AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
       }
 
-      else if (whatToDo=="SPLINE_SECTION_BETA_PATH") {
+      else if (whatToDo=="SPLINE_CORR_DT_PATH") {
         AnalysisConfigFile >> DataBuffer;
-        m_SPLINE_SECTION_BETA_PATH = DataBuffer;
-        cout << "*** Loading Spline for Beta correction per section ***" << endl;
-        LoadSplineBeta();
+        m_SPLINE_DT_PATH = DataBuffer;
+        cout << "*** Loading Spline for Drift Time Correction per section and anode ***" << endl;
+        LoadSplineDT();
       }
 
       else if (whatToDo=="E_THRESHOLD") {
@@ -302,16 +371,21 @@ void TSofTwimPhysics::ReadAnalysisConfig() {
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofTwimPhysics::LoadSplineBeta(){
-  TString filename = m_SPLINE_SECTION_BETA_PATH;
+void TSofTwimPhysics::LoadSplineDT(){
+  TString filename = m_SPLINE_DT_PATH;
   TFile* ifile = new TFile(filename,"read");
 
   if(ifile->IsOpen()){
     cout << "Loading splines..." << endl;
+
+    m_SPLINE_CORRECTION = true;
+    
     for(int s=0; s<m_NumberOfSections; s++){
-      TString splinename = Form("spline_sec%i",s+1);
-      fcorr_beta_sec[s] = (TSpline3*) ifile->FindObjectAny(splinename);
-      cout << fcorr_beta_sec[s]->GetName() << endl;
+      for(int a=0; a<m_NumberOfAnodesPerSection; a++){
+        TString splinename = Form("spline_corr_dt_sec%i_anode%i",s+1,a+1);
+        fcorr_dt[s][a] = (TSpline3*) ifile->FindObjectAny(splinename);
+        cout << fcorr_dt[s][a]->GetName() << endl;
+      }
     }
   }
   else

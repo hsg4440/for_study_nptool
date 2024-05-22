@@ -51,9 +51,20 @@ using namespace NPUNITS;
 //   Default Constructor
 NPL::DetectorManager::DetectorManager(){
   ROOT::EnableThreadSafety();
+  //m_BuildPhysicalPtr = &NPL::VDetector::BuildPhysicalEvent;
+  //m_ClearEventPhysicsPtr =  &NPL::VDetector::ClearEventPhysics;
+  //m_ClearEventDataPtr = &NPL::VDetector::ClearEventData ;
   m_BuildPhysicalPtr = &NPL::VDetector::BuildPhysicalEvent;
   m_ClearEventPhysicsPtr =  &NPL::VDetector::ClearEventPhysics;
   m_ClearEventDataPtr = &NPL::VDetector::ClearEventData ;
+  m_SetTreeReaderPtr = &NPL::VDetector::SetTreeReader;
+  m_InitializeRootInputPhysicsPtr = &NPL::VDetector::InitializeRootInputPhysics;
+  m_InitializeRootInputRawPtr = &NPL::VDetector::InitializeRootInputRaw;
+  m_InitializeRootOutputPtr = &NPL::VDetector::InitializeRootOutput;
+  m_InitializeRootHistogramsCalibPtr = &NPL::VDetector::InitializeRootHistogramsCalib;
+  m_FillHistogramsCalibPtr = &NPL::VDetector::FillHistogramsCalib;
+  m_WriteHistogramsCalibPtr = &NPL::VDetector::WriteHistogramsCalib;
+  m_DoCalibrationPtr = &NPL::VDetector::DoCalibration;
   m_FillSpectra = NULL; 
   m_CheckSpectra = NULL;   
   m_SpectraServer = NULL;
@@ -102,6 +113,55 @@ NPL::DetectorManager::~DetectorManager(){
     m_SpectraServer->Destroy();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void NPL::DetectorManager::ReadDoCalibrationFile(std::string Path)   {
+  NPL::InputParser parser(Path);
+  std::set<std::string> check;
+  std::vector<std::string> token = parser.GetAllBlocksToken();
+  NPL::DetectorFactory* theFactory = NPL::DetectorFactory::getInstance();
+  
+  std::string runToReadfileName = NPOptionManager::getInstance()->GetRunToReadFile();
+  RootInput::getInstance(runToReadfileName);
+  if(NPOptionManager::getInstance()->GetCalibrationFile().compare("defaultCalibration.txt")!=0){
+    std::cout << "-C option used, looking for Calibration parameters" << std::endl;
+    CalibrationManager::getInstance(NPOptionManager::getInstance()->GetCalibrationFile());
+  }
+  else
+    std::cout << "-C option not used, no Calibration parameters loaded" << std::endl;
+
+  
+  ////////////////////////////////////////////
+  /////////// Search for Detectors ///////////
+  ////////////////////////////////////////////
+  // Get the list of main token
+  
+  std::cout << "IN DO CALIBRATION " << token.size() << std::endl;
+  // Look for detectors among them
+  for(unsigned int i = 0 ; i < token.size() ; i++){
+    VDetector* detector = theFactory->Construct(token[i]);
+    VTreeReader* Reader = theFactory->ConstructReader(token[i]);
+    if(detector!=NULL && check.find(token[i])==check.end()){
+      if(NPOptionManager::getInstance()->GetVerboseLevel()){
+        std::cout << "/////////////////////////////////////////" << std::endl;
+        std::cout << "//// Adding Detector for DoCalibration " << token[i] << std::endl; 
+      }
+      detector->ReadDoCalibration(parser);
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        std::cout << "/////////////////////////////////////////" << std::endl;
+
+      // Add array to the VDetector Vector
+      AddDetector(token[i], detector);
+      AddDetectorReader(token[i], Reader);
+      check.insert(token[i]);
+    }
+    else if(detector!=NULL){
+      delete detector;
+      delete Reader;
+    }
+  }
+  // The calibration Manager got all the parameter added, so it can load them from the calibration file
+  CalibrationManager::getInstance()->LoadParameterFromFile();
+}
 ///////////////////////////////////////////////////////////////////////////////
 //   Read stream at ConfigFile and pick-up Token declaration of Detector
 void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
@@ -211,6 +271,7 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
   // Look for detectors among them
   for(unsigned int i = 0 ; i < token.size() ; i++){
     VDetector* detector = theFactory->Construct(token[i]);
+    VTreeReader* Reader = theFactory->ConstructReader(token[i]);
     if(detector!=NULL && check.find(token[i])==check.end()){
       if(NPOptionManager::getInstance()->GetVerboseLevel()){
         std::cout << "/////////////////////////////////////////" << std::endl;
@@ -222,11 +283,28 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 
       // Add array to the VDetector Vector
       AddDetector(token[i], detector);
+      AddDetectorReader(token[i], Reader);
       check.insert(token[i]);
     }
-    else if(detector!=NULL)
+    else if(detector!=NULL){
       delete detector;
+      delete Reader;
+    }
+    //std::cout << "Reader adress : " << Reader << std::endl;
+    //if(Reader!=NULL && check.find(token[i])==check.end()){
+    //  if(NPOptionManager::getInstance()->GetVerboseLevel()){
+    //    std::cout << "/////////////////////////////////////////" << std::endl;
+    //    std::cout << "//// Adding Reader " << token[i] << std::endl; 
+    //    std::cout << "/////////////////////////////////////////" << std::endl;
+    //  }
+    //  // Add array to the VDetector Vector
+    //  AddDetectorReader(token[i], Reader);
+    //  //check.insert(token[i]);
+    //}
+    //else if(Reader!=NULL)
+    //  delete Reader;
   }
+  std::cout << "Readersize : " << m_DetectorReader.size() << std::endl;
   // Now That the detector lib are loaded, we can instantiate the root input
   std::string runToReadfileName = NPOptionManager::getInstance()->GetRunToReadFile();
   RootInput::getInstance(runToReadfileName);
@@ -246,8 +324,20 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
   return;
 }
 
+void NPL::DetectorManager::SetTreeReader(TTreeReader* TreeReader){
+  static std::map<std::string,VDetector*>::iterator it;
+  static std::map<std::string,VDetector*>::iterator begin=m_Detector.begin();
+  static std::map<std::string,VDetector*>::iterator end= m_Detector.end();
+  for (it =begin; it != end; ++it) {
+    (it->second->*m_SetTreeReaderPtr)(TreeReader);
+  }
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void NPL::DetectorManager::BuildPhysicalEvent(){
+
+  //std::cout << "Test Build ////////////////////////////////////////////////////////////" << std::endl;
 #if __cplusplus > 199711L && NPMULTITHREADING
     // add new job
     m_mtx.lock();
@@ -264,13 +354,17 @@ void NPL::DetectorManager::BuildPhysicalEvent(){
   static std::map<std::string,VDetector*>::iterator begin=m_Detector.begin();
   static std::map<std::string,VDetector*>::iterator end= m_Detector.end();
 
+  //static std::map<std::string,VTreeReader*>::iterator it;
+  //static std::map<std::string,VTreeReader*>::iterator begin=m_DetectorReader.begin();
+  //static std::map<std::string,VTreeReader*>::iterator end= m_DetectorReader.end();
+  
   for (it =begin; it != end; ++it) {
     (it->second->*m_ClearEventPhysicsPtr)();
     (it->second->*m_BuildPhysicalPtr)();
-      (it->second->*m_FillSpectra)();
-      if(m_CheckSpectra) {
-        (it->second->*m_CheckSpectra)();
-    }
+    //  (it->second->*m_FillSpectra)();
+    //  if(m_CheckSpectra) {
+    //    (it->second->*m_CheckSpectra)();
+    //}
   }
 #endif
   return;
@@ -284,13 +378,20 @@ void NPL::DetectorManager::InitializeRootInput(){
 
   std::map<std::string,VDetector*>::iterator it;
 
+  //std::cout << "m_DetectorReader size : " << m_DetectorReader.size() << std::endl;
   if(NPOptionManager::getInstance()->GetInputPhysicalTreeOption())
-    for (it = m_Detector.begin(); it != m_Detector.end(); ++it) 
-      it->second->InitializeRootInputPhysics();
+    //m_DetectorReader.begin()->second->InitializeRootInputPhysics();
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){ 
+      //std::cout << "Test input" << std::endl;
+      (it->second->*m_InitializeRootInputPhysicsPtr)();
+    }
 
   else // Default Case
-    for (it = m_Detector.begin(); it != m_Detector.end(); ++it) 
-      it->second->InitializeRootInputRaw();
+    //m_DetectorReader.begin()->second->InitializeRootInputRaw();
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      //std::cout << "Test input" << std::endl;
+      (it->second->*m_InitializeRootInputRawPtr)();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,14 +399,72 @@ void NPL::DetectorManager::InitializeRootOutput(){
   std::map<std::string,VDetector*>::iterator it;
 
   if(!NPOptionManager::getInstance()->GetInputPhysicalTreeOption())
-    for (it = m_Detector.begin(); it != m_Detector.end(); ++it) 
-      it->second->InitializeRootOutput();
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      //std::cout << "Test output" << std::endl; 
+      (it->second->*m_InitializeRootOutputPtr)();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void NPL::DetectorManager::InitializeRootHistogramsCalib(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      //std::cout << "Test calib output" << std::endl; 
+      (it->second->*m_InitializeRootHistogramsCalibPtr)();
+    }
+  else{
+    std::cout << "Warning : IsCalibration not recognized, output file not initialized" << std::endl;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void NPL::DetectorManager::FillHistogramsCalib(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      (it->second->*m_FillHistogramsCalibPtr)();
+    }
+  else{
+    std::cout << "Warning : IsCalibration not recognized, Fill not working" << std::endl;
+  }
+}
+
+void NPL::DetectorManager::WriteHistogramsCalib(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      //std::cout << "Test Write Histograms" << std::endl; 
+      (it->second->*m_WriteHistogramsCalibPtr)();
+    }
+  else{
+    std::cout << "Warning : IsCalibration not recognized, Write not working" << std::endl;
+  }
+}
+
+void NPL::DetectorManager::DoCalibration(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      (it->second->*m_DoCalibrationPtr)();
+    }
+  else{
+    std::cout << "Warning : IsCalibration not recognized, DoCalibration not working" << std::endl;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void NPL::DetectorManager::AddDetector(std::string DetectorName , VDetector* newDetector){
   m_Detector[DetectorName] = newDetector;
   newDetector->AddParameterToCalibrationManager();
+}
+
+void NPL::DetectorManager::AddDetectorReader(std::string DetectorName , VTreeReader* newDetector){
+  m_DetectorReader[DetectorName] = newDetector;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,6 +555,7 @@ void NPL::DetectorManager::InitThreadPool(){
   m_ThreadPool.clear();
   m_Ready.clear();
   std::map<std::string,VDetector*>::iterator it;
+  //std::cout << "Test Detector size : " << m_Detector.size() << std::endl;
   m_Ready.resize(m_Detector.size(),false);
   unsigned int i = 0;
   for (it = m_Detector.begin(); it != m_Detector.end(); ++it) { 
@@ -417,16 +577,17 @@ void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
+  //std::cout << "Test Build 2 ////////////////////////////////////////////////////////////" << std::endl;
       // Do the job
       (det->*m_ClearEventPhysicsPtr)();
 
       (det->*m_BuildPhysicalPtr)();
 
-      if(m_FillSpectra){
-        (det->*m_FillSpectra)();
-       if(m_CheckSpectra)
-          (det->*m_CheckSpectra)();
-      }
+      //if(m_FillSpectra){
+      //  (reader->*m_FillSpectra)();
+      // if(m_CheckSpectra)
+      //    (reader->*m_CheckSpectra)();
+      //}
      m_mtx.lock();
      m_Ready[id].flip();
      m_mtx.unlock();

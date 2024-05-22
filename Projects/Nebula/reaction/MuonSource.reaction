@@ -1,0 +1,14 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= neutron 
+ Energy= 196 MeV
+ SigmaEnergy= 0.5 MeV
+ SigmaThetaX= 0.01 deg
+ SigmaPhiY= 0.01 deg
+ SigmaX= 0 mm
+ SigmaY= 0 mm
+ MeanThetaX= 0 deg
+ MeanPhiY= 0 deg
+ MeanX= 0 mm
+ MeanY= 0 mm
+ ZEmission= 0 mm

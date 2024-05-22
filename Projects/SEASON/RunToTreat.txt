@@ -1,0 +1,8 @@
+TTreeName 
+	SimulatedTree
+RootFileName 
+	/local/home/admin-local/Public/nptool/Outputs/Simulation/3alpha_60min_2mm_Target.root
+	%/local/home/admin-local/Public/nptool/Outputs/Simulation/3alpha_60min_2mm_NoTarget.root
+	%/local/home/admin-local/Public/nptool/Outputs/Simulation/test.root
+	%/local/home/admin-local/Public/nptool/Outputs/Simulation/3alpha_60min_2mm_target.root
+	%/local/home/admin-local/Public/nptool/Outputs/Simulation/Calib_2mm_60min.root

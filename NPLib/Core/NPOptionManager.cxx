@@ -66,8 +66,14 @@ void NPOptionManager::ReadProjectConfigFile(){
       if(blocks[i]->HasToken("SimulationOutput"))
         m_SimulationOutputPath = blocks[i]->GetString("SimulationOutput"); 
       
+      if(blocks[i]->HasToken("CalibrationOutput"))
+        m_CalibrationOutputPath = blocks[i]->GetString("CalibrationOutput"); 
+      
       if(blocks[i]->HasToken("EnergyLoss"))
         m_EnergyLossPath = blocks[i]->GetString("EnergyLoss"); 
+      
+      if(blocks[i]->HasToken("Cuts"))
+        m_CutsPath = blocks[i]->GetString("Cuts"); 
     }
  } 
 
@@ -79,9 +85,11 @@ void NPOptionManager::ReadProjectConfigFile(){
   std::string Path = getenv("NPTOOL");
   m_AnalysisOutputPath=Path+"/Outputs/Analysis/";
   m_SimulationOutputPath=Path+"/Outputs/Simulation/";
+  m_CalibrationOutputPath=Path+"/Outputs/Calibration/";
   m_EnergyLossPath=Path+"/Inputs/EnergyLoss/";
   std::cout << "AnalysisOutput= " << m_AnalysisOutputPath << std::endl;
   std::cout << "SimulationOutput= " << m_SimulationOutputPath << std::endl;
+  std::cout << "CalibrationOutput= " << m_CalibrationOutputPath << std::endl;
   std::cout << "EnergyLoss= " << m_EnergyLossPath << std::endl;
  }
 }
@@ -98,6 +106,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fDefaultOutputTreeName      = "NPTool_Tree";
   fDefaultRunToReadFileName   = "defaultRunToTreat.txt";
   fDefaultCalibrationFileName = "defaultCalibration.txt";
+  fDefaultDoCalibrationFileName = "defaultDoCalibration.txt";
   fDefaultG4MacroPath         = "defaultG4MacroPath.txt";
   // Assigned values
   fReactionFileName           = fDefaultReactionFileName;
@@ -217,6 +226,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "--definition" && argc >= i + 1)         {std::string def= argv[++i];fDefinition.insert(def);}
 
+    else if (argument == "-DC" && argc >= i + 1)                  fDoCalibrationFileName    = argv[++i] ;
+    
     else{
     SendErrorAndExit(argument.c_str()); 
     }
@@ -320,6 +331,35 @@ void NPOptionManager::CheckEventGenerator(){
   ConfigFile.close();
 }
 
+void NPOptionManager::CheckDoCalibrationConfiguration(){
+  bool checkFile = true;
+
+  // NPTool path
+  std::string GlobalPath = getenv("NPTOOL");
+  std::string StandardPath = GlobalPath + "/Inputs/DoCalibrationConfiguration/" + fDoCalibrationFileName;
+
+  // ifstream to configfile
+  std::ifstream ConfigFile;
+
+  // test if config file is in local path
+  ConfigFile.open(fDoCalibrationFileName.c_str());
+  if (!ConfigFile.is_open()) {
+    ConfigFile.open(StandardPath.c_str());
+    if (!ConfigFile.is_open()) {  // if not, assign standard path
+      checkFile = false;
+    }
+    else {
+      fDoCalibrationFileName = StandardPath;
+    }
+  }
+  if (!checkFile && fDoCalibrationFileName != fDefaultDoCalibrationFileName) {   // if file does not exist
+    SendErrorAndExit("DoCalibrationConfiguration");
+  }
+
+  // close ConfigFile
+  ConfigFile.close();
+
+}
 ////////////////////////////////////////////////////////////////////////////////
 void NPOptionManager::CheckDetectorConfiguration(){
   bool checkFile = true;
@@ -381,6 +421,9 @@ bool NPOptionManager::IsDefault(const char* type) const{
   }
   else if (stype == "Calibration") {
     if (fCalibrationFileName == fDefaultCalibrationFileName) result = true;
+  }
+  else if (stype == "DoCalibration") {
+    if (fDoCalibrationFileName == fDefaultDoCalibrationFileName) result = true;
   }
   else if (stype == "RunToTreat") {
     if (fRunToReadFileName == fDefaultRunToReadFileName) result = true;

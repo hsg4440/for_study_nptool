@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Isotropic Source to be used as EventGenerator %%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Energy are given in MeV , Position in mm      % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  5 mm FWHM
+%  Position for 0.09 um (20 g/cm2) thick carbon foil
+%  Source 6 nm depth in foil
+MultipleParticle
+ x0= 0 mm
+ y0= 0 mm
+ z0= 6 nm
+ HalfOpenAngleMin= 0 deg
+ HalfOpenAngleMax= 180 deg
+ SigmaX= 2.12 mm
+ SigmaY= 2.12 mm
+ Events= 1 
+ EventFile= /local/home/admin-local/nptool/Projects/SEASON/sources/alpha_electron_cascade.txt
