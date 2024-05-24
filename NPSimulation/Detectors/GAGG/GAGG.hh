@@ -27,91 +27,93 @@
 using namespace std;
 
 // G4 headers
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
+#include "G4RotationMatrix.hh"
+#include "G4ThreeVector.hh"
 
 // NPTool header
+#include "NPInputParser.h"
 #include "NPSVDetector.hh"
 #include "TGAGGData.h"
-#include "NPInputParser.h"
 
-class GAGG : public NPS::VDetector{
+class GAGG : public NPS::VDetector {
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
-  public:
-    GAGG() ;
-    virtual ~GAGG() ;
+ public:
+  GAGG();
+  virtual ~GAGG();
 
-    ////////////////////////////////////////////////////
-    /////// Specific Function of this Class ///////////
-    ////////////////////////////////////////////////////
-  public:
-    // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
-    // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
+  ////////////////////////////////////////////////////
+  /////// Specific Function of this Class ///////////
+  ////////////////////////////////////////////////////
+ public:
+  // Cartesian
+  void AddDetector(G4ThreeVector POS, string Shape);
+  // Spherical
+  void AddDetector(double R, double Theta, double Phi, string Shape, double Width, double Height, double Thickness);
 
+  G4LogicalVolume* BuildSquareDetector(int DetectorNumber);
+  // G4LogicalVolume* BuildCylindricalDetector();
 
-    G4LogicalVolume* BuildSquareDetector();
-    G4LogicalVolume* BuildCylindricalDetector();
-  
-  private:
-    G4LogicalVolume* m_SquareDetector;
-    G4LogicalVolume* m_CylindricalDetector;
-    
-    ////////////////////////////////////////////////////
-    //////  Inherite from NPS::VDetector class /////////
-    ////////////////////////////////////////////////////
-  public:
-    // Read stream at Configfile to pick-up parameters of detector (Position,...)
-    // Called in DetecorConstruction::ReadDetextorConfiguration Method
-    void ReadConfiguration(NPL::InputParser) ;
+ private:
+  G4LogicalVolume* m_SquareDetector;
+  G4LogicalVolume* m_CylindricalDetector;
 
-    // Construct detector and inialise sensitive part.
-    // Called After DetecorConstruction::AddDetector Method
-    void ConstructDetector(G4LogicalVolume* world) ;
+  ////////////////////////////////////////////////////
+  //////  Inherite from NPS::VDetector class /////////
+  ////////////////////////////////////////////////////
+ public:
+  // Read stream at Configfile to pick-up parameters of detector (Position,...)
+  // Called in DetecorConstruction::ReadDetextorConfiguration Method
+  void ReadConfiguration(NPL::InputParser);
 
-    // Add Detector branch to the EventTree.
-    // Called After DetecorConstruction::AddDetector Method
-    void InitializeRootOutput() ;
+  // Construct detector and inialise sensitive part.
+  // Called After DetecorConstruction::AddDetector Method
+  void ConstructDetector(G4LogicalVolume* world);
 
-    // Read sensitive part and fill the Root tree.
-    // Called at in the EventAction::EndOfEventAvtion
-    void ReadSensitive(const G4Event* event) ;
+  // Add Detector branch to the EventTree.
+  // Called After DetecorConstruction::AddDetector Method
+  void InitializeRootOutput();
 
-  public:   // Scorer
-    //   Initialize all Scorer used by the MUST2Array
-    void InitializeScorers() ;
+  // Read sensitive part and fill the Root tree.
+  // Called at in the EventAction::EndOfEventAvtion
+  void ReadSensitive(const G4Event* event);
 
-    //   Associated Scorer
-    G4MultiFunctionalDetector* m_GAGGScorer ;
-    ////////////////////////////////////////////////////
-    ///////////Event class to store Data////////////////
-    ////////////////////////////////////////////////////
-  private:
-    TGAGGData* m_Event ;
+ public: // Scorer
+  //   Initialize all Scorer used by the MUST2Array
+  void InitializeScorers();
 
-    ////////////////////////////////////////////////////
-    ///////////////Private intern Data//////////////////
-    ////////////////////////////////////////////////////
-  private: // Geometry
-    // Detector Coordinate 
-    vector<double>  m_R; 
-    vector<double>  m_Theta;
-    vector<double>  m_Phi; 
-    
-    //   Shape type
-    vector<string> m_Shape ;
-   
-    // Visualisation Attribute
-    G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
+  //   Associated Scorer
+  G4MultiFunctionalDetector* m_GAGGScorer;
+  ////////////////////////////////////////////////////
+  ///////////Event class to store Data////////////////
+  ////////////////////////////////////////////////////
+ private:
+  TGAGGData* m_Event;
+
+  ////////////////////////////////////////////////////
+  ///////////////Private intern Data//////////////////
+  ////////////////////////////////////////////////////
+ private: // Geometry
+  // Detector Coordinate
+  vector<double> m_R;
+  vector<double> m_Theta;
+  vector<double> m_Phi;
+  vector<double> m_Width;
+  vector<double> m_Height;
+  vector<double> m_Thickness;
+
+  //   Shape type
+  vector<string> m_Shape;
+
+  // Visualisation Attribute
+  G4VisAttributes* m_VisSquare;
+  G4VisAttributes* m_VisCylinder;
 
   // Needed for dynamic loading of the library
-  public:
-    static NPS::VDetector* Construct();
+ public:
+  static NPS::VDetector* Construct();
 };
 #endif
