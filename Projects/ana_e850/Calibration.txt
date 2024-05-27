@@ -1,30 +1,30 @@
 CalibrationFilePath
- ./Calibration/Energy/PISTA1_E.cal
- ./Calibration/Energy/PISTA2_E.cal
- ./Calibration/Energy/PISTA3_E.cal
- ./Calibration/Energy/PISTA4_E.cal
- ./Calibration/Energy/PISTA5_E.cal
- ./Calibration/Energy/PISTA6_E.cal
- ./Calibration/Energy/PISTA7_E.cal
- ./Calibration/Energy/PISTA8_E.cal
- ./Calibration/Energy/PISTA1_DE.ped
- ./Calibration/Energy/PISTA2_DE.ped
- ./Calibration/Energy/PISTA3_DE.ped
- ./Calibration/Energy/PISTA4_DE.ped
- ./Calibration/Energy/PISTA5_DE.ped
- ./Calibration/Energy/PISTA6_DE.ped
- ./Calibration/Energy/PISTA7_DE.ped
- ./Calibration/Energy/PISTA8_DE.ped
- ./Calibration/Energy/PISTA1_DE.cal
- ./Calibration/Energy/PISTA2_DE.cal
- ./Calibration/Energy/PISTA3_DE.cal
- ./Calibration/Energy/PISTA4_DE.cal
- ./Calibration/Energy/PISTA5_DE.cal
- ./Calibration/Energy/PISTA6_DE.cal
- ./Calibration/Energy/PISTA7_DE.cal
- ./Calibration/Energy/PISTA8_DE.cal
- ./Calibration/Energy/PISTA_BACK_DE.cal
- ./Calibration/Energy/PISTA_BACK_E_min.cal
+ %./Calibration/pista/e850_2023/part1/PISTA1_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA2_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA3_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA4_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA5_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA6_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA7_E.cal
+ %./Calibration/pista/e850_2023/part1/PISTA8_E.cal
+ ./Calibration/pista/e850_2023/part1/PISTA1_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA2_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA3_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA4_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA5_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA6_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA7_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA8_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA_BACK_DE.cal
+ ./Calibration/pista/e850_2023/part1/PISTA_BACK_E_min.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA1_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA2_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA3_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA4_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA5_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA6_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA7_backE.cal
+ %./Calibration/pista/e850_2023/part1/pol2/PISTA8_backE.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec5.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec6.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec7.cal
@@ -40,3 +40,12 @@ CalibrationFilePath
  ./Calibration/VAMOS/CHIO/Chio_E_sec17.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec18.cal
  ./Calibration/VAMOS/CHIO/Chio_E_sec19.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW1_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW1_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW2_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW2_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW3_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW3_Y.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW4_X.cal
+ ./Calibration/VAMOS/FPMW/npformat/FPMW4_Y.cal
+

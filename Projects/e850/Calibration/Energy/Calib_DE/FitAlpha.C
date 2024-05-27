@@ -17,7 +17,7 @@ void FitAlpha()
 
 
   for(int i=0; i<NumberOfDetectors; i++){
-    ifstream ifile;
+    /*ifstream ifile;
     string ifilename = "PISTA" + to_string(i+1) + "_DE.ped";
     ifile.open(ifilename.c_str());
     string token;
@@ -26,7 +26,7 @@ void FitAlpha()
 
       cout << token << " " << pedestal[s] << endl;
     }
-    ifile.close();
+    ifile.close();*/
 
     ofstream ofile;
     string ofilename = "PISTA" + to_string(i+1) + "_DE.cal";
@@ -40,8 +40,8 @@ void FitAlpha()
       TString token = Form("PISTA_T%i_STRIP%i_DE_ENERGY",i+1,j+1);
       if(Finder(h,mean,sigma)){
         c2->cd();
-        Calibration(h,mean,sigma,a,b,pedestal[j]);
-        cout << i+1 << " " << j+1 << " " << pedestal[j] << endl;
+        Calibration(h,mean,sigma,a,b,0);
+        cout << i+1 << " " << j+1 << " " << 0 << endl;
         ofile << token << " "  << b << " " << a << endl;
       }
       else 

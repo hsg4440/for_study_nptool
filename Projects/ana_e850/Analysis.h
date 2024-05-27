@@ -31,6 +31,7 @@
 #include "TInteractionCoordinates.h"
 #include "NPEnergyLoss.h"
 #include "NPReaction.h"
+#include "NPParticle.h"
 #include "TRandom3.h"
 #include "TSpline.h"
 #include "TChain.h"
@@ -48,6 +49,8 @@ class Analysis: public NPL::VAnalysis{
     void InitInputBranch();
     void ReInitValue();
     void LoadCalibParameter();
+    void PistaAnalysis();
+    void VamosAnalysis(); 
     void TwoAlphaAnalysis();
     void ReadAnalysisConfig();
 
@@ -59,6 +62,9 @@ class Analysis: public NPL::VAnalysis{
     double m_ZTarget_offset;
     double m_Beam_ThetaX;
     double m_Beam_ThetaY;
+    double m_BeamEnergy;
+    double m_Brho_ref;
+    double m_Vamos_Angle;
   private:
     double BeamEnergy;
     double Xcalc;
@@ -72,6 +78,8 @@ class Analysis: public NPL::VAnalysis{
     int strip_DE;
     int strip_E;
     double Time_E;
+    double Pista_Time_Target;
+    double Vamos_Time_Target;
     double DeltaE;
     double DeltaEcorr;
     double Eres;
@@ -83,6 +91,11 @@ class Analysis: public NPL::VAnalysis{
     double Ex236U;
     double Ex238U;
     double PID;
+
+    ULong64_t fVAMOS_TS_sec;
+    ULong64_t fPISTA_TS_sec;
+    double VAMOS_TS_hour;
+    double PISTA_TS_hour;
 
     int FPMW_Section;
     double FF_Brho;
@@ -134,7 +147,10 @@ class Analysis: public NPL::VAnalysis{
     NPL::Reaction* Transfer8Be;
     NPL::Reaction* Transfer14C;
     NPL::Reaction* Elastic;
-    
+   
+    NPL::Particle* C12;
+    NPL::Particle* Be10;
+
     TVector3 PositionOnTarget;
     TRandom3 Rand;
     double ThetaNormalTarget;
@@ -142,8 +158,16 @@ class Analysis: public NPL::VAnalysis{
     double TargetThickness;
 
     NPL::EnergyLoss C12C;
+    NPL::EnergyLoss C12Al;
     NPL::EnergyLoss Be10C;
+    NPL::EnergyLoss Be10Al;
     NPL::EnergyLoss U238C;
+    TGraph *geloss_C12C;
+    TGraph *geloss_C12Al;
+    TGraph *geloss_Be10C;
+    TGraph *geloss_Be10Al;
+
+
 
     float T13;
     float T14;
@@ -157,9 +181,16 @@ class Analysis: public NPL::VAnalysis{
     double Exogam_Energy;
     int Exogam_Crystal;
 
+  private:
+    double Xmean;
+    double Ymean;
+    double Xmean_iter;
+    double Ymean_iter;
+    int iteration;
 
     double m_Q_p0[20];
     double m_Q_p1[20];
+
   private:
     TPISTAPhysics* PISTA;
     TFPMWPhysics* FPMW;

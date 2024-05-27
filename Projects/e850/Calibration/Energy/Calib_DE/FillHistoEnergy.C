@@ -10,7 +10,7 @@ void FillHistoEnergy()
 {
   // Input file
   chain = new TChain("AD");
-  chain->Add("/home/pierre/Physics/ganil/pista/analysisenv/RootA/r0180_000a.root");
+  chain->Add("/home/morfouacep/Physics/ganil/pista/analysisenv-e850-2023/RootA/r0180_000a.root");
 
   // Output file
   TFile * ofile = new TFile("histo_file_alpha.root","recreate");
