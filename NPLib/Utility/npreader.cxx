@@ -74,7 +74,6 @@ int main(int argc , char** argv){
   }
 
   RootOutput::getInstance(OutputfileName,TreeName);
-  //TTree* tree= RootOutput::getInstance()->GetTree();
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
@@ -87,12 +86,10 @@ int main(int argc , char** argv){
   dlopen(libName.c_str(),RTLD_NOW | RTLD_GLOBAL);
   char* error = dlerror();
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
-  std::cout << "Checking TreeReader adress: " << inputTreeReader << std::endl;
   myDetector->SetTreeReader(inputTreeReader);
   if(error==NULL){
     UserAnalysis = NPL::AnalysisFactory::getInstance()->Construct(); 
     UserAnalysis->SetDetectorManager(myDetector);
-    std::cout << "Salut ////////////////////" << std::endl; 
     UserAnalysis->Init();
     UserAnalysis->InitTreeReader(inputTreeReader);
   } 
@@ -139,41 +136,16 @@ int main(int argc , char** argv){
   int entry_max = NPOptionManager::getInstance()->GetNumberOfEntryToAnalyse();
 
   bool IsPhysics = myOptionManager->GetInputPhysicalTreeOption();
-
   if(UserAnalysis==NULL){ 
     if(!IsPhysics){
-      while(inputTreeReader->Next()){
-      //for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
-      //  // Get the raw Data
-      //  Chain -> GetEntry(i);
-      //  // Build the current event
+      while(inputTreeReader->Next()&& treated < entry_max){
+        
         myDetector->BuildPhysicalEvent();
         // Fill the tree
         myDetector->FillOutputTree();
 
         current_tree = Chain->GetTreeNumber()+1;
         ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
-        ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
-        //if(myOptionManager->GetOnline() && i%10000==0){
-        //  myDetector->CheckSpectraServer();
-
-        //  bool first = true;
-        //  if(!Chain || first){
-        //    first = false;
-        //   RootInput::getInstance()->GetFile()->ReadKeys(kTRUE);
-
-        //    Chain = (TChain*)  RootInput::getInstance()->GetFile()->FindKeyAny(ChainName)->ReadObj();    
-        //    new_nentries = Chain->GetEntries();
-        //    if(new_nentries!=nentries){
-        //      RootInput::getInstance()->SetChain(Chain);
-        //      myDetector->InitializeRootInput();
-        //      nentries = Chain->GetEntries();
-        //    }
-        //    else{
-        //      first = true;
-        //    }
-        //  }
-        //}
       }
     }
 

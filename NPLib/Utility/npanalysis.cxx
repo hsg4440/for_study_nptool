@@ -129,7 +129,6 @@ int main(int argc , char** argv){
   int total_tree = Chain->GetNtrees();
 
   bool IsPhysics = myOptionManager->GetInputPhysicalTreeOption();
-
   if(UserAnalysis==NULL){ 
     if(!IsPhysics){
       for (unsigned long i = first_entry ; i < nentries + first_entry; i++) { 
