@@ -55,11 +55,6 @@ TZDDPhysics::TZDDPhysics()
      m_E_Threshold(0),     // MeV
      m_NumberOfDetectors(0)
       {
-  //ICcounter = 0;
-  //ACcounter = 0;
-  //GGcounter = 0;
-  //Entry_Exit_counter = 0;
-  //Plasticcounter = 0;
 }
 
   
@@ -87,12 +82,6 @@ void TZDDPhysics::BuildPhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::Treat_DC(){
- /* // Dont have anything to modify for the moment
-  unsigned int mysizeDC = m_PreTreatedData->GetMultDrift();
-  for(int i = 0; i < mysizeDC; i++){
-    DC_DetectorNumber.push_back(m_PreTreatedData->GetDrift_DetectorNbr(i));
-    DC_DriftTime.push_back(m_PreTreatedData->Get_DriftTime(i));
-  }*/
 }
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::Match_IC(){
@@ -147,12 +136,6 @@ void TZDDPhysics::Match_PL(){
   }
 }
 
-// bool TZDDPhysics::CheckGoodEvent(){
-//   if (NPOptionManager::getInstance()->IsReader() == true) {
-//     m_EventData = &(**r_ReaderEventData);
-//   }
-//   return abs(ZDD->)
-// }
 ///////////////////////////////////////////////////////////////////////////
 void TZDDPhysics::PreTreat() {
   // This method typically applies thresholds and calibrations
@@ -192,40 +175,6 @@ void TZDDPhysics::PreTreat() {
     }
   }
 }
-
-///////////////////////////////////////////////////////////////////////////
-void TZDDPhysics::PreTreatEnergy(std::string Detector, CalibrationManager* Cal){
-  /*unsigned int mysize = m_EventData->GetMultEnergy(Detector);
-  for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->Get_Energy(Detector, i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("ZDD/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(Detector, i)),m_EventData->Get_Energy(Detector, i));
-      if (Energy > m_E_Threshold) {
-        if(Detector == "IC")
-          m_PreTreatedData->Set_IC_Energy(m_EventData->GetE_DetectorNbr(Detector, i), Energy);
-
-        else if(Detector == "Plastic")
-          m_PreTreatedData->Set_Plastic_Energy(m_EventData->GetE_DetectorNbr(Detector, i), Energy);
-      }
-    }
-  }
-*/
-}
-
-///////////////////////////////////////////////////////////////////////////
-void TZDDPhysics::PreTreatTime(std::string Detector, CalibrationManager* Cal){
-/*  unsigned int mysize = m_EventData->GetMultTime(Detector);
-  for (UShort_t i = 0; i < mysize; ++i) {
-    Double_t Time= Cal->ApplyCalibration("ZDD/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(Detector, i)),m_EventData->Get_Time(Detector,i));
-    if(Detector == "IC")
-      m_PreTreatedData->Set_IC_Time(m_EventData->GetT_DetectorNbr(Detector, i), Time);
-    else if(Detector == "Plastic")
-      m_PreTreatedData->Set_Plastic_Time(m_EventData->GetT_DetectorNbr(Detector, i), Time);
-    else if(Detector == "DC")
-      m_PreTreatedData->Set_DC_Time(m_EventData->GetT_DetectorNbr(Detector, i), Time);
-  }
-*/
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -336,11 +285,6 @@ void TZDDPhysics::ReadConfiguration(NPL::InputParser parser){
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
   vector<string> TokenZDD  = {"R", "Theta"};
-  //vector<string> TokenDC = {"Z", "Gas","Thickness", "Pressure", "Temperature"};
-  //vector<string> TokenAC = {"Z", "Thickness", "Material"};
-  //vector<string> TokenEntryExit = {"Z", "Thickness", "Material"};
-  //vector<string> TokenIC = {"Z", "Thickness", "Gas", "Pressure", "Temperature"};
-  //vector<string> TokenPlastic = {"Material", "Width", "Length", "Thickness", "Pos"};
 
 
 
@@ -353,76 +297,6 @@ void TZDDPhysics::ReadConfiguration(NPL::InputParser parser){
 
         Add_ZDD(R, Theta);
     }
-//    else if (blocks[i]->GetMainValue() == "DC"
-//            && blocks[i]->HasTokenList(TokenDC)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// DC" << i + 1 << endl;
-//        double Z           = blocks[i]->GetDouble("Z", "mm");
-//        double Thickness   = blocks[i]->GetDouble("Thickness", "mm");
-//        string   Gas         = blocks[i]->GetString("Gas");
-//        double Pressure    = blocks[i]->GetDouble("Pressure", "bar");
-//        double Temperature = blocks[i]->GetDouble("Temperature", "kelvin");
-//        Add_Drift_Chamber(Z, Thickness, Gas, Pressure, Temperature);
-//        }
-//    else if (blocks[i]->GetMainValue() == "IC"
-//            && blocks[i]->HasTokenList(TokenIC)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// IC" << ICcounter+1 << endl;
-//        double Z           = blocks[i]->GetDouble("Z", "mm");
-//        double Thickness   = blocks[i]->GetDouble("Thickness", "mm");
-//        string   Gas         = blocks[i]->GetString("Gas");
-//        double Pressure    = blocks[i]->GetDouble("Pressure", "bar");
-//        double Temperature = blocks[i]->GetDouble("Temperature", "kelvin");
-//        Add_Ionisation_Chamber(Z, Thickness, Gas, Pressure, Temperature);
-//        ICcounter++;
-//    }
-//    else if (blocks[i]->GetMainValue() == "GasGap"
-//            && blocks[i]->HasTokenList(TokenIC)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// GasGap" << GGcounter+1 << endl;
-//        double Z           = blocks[i]->GetDouble("Z", "mm");
-//        double Thickness   = blocks[i]->GetDouble("Thickness", "mm");
-//        string   Gas         = blocks[i]->GetString("Gas");
-//        double Pressure    = blocks[i]->GetDouble("Pressure", "bar");
-//        double Temperature = blocks[i]->GetDouble("Temperature", "kelvin");
-//        Add_Gas_Gap(Z, Thickness, Gas, Pressure, Temperature);
-//        GGcounter++;
-//    }
-//    else if (blocks[i]->GetMainValue() == "AC"
-//            && blocks[i]->HasTokenList(TokenAC)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// AC" << ACcounter+1 << endl;
-//        double Z           = blocks[i]->GetDouble("Z", "mm");
-//        double Thickness   = blocks[i]->GetDouble("Thickness", "um");
-//        string   Material    = blocks[i]->GetString("Material");
-//        Add_AC(Z, Thickness, Material);
-//        ACcounter++;
-//    }
-//    else if (blocks[i]->GetMainValue() == "EntryExit"
-//            && blocks[i]->HasTokenList(TokenEntryExit)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// AC" << Entry_Exit_counter+1 << endl;
-//        double Z           = blocks[i]->GetDouble("Z", "mm");
-//        double Thickness   = blocks[i]->GetDouble("Thickness", "um");
-//        string   Material    = blocks[i]->GetString("Material");
-//        Add_Entry_Exit(Z, Thickness, Material);
-//        Entry_Exit_counter++;
-//    }
-//    else if (blocks[i]->GetMainValue() == "Plastic"
-//            && blocks[i]->HasTokenList(TokenPlastic)) {
-//        if (NPOptionManager::getInstance()->GetVerboseLevel())
-//            cout << endl << "//// Plastic" << Plasticcounter + 1 << endl;
-//        string        Material  = blocks[i]->GetString("Material");
-//        double      Width     = blocks[i]->GetDouble("Width", "mm");
-//        double      Length    = blocks[i]->GetDouble("Length", "mm");
-//        double      Thickness = blocks[i]->GetDouble("Thickness", "mm");
-//        int x = (blocks[i]->GetTVector3("Pos", "mm")).X();
-//        int y = (blocks[i]->GetTVector3("Pos", "mm")).Y();
-//        int z = (blocks[i]->GetTVector3("Pos", "mm")).Z();
-//        std::vector<int> Pos{x, y, z}; 
-//        Add_Plastic(Material, Width, Length, Thickness, Pos);
-//        Plasticcounter++;
-//    }
     else{
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);

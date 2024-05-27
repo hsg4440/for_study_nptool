@@ -64,6 +64,7 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
   pCurrentDirectory= gDirectory;
   bool analysis=false;
   bool simulation=false;
+  bool calibration=false;
 
   if(NPOptionManager::getInstance()->IsAnalysis()){
     analysis = true;
@@ -71,12 +72,17 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
   else if(NPOptionManager::getInstance()->IsSimulation()){
     simulation= true;
   }
+  else if(NPOptionManager::getInstance()->IsCalibration() || NPOptionManager::getInstance()->IsTestCalibration()){
+    calibration= true;
+  }
 
   // Setup the base name
   if(analysis)
     pBaseName = NPOptionManager::getInstance()->GetAnalysisOutputPath();
   else if(simulation)
     pBaseName = NPOptionManager::getInstance()->GetSimulationOutputPath();
+  else if(calibration)
+    pBaseName = NPOptionManager::getInstance()->GetCalibrationOutputPath();
   else
     pBaseName="./";
 

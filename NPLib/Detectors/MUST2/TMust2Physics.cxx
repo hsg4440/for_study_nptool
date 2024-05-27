@@ -1877,6 +1877,7 @@ void TMust2Physics::FillHistogramsCalibCSIF() {
                 (*TCutGMap)["MUST2"][CutName]->IsInside(CSIE, StripXEnergy_O)) {
                     double E_from_delta_E = ParticleSi[ParticleType[i].c_str()]->EvaluateEnergyFromDeltaE(
                               SiXE, SiThickness[DetN], ThetaM2Surface, 6.0 * MeV, 300.0 * MeV, 0.001 * MeV, 10000);
+              // if(!(ParticleType[i] == "proton" && )
               (*TH2Map)["MUST2"][CutName]->Fill(CSIE, E_from_delta_E- SiXE);
             }
           }
