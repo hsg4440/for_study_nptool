@@ -63,64 +63,40 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   void Clear(const Option_t*) {};
 
   // Only threshold and cal applied to exogam
-  std::vector<double> E_Cal;
-  std::vector<double> EHG_Cal;
-  std::vector<double> Outer1_Cal;
-  std::vector<double> Outer2_Cal;
-  std::vector<double> Outer3_Cal;
-  std::vector<double> Outer4_Cal;
-  // std::vector<double> E_Doppler;
-  std::vector<unsigned int> FlangeN;
-  std::vector<unsigned int> CrystalN;
+  std::vector<double> E;
+  std::vector<double> EHG;
+  std::vector<double> Outer1;
+  std::vector<double> Outer2;
+  std::vector<double> Outer3;
+  std::vector<double> Outer4;
+  std::vector<unsigned int> Flange;
+  std::vector<unsigned int> Crystal;
+  std::vector<unsigned int> TDC;
+  std::vector<unsigned long long> TS;
   
   // Previous treatment + Add_Back (size of vectors are not the same because of AB !)
+  // Energy AddBack
   std::vector<double> E_AB;
-  std::vector<unsigned int> FlangeN_ABD;
-  std::vector<unsigned int> Size_ABD;
-  std::vector<unsigned int> CrystalN_ABD;
-  std::vector<int> OuterN_ABD;
-  std::vector<double> Theta_D;
-  std::vector<double> Phi_D;
-  // std::vector<double> E_ABD;
+  // Number of gammas added to form the Energy AddBack
+  std::vector<unsigned int> Size_AB;
+  // Flange (addback only done in a specific flange)
+  std::vector<unsigned int> Flange_AB;
+  // Crystal with highest E
+  std::vector<unsigned int> Crystal_AB;
+  // TDC AddBack
+  std::vector<unsigned int> TDC_AB;
+  // TS AddBack
+  std::vector<unsigned long long> TS_AB;
+  // Outer with highest E
+  std::vector<int> Outer_AB;
+  // Theta Outer with highest E
+  std::vector<double> Theta;
+  // Phi Outer with highest E
+  std::vector<double> Phi;
 
 
 
 
-  Int_t	 		EventMultiplicity	; //!
-  Int_t                 ECC_Multiplicity        ; //!
-  Int_t                 GOCCE_Multiplicity      ; //!
-  Int_t                 NumberOfClover          ; //!
-  
-  // Clover
-  Int_t                 NumberOfHitClover       ; //!
-  Int_t                 NumberOfHitCristal      ; //!
-  vector<int>		ECC_CloverNumber		;    //!
-  vector<int>		ECC_CristalNumber		; //!
-  vector<int>		GOCCE_CloverNumber		;    //!
-  vector<int>		GOCCE_CristalNumber		; //!
-  vector<int>		GOCCE_SegmentNumber		; //!
-    	
-  //	ECC
-  vector<double>	ECC_E				; //!
-  vector<double>	ECC_T				; //!
-  
-  //	GOCCE
-  vector<double>	GOCCE_E				; //!
- 
-  //  Add-Back and Doppler correction
-  
-  vector<int>      CristalNumber                     ; //!
-  vector<int>      SegmentNumber                     ; //!
-  vector<int>      CloverNumber                      ; //!
-  int              CloverMult                        ; //!
-  
-  vector<double>   TotalEnergy_lab                   ; //!
-  vector<double>   Time                              ; //!
-  vector<double>   DopplerCorrectedEnergy            ; //!
-  vector<double>   Position                          ; //!
-  vector<double>   Theta                             ; //!
-
-  vector < vector < vector < vector <double> > > > Clover_Angles_Theta_Phi;   //!
  
   /* 
   TH1F*                 clover_mult                  ;  
@@ -161,6 +137,8 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   void BuildSimplePhysicalEvent()	       ; //!
 
   double DopplerCorrection(double Energy, double Theta); //!
+  
+  bool TDCMatch(unsigned int event); //!
 
   //	Those two method all to clear the Event Physics or Data
   void ClearEventPhysics()		{Clear();}		 //!
@@ -239,12 +217,6 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   // void AddClover(string AngleFile);
   void AddClover(int Board, int Flange, int Channel0, int Channel1); //!
 
-  Int_t GetClover_Mult()    { return(CloverNumber.size()); } //!
-  //  Int_t GetECC_Mult()   { return(ECC_CristalNumber.size()); }
-  //  Int_t GetGOCCE_Mult() { return(GOCCE_SegmentNumber.size()); }
-
-  Double_t GetSegmentAnglePhi(int Clover, int Cristal, int Segment)    {return(Clover_Angles_Theta_Phi[Clover][Cristal][Segment][1]);}; //!
-  Double_t GetSegmentAngleTheta(int Clover, int Cristal, int Segment)  {return(Clover_Angles_Theta_Phi[Clover][Cristal][Segment][0]);}; //!
  
   // Give and external TMustData object to TExogamPhysics. Needed for online analysis for example.
   void SetRawDataPointer(TExogamData* rawDataPointer) {m_EventData = rawDataPointer;} //!
@@ -272,6 +244,8 @@ class TExogamPhysics : public TObject, public NPL::VDetector, public TExogamPhys
   double m_EXO_E_Threshold;//!
   double m_EXO_EHG_RAW_Threshold;//!
   double m_EXO_TDC_RAW_Threshold;//!
+  int m_ExoTDC_LowThreshold;//!
+  int m_ExoTDC_HighThreshold;//!
   double EXO_E;//!
   double EXO_EHG;//!
   double EXO_TDC;//!

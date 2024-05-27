@@ -198,9 +198,9 @@ void TExogamSpectra::FillPhysicsSpectra(TExogamPhysics* Physics){
   // Doppler Correct and Add Back
   name = "ExogamEnergyAddBack";
   family = "Exogam/DC";
-  for (unsigned int i = 0; i < Physics->DopplerCorrectedEnergy.size(); i++) {
-    FillSpectra(family,name
-      ,Physics->DopplerCorrectedEnergy[i]);
-  }
+  //for (unsigned int i = 0; i < Physics->DopplerCorrectedEnergy.size(); i++) {
+  //  FillSpectra(family,name
+  //    ,Physics->DopplerCorrectedEnergy[i]);
+  // }
 
 }

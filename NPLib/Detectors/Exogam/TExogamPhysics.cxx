@@ -41,25 +41,18 @@ using namespace EXOGAM_LOCAL;
 ClassImp(TExogamPhysics)
     ///////////////////////////////////////////////////////////////////////////
     TExogamPhysics::TExogamPhysics() {
-  EventMultiplicity = 0;
-  ECC_Multiplicity = 0;
-  GOCCE_Multiplicity = 0;
-  NumberOfHitClover = 0;
-  NumberOfHitCristal = 0;
   m_Spectra = NULL;
-  NumberOfClover = 0;
-  m_EXO_OuterUp_RAW_Threshold = 4294966296;
   m_EXO_E_RAW_Threshold = 0;
   m_EXO_E_Threshold = 0;
   m_EXO_EHG_RAW_Threshold = 0;
   m_EXO_TDC_RAW_Threshold = 0;
-  m_EXO_TDC_RAW_Threshold = 0;
+  m_ExoTDC_HighThreshold = 0;
+  m_ExoTDC_LowThreshold = 0;
+  m_EXO_OuterUp_RAW_Threshold = 1e5;
 
   m_PreTreatedData = new TExogamData;
   m_EventData = new TExogamData;
   m_EventPhysics = this;
-  NumberOfClover = 0;
-  CloverMult = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -104,11 +97,6 @@ void TExogamPhysics::PreTreat() {
       EXO_Outer4 = fEXO_Outer(m_EventData, i, 3);
     else
       EXO_Outer4 = 0;
-    // std::cout << m_EventData->GetExoOuter4(i) << std::endl;
-    // std::cout << EXO_E << " " << EXO_EHG << " " << EXO_Outer1 << " " << EXO_Outer2 << " " << EXO_Outer3 << " " << EXO_Outer4 << std::endl;
-    //EXO_Outer2 = fEXO_Outer(m_EventData, i, 1);
-    //EXO_Outer3 = fEXO_Outer(m_EventData, i, 2);
-    //EXO_Outer4 = fEXO_Outer(m_EventData, i, 3);
     
     // *1000 to convert MeV into keV
     if(EXO_E > m_EXO_E_Threshold){
@@ -141,24 +129,26 @@ void TExogamPhysics::BuildPhysicalEvent() {
   std::map<unsigned int,std::vector<unsigned int>> HitsID;
 
   for(unsigned int i = 0; i < m_PreTreatedData->GetExoMult(); i++){
-
-    // Doing flange and crystal matching
-    flange_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].first;
-    crystal_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].second;
+    // Asking good TDC prompt
+    if(TDCMatch(i)){
+      // Doing flange and crystal matching
+      flange_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].first;
+      crystal_nbr = MapCrystalFlangeCLover[m_PreTreatedData->GetExoCrystal(i)].second;
     
-    E_Cal.push_back(m_PreTreatedData->GetExoE(i));
-    EHG_Cal.push_back(m_PreTreatedData->GetExoEHG(i));
-    Outer1_Cal.push_back(m_PreTreatedData->GetExoOuter1(i));
-    Outer2_Cal.push_back(m_PreTreatedData->GetExoOuter2(i));
-    Outer3_Cal.push_back(m_PreTreatedData->GetExoOuter3(i));
-    Outer4_Cal.push_back(m_PreTreatedData->GetExoOuter4(i));
-    FlangeN.push_back(flange_nbr);
-    CrystalN.push_back(crystal_nbr);
+      E.push_back(m_PreTreatedData->GetExoE(i));
+      EHG.push_back(m_PreTreatedData->GetExoEHG(i));
+      Outer1.push_back(m_PreTreatedData->GetExoOuter1(i));
+      Outer2.push_back(m_PreTreatedData->GetExoOuter2(i));
+      Outer3.push_back(m_PreTreatedData->GetExoOuter3(i));
+      Outer4.push_back(m_PreTreatedData->GetExoOuter4(i));
+      TDC.push_back(m_PreTreatedData->GetExoTDC(i));
+      TS.push_back(m_PreTreatedData->GetExoTS(i));
+      Flange.push_back(flange_nbr);
+      Crystal.push_back(crystal_nbr);
     
-    // Filling HitsID
-    // std::cout << i << " " << flange_nbr << " " << crystal_nbr << std::endl; 
     
-    HitsID[flange_nbr].push_back(i);
+      HitsID[flange_nbr].push_back(i);
+    }
   }
 
   // Now that HitsID is full, we use it to process simple AddBack of events in the same flange
@@ -180,51 +170,52 @@ void TExogamPhysics::BuildPhysicalEvent() {
     
     // Adding all AddBack (AB) related stuff
     E_AB.push_back(E_AddBack);
-    FlangeN_ABD.push_back(flange_nbr);
-    Size_ABD.push_back((*it).second.size());
+    Flange_AB.push_back(flange_nbr);
+    Size_AB.push_back((*it).second.size());
+    TDC_AB.push_back(m_PreTreatedData->GetExoTDC(Id_Max));
+    TS_AB.push_back(m_PreTreatedData->GetExoTS(Id_Max));
 
     // Adding these parameters for Doppler correction purposes (D)
-    CrystalN_ABD.push_back(crystal_nbr);
+    Crystal_AB.push_back(crystal_nbr);
     int MaxOuterId = GetMaxOuter(Id_Max);
-    OuterN_ABD.push_back(GetMaxOuter(Id_Max));
+    Outer_AB.push_back(GetMaxOuter(Id_Max));
     
     if(MaxOuterId > -1){
       Exogam_struc = Ask_For_Angles(flange_nbr, ComputeMeanFreePath(E_AddBack));
       double Theta_seg = Exogam_struc.Theta_Crystal_Seg[crystal_nbr][MaxOuterId];
       double Phi_seg = Exogam_struc.Phi_Crystal_Seg[crystal_nbr][MaxOuterId];
-      Theta_D.push_back(Theta_seg);
-      Phi_D.push_back(Phi_seg);
+      Theta.push_back(Theta_seg);
+      Phi.push_back(Phi_seg);
     }
     else{
-      Theta_D.push_back(-1000);
-      Phi_D.push_back(-1000);
+      Theta.push_back(-1000);
+      Phi.push_back(-1000);
     }
-    // If a max Outer is found, Do doppler correction, else push_back -1000;
-    //double EnergyDoppler = -1000;
-    //if(MaxOuterId > -1){
-    //  EnergyDoppler= GetDoppler(E_AddBack, flange_nbr, crystal_nbr, MaxOuterId);
-    //}
-    //E_ABD.push_back(EnergyDoppler);
   }
 }
 
+bool TExogamPhysics::TDCMatch(unsigned int event){
+  return m_PreTreatedData->GetExoTDC(event) > m_ExoTDC_LowThreshold && m_PreTreatedData->GetExoTDC(event) < m_ExoTDC_HighThreshold;
+}
+
 int TExogamPhysics::GetMaxOuter(unsigned int EventId){
-  double OuterMax = 0;
+  // somehow starting at 50 to get something equivalent to a 50keV threshold
+  double OuterMax = 50;
   int OuterId = -1;
-  if(m_EventData->GetExoOuter1(EventId) > OuterMax){
-    OuterMax =  m_EventData->GetExoOuter1(EventId);
+  if(m_PreTreatedData->GetExoOuter1(EventId) > OuterMax){
+    OuterMax =  m_PreTreatedData->GetExoOuter1(EventId);
     OuterId = 0;
   }
-  if(m_EventData->GetExoOuter2(EventId) > OuterMax){
-    OuterMax =  m_EventData->GetExoOuter2(EventId);
+  if(m_PreTreatedData->GetExoOuter2(EventId) > OuterMax){
+    OuterMax =  m_PreTreatedData->GetExoOuter2(EventId);
     OuterId = 1;
   }
-  if(m_EventData->GetExoOuter3(EventId) > OuterMax){
-    OuterMax =  m_EventData->GetExoOuter3(EventId);
+  if(m_PreTreatedData->GetExoOuter3(EventId) > OuterMax){
+    OuterMax =  m_PreTreatedData->GetExoOuter3(EventId);
     OuterId = 2;
   }
-  if(m_EventData->GetExoOuter4(EventId) > OuterMax){
-    OuterMax =  m_EventData->GetExoOuter4(EventId);
+  if(m_PreTreatedData->GetExoOuter4(EventId) > OuterMax){
+    OuterMax =  m_PreTreatedData->GetExoOuter4(EventId);
     OuterId = 3;
   }
   return OuterId;
@@ -281,53 +272,27 @@ double TExogamPhysics::DopplerCorrection(double E, double Theta) {
 
 void TExogamPhysics::Clear() {
   // Exogam_struc = {};
-  EventMultiplicity = 0;
-  ECC_Multiplicity = 0;
-  GOCCE_Multiplicity = 0;
-  NumberOfHitClover = 0;
-  NumberOfHitCristal = 0;
 
-  E_Cal.clear();
-  EHG_Cal.clear();
-  Outer1_Cal.clear();
-  Outer2_Cal.clear();
-  Outer3_Cal.clear();
-  Outer4_Cal.clear();
-  FlangeN.clear();
-  CrystalN.clear();
-  // E_Doppler.clear();
+  E.clear();
+  EHG.clear();
+  Outer1.clear();
+  Outer2.clear();
+  Outer3.clear();
+  Outer4.clear();
+  Flange.clear();
+  Crystal.clear();
+  TDC.clear();
+  TS.clear();
+
   E_AB.clear();
-  FlangeN_ABD.clear();
-  Size_ABD.clear();
-  CrystalN_ABD.clear();
-  OuterN_ABD.clear();
-  Theta_D.clear();
-  Phi_D.clear();
-  // E_ABD.clear();
-
-//
-//  ECC_CloverNumber.clear();
-//  ECC_CristalNumber.clear();
-//  GOCCE_CloverNumber.clear();
-//  GOCCE_CristalNumber.clear();
-//  GOCCE_SegmentNumber.clear();
-//
-//  // ECC
-//  ECC_E.clear();
-//  ECC_T.clear();
-//
-//  // GOCCE
-//  GOCCE_E.clear();
-//
-//  CristalNumber.clear();
-//  SegmentNumber.clear();
-//  CloverNumber.clear();
-//
-//  TotalEnergy_lab.clear();
-//  Time.clear();
-//  DopplerCorrectedEnergy.clear();
-//  Position.clear();
-//  Theta.clear();
+  Flange_AB.clear();
+  Size_AB.clear();
+  Crystal_AB.clear();
+  Outer_AB.clear();
+  Theta.clear();
+  Phi.clear();
+  TDC_AB.clear();
+  TS_AB.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -440,15 +405,21 @@ void TExogamPhysics::ReadAnalysisConfig() {
         MapCrystalFlangeCLover[CrystalNb] = std::make_pair(Flange,CrystalNb2);
         // cout << whatToDo << " " << atoi(DataBuffer.substr(0,1).c_str()) << " " << atoi(DataBuffer.substr(1,1).c_str()) << endl;
       }
+      else if (whatToDo == "TDC_THRESHOLDS") {
+        AnalysisConfigFile >> DataBuffer;
+        m_ExoTDC_LowThreshold = stoi(DataBuffer);
+        AnalysisConfigFile >> DataBuffer;
+        m_ExoTDC_HighThreshold = stoi(DataBuffer);
+        cout << "TDC Thresholds " << m_ExoTDC_LowThreshold << " " <<m_ExoTDC_HighThreshold << endl;
+      }
       else{
         ReadingStatus = false;
       }
     }
   }
 }
-///////////////////////////////////////////////////////////////////////////
-void TExogamPhysics::InitSpectra() { m_Spectra = new TExogamSpectra(NumberOfClover); }
-
+void TExogamPhysics::InitSpectra() {
+}
 ///////////////////////////////////////////////////////////////////////////
 void TExogamPhysics::FillSpectra() {
   m_Spectra->FillRawSpectra(m_EventData);
