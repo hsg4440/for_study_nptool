@@ -40,6 +40,7 @@
 #include"NPParticle.h"
 #include"NPBeam.h"
 #include "TCutG.h"
+// #include"NPTimeStamp.h"
 #include<random>
 class Analysis: public NPL::VAnalysis{
   public:
@@ -428,6 +429,9 @@ class Analysis: public NPL::VAnalysis{
   CalibrationManager* Cal;
   std::map<TString,std::map<TString,TCutG*>>* TCutGMap;
   std::map<TString,std::map<TString,TFile*>>* TFileMap;
+
+  private:
+    // TimeStamp TS;
 
 };
 #endif

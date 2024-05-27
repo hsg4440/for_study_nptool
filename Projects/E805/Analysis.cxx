@@ -34,6 +34,7 @@ Analysis::~Analysis(){
 void Analysis::Init(){
   InitInputBranch();
   InitOutputBranch();
+  // TS.ReadConfigurationFile();
   CATS = (TCATSPhysics*)  m_DetectorManager -> GetDetector("CATSDetector");
   M2 = (TMust2Physics*)  m_DetectorManager -> GetDetector("M2Telescope");
   ZDD = (TZDDPhysics*)  m_DetectorManager -> GetDetector("ZDD");
@@ -50,9 +51,9 @@ void Analysis::Init(){
   string heavy_ejectile=  NPL::ChangeNameToG4Standard(reaction->GetNucleus4()->GetName());
   string light=NPL::ChangeNameToG4Standard(reaction->GetNucleus3()->GetName());
 
-  string Reaction_pd_s = "48Cr(p,d)47Cr@1620";
-  string Reaction_pt_s = "48Cr(p,t)46Cr@1620";
-  string Reaction_p3He_s = "48Cr(p,3He)46V@1620";
+  string Reaction_pd_s = "48Cr(p,d)47Cr@1560";
+  string Reaction_pt_s = "48Cr(p,t)46Cr@1560";
+  string Reaction_p3He_s = "48Cr(p,3He)46V@1560";
   Reaction_pd = new Reaction(Reaction_pd_s);
   Reaction_pt = new Reaction(Reaction_pt_s);
   Reaction_p3He = new Reaction(Reaction_p3He_s);
@@ -270,9 +271,9 @@ void Analysis::TreatEXO(){
   for(unsigned int countExo = 0 ; countExo < EXO_AB_size; countExo++){
   // Doing Doppler correction only if one reaction occurs
     if(Beta_pd.size() == 1){
-      EXO_Doppler_pd.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_pd[0],Exogam->E_AB[countExo]));
-      EXO_Doppler_pt.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_pt[0],Exogam->E_AB[countExo]));
-      EXO_Doppler_p3He.push_back(Doppler_Correction(Exogam->Theta_D[countExo], Exogam->Phi_D[countExo], 0,0,Beta_p3He[0],Exogam->E_AB[countExo]));
+      EXO_Doppler_pd.push_back(Doppler_Correction(Exogam->Theta[countExo], Exogam->Phi[countExo], 0,0,Beta_pd[0],Exogam->E_AB[countExo]));
+      EXO_Doppler_pt.push_back(Doppler_Correction(Exogam->Theta[countExo], Exogam->Phi[countExo], 0,0,Beta_pt[0],Exogam->E_AB[countExo]));
+      EXO_Doppler_p3He.push_back(Doppler_Correction(Exogam->Theta[countExo], Exogam->Phi[countExo], 0,0,Beta_p3He[0],Exogam->E_AB[countExo]));
     }
   }
 }

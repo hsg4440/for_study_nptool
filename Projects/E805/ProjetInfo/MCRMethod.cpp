@@ -301,8 +301,8 @@ void MCRMethod::Nappe(){
     }
   }
   // std::cout << "test2" << std::endl;
-  runmask[0] = "r314_mask1";
-  runmask[1] = "r315_mask2";
+  runmask[0] = "rmask1_367";
+  runmask[1] = "rmask2_368";
   for(unsigned int i = 0; i < 2; i++){
     Chain[i] = new TChain("PhysicsTree");
     Chain[i]->Add(path+runmask[i]+".root"); //CATS1

@@ -43,4 +43,4 @@ add_library(NPFissionConditions SHARED TFissionConditions.cxx TFissionConditions
 target_link_libraries(NPFissionConditions ${ROOT_LIBRARIES} ) 
 
 
-install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h NPPhaseSpace.h NPQFS.h TInitialConditions.h TTrackInfo.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h NPPhaseSpace.h NPQFS.h NPTimeStamp.h TInitialConditions.h TTrackInfo.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})

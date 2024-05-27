@@ -70,7 +70,7 @@ class MCRMethod
   private:
   TChain *Chain[2];
   TTreeReader *TreeReader[2];
-  TString path = "./ssd/";
+  TString path = "./data/NPRoot/Analysis/";
   TFile * f_cut_Cr = new TFile("./CUT_Cr.root");
   TCutG* cut_Cr =  (TCutG*) f_cut_Cr->FindObjectAny("CUTCr");
   TFile * f_cut_deuton = new TFile("./CUT_deuton.root");
