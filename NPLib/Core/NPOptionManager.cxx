@@ -123,6 +123,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fLastAnyFile = false;
   fIsAnalysis  = false;
   fIsSimulation= false;
+  fTestCalibration= false;
   fVerboseLevel               = 1;
   fNumberOfEntryToAnalyse     = -1;
 	fFirstEntryToAnalyse        = 0;
@@ -227,6 +228,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "--definition" && argc >= i + 1)         {std::string def= argv[++i];fDefinition.insert(def);}
 
     else if (argument == "-DC" && argc >= i + 1)                  fDoCalibrationFileName    = argv[++i] ;
+    
+    else if (argument == "-TC")                                   fTestCalibration   = true;
     
     else{
     SendErrorAndExit(argument.c_str()); 

@@ -62,6 +62,7 @@ namespace NPL{
       void        FillHistogramsCalib();
       void        WriteHistogramsCalib();
       void        DoCalibration();
+      void        TestCalibration();
       void        SetTreeReader(TTreeReader* TreeReader);
       void        AddDetector(std::string,VDetector*);
       void        AddDetectorReader(std::string,VTreeReader*);
@@ -107,6 +108,7 @@ namespace NPL{
       VDetector_FuncPtr m_FillHistogramsCalibPtr;
       VDetector_FuncPtr m_WriteHistogramsCalibPtr;
       VDetector_FuncPtr m_DoCalibrationPtr;
+      VDetector_FuncPtr m_TestCalibrationPtr;
       VDetector_SetReader m_SetTreeReaderPtr;
       VDetector_FuncPtr m_FillSpectra;
       VDetector_FuncPtr m_CheckSpectra;

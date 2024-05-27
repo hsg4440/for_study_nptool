@@ -152,6 +152,8 @@ class TCATSPhysics : public TObject, public NPL::VDetector, public TCATSPhysicsR
     // Used for Online only, clear all the spectra hold by the Spectra class
     void ClearSpectra();
 
+    void TestCalibration();
+
     void SetTreeReader(TTreeReader* TreeReader);
 
     //   Those two method all to clear the Event Physics or Data

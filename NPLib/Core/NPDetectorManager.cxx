@@ -65,6 +65,7 @@ NPL::DetectorManager::DetectorManager(){
   m_FillHistogramsCalibPtr = &NPL::VDetector::FillHistogramsCalib;
   m_WriteHistogramsCalibPtr = &NPL::VDetector::WriteHistogramsCalib;
   m_DoCalibrationPtr = &NPL::VDetector::DoCalibration;
+  m_TestCalibrationPtr = &NPL::VDetector::TestCalibration;
   m_FillSpectra = NULL; 
   m_CheckSpectra = NULL;   
   m_SpectraServer = NULL;
@@ -454,6 +455,19 @@ void NPL::DetectorManager::DoCalibration(){
     }
   else{
     std::cout << "Warning : IsCalibration not recognized, DoCalibration not working" << std::endl;
+  }
+}
+
+void NPL::DetectorManager::TestCalibration(){
+  std::map<std::string,VDetector*>::iterator it;
+
+  if(NPOptionManager::getInstance()->IsTestCalibration())
+    for (it = m_Detector.begin(); it != m_Detector.end(); ++it){
+      (it->second->*m_ClearEventPhysicsPtr)();
+      (it->second->*m_TestCalibrationPtr)();
+    }
+  else{
+    std::cout << "Warning : TestCalibration not working" << std::endl;
   }
 }
 

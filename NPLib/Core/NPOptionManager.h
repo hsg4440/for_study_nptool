@@ -112,6 +112,7 @@ class NPOptionManager{
       bool   IsCalibration()               {return fIsCalibration;}
       bool   IsReader()                    {return fReader;}
       bool   IsSplit()                     {return fIsSplit;}
+      bool   IsTestCalibration()           {return fTestCalibration;}
 
       int    GetVerboseLevel()             {return fVerboseLevel;}
       int    GetNumberOfEntryToAnalyse()   {return fNumberOfEntryToAnalyse;} 
@@ -174,6 +175,7 @@ class NPOptionManager{
       bool   fIsSimulation;
       bool   fIsCalibration;
       bool   fReader;
+      bool   fTestCalibration;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)

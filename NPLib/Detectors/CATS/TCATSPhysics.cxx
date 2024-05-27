@@ -119,14 +119,11 @@ void TCATSPhysics::BuildSimplePhysicalEvent(){
 //////////////////////////////////////////////////////////////////////////////		
 void TCATSPhysics::BuildPhysicalEvent(){
 
-  // std::cout << "test 1" << std::endl;
   if (NPOptionManager::getInstance()->IsReader() == true) {
     m_EventData = &(**r_ReaderEventData);
   }
-  //m_EventData->Dump();
 
 
-  // std::cout << "test 2" << std::endl;
   PreTreat();
 
 
@@ -257,6 +254,41 @@ void TCATSPhysics::BuildPhysicalEvent(){
 
   // Does not meet the conditions for target position and beam direction 
   return;
+}
+
+void TCATSPhysics::TestCalibration(){
+  // Method to be used to test calibrations
+  // Thus does not match X and Y strips
+  if (NPOptionManager::getInstance()->IsReader() == true) {
+    m_EventData = &(**r_ReaderEventData);
+  }
+
+  PreTreat();
+
+  sizeX = m_PreTreatedData->GetCATSMultX() ;
+  sizeY = m_PreTreatedData->GetCATSMultY() ;
+  
+  for( unsigned short i = 0 ; i < sizeX; i++ ){ 
+    StripNumberX.push_back(m_PreTreatedData->GetCATSStripX(i));
+    DetNumber.push_back(m_PreTreatedData->GetCATSDetX(i));
+    ChargeX.push_back(m_PreTreatedData->GetCATSChargeX(i));
+    StripNumberY.push_back(-1);
+    ChargeY.push_back(-1);
+  }
+  for( unsigned short i = 0 ; i < sizeY; i++ ){ 
+    StripNumberY.push_back(m_PreTreatedData->GetCATSStripY(i));
+    DetNumber.push_back(m_PreTreatedData->GetCATSDetY(i));
+    ChargeY.push_back(m_PreTreatedData->GetCATSChargeY(i));
+    StripNumberX.push_back(-1);
+    ChargeX.push_back(-1);
+  }
+  BeamDirection = TVector3 (1,0,0);
+  PositionOnTargetX = -1000	;
+  PositionOnTargetY = -1000	;
+  PositionOnMask1X= -1000;
+  PositionOnMask1Y= -1000;
+  PositionOnMask2X= -1000;
+  PositionOnMask2Y= -1000;
 }
 
 void TCATSPhysics::SetTreeReader(TTreeReader* TreeReader) {

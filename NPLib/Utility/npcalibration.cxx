@@ -25,24 +25,37 @@ void ProgressDisplay(struct timeval& begin, struct timeval& end, unsigned long& 
 int main(int argc , char** argv){
   // command line parsing
   NPOptionManager* myOptionManager = NPOptionManager::getInstance(argc,argv);
-  myOptionManager->SetIsCalibration();
+  std::string docalibrationfileName    = myOptionManager->GetDoCalibrationFile();
+  std::string OutputfileName      = myOptionManager->GetOutputFile();
+  if(!myOptionManager->IsTestCalibration()){
+    myOptionManager->SetIsCalibration();
+  }
+  else{
+    std::string TreeName="TestCalibration";
+    RootOutput::getInstance(OutputfileName,TreeName);
+  }
   myOptionManager->SetReader(true);
   std::string inputfilename = myOptionManager->GetRunToReadFile();
 
-  if (myOptionManager->IsDefault("DoCalibration")) {
+  if (myOptionManager->IsDefault("DoCalibration") && myOptionManager->IsCalibration()) {
     std::cout << "Please use a valid DoCalibration File" << std::endl;
     return 0;
   }
 
   // get input files from NPOptionManager
-  std::string docalibrationfileName    = myOptionManager->GetDoCalibrationFile();
-  std::string OutputfileName      = myOptionManager->GetOutputFile();
 
-  RootHistogramsCalib::getInstance(OutputfileName);
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
-  myDetector->ReadDoCalibrationFile(docalibrationfileName);
+  if (myOptionManager->IsCalibration()){
+    RootHistogramsCalib::getInstance(OutputfileName);
+    myDetector->ReadDoCalibrationFile(docalibrationfileName);
+  }
+  else{
+    std::string runToReadfileName = NPOptionManager::getInstance()->GetRunToReadFile();
+    RootInput::getInstance(runToReadfileName);
+    myDetector->ReadConfigurationFile(myOptionManager->GetDetectorFile());
+  }
   myDetector->InitializeRootInput();
   TTreeReader* inputTreeReader = RootInput::getInstance()->GetTreeReader();
   myDetector->SetTreeReader(inputTreeReader);
@@ -88,6 +101,18 @@ int main(int argc , char** argv){
     myDetector->DoCalibration();
     myDetector->WriteHistogramsCalib();
   }
+  else if(myOptionManager->IsTestCalibration()){
+    myDetector->InitializeRootOutput();
+    while(inputTreeReader->Next()){
+      myDetector->TestCalibration();
+      myDetector->FillOutputTree();
+      current_tree = Chain->GetTreeNumber()+1;
+      ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
+      if(entry_max >= 0 && treated> entry_max)
+        break;
+    }
+
+  }
   else{
     std::cout << "Error, IsCalibration Option not well configured !\n"; 
   }
@@ -102,6 +127,7 @@ int main(int argc , char** argv){
   ProgressDisplay(tv_begin,tv_end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
 
   RootInput::Destroy();
+  RootOutput::Destroy();
   RootHistogramsCalib::Destroy();
   return 0;
 }

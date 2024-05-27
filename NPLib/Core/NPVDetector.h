@@ -83,6 +83,10 @@ namespace NPL {
     //  This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract
     //  physical parameter.
     virtual void BuildPhysicalEvent(){};
+    
+    //  This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract
+    //  physical parameter.
+    virtual void TestCalibration(){};
 
     //  Same as above, but only the simplest event and/or simple method are used (low multiplicity, faster algorythm but
     //  less efficient ...). This method aimed to be used for analysis performed during experiment, when speed is
