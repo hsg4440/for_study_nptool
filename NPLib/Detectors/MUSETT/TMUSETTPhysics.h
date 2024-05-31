@@ -18,13 +18,14 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
 // STL
 #include <map>
 #include <vector>
+#include <string>
 // NPL
 #include "NPCalibrationManager.h"
 #include "NPInputParser.h"
@@ -62,30 +63,36 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   //   Provide Physical Multiplicity
   Int_t EventMultiplicity;
 
-  //   Provide a Classification of Event
-  vector<int> EventType;
+  Int_t EventTrigger;
+
 
   // Detector
   vector<int> DetectorNumber;
    //   DSSD
   vector<double> DSSD_E;
+  vector<double> DSSD_E_X;
+  vector<double> DSSD_E_Y;
   vector<double> DSSD_T;
+  vector<double> DSSD_T_X;
+  vector<double> DSSD_T_Y;
   vector<int>    DSSD_X;
   vector<int>    DSSD_Y;
 
+  //Garder E_x, E_y, T_x, T_y
+
+
+  //Rajouter strip number
   vector<double> PosX;
   vector<double> PosY;
   vector<double> PosZ;
   vector<double> Theta;//!
 
-  // Physical Value
-  vector<double> TotalEnergy;
-  double RelativeAngle;
-  double SRa220;
-  double SRn216;
+
+
+
 
   private:
- 
+
 
   public: //   Innherited from VDetector Class
   //   Read stream at ConfigFile to pick-up parameters of detector
@@ -157,7 +164,7 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   //   ie: all channel enable, maximum multiplicity for strip = number of
   //   telescope
   void InitializeStandardParameter();
-  
+
   //   Read the user configuration file; if no file found, load standard one
   void ReadAnalysisConfig();
 
@@ -181,11 +188,11 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   TMUSETTData* GetRawData() const { return m_EventData; }
   TMUSETTData* GetPreTreatedData() const { return m_PreTreatedData; }
 
-  
+
   // Use to access the strip position
   double GetStripPositionX(const int N, const int X, const int Y) {
     // if (N==9)
-    // cout << N << " " << X << " " << Y << " " << m_DetectorNumberIndex[N] << " " << m_StripPositionX[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1] << endl; 
+    // cout << N << " " << X << " " << Y << " " << m_DetectorNumberIndex[N] << " " << m_StripPositionX[ m_DetectorNumberIndex[N] - 1][X - 1][Y - 1] << endl;
     return m_StripPositionX[N][X][Y];
   };
   double GetStripPositionY(const int N, const int X, const int Y) {
@@ -200,7 +207,10 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   // To be called after a build Physical Even
   int GetEventMultiplicity() const { return EventMultiplicity; };
 
-  double GetEnergyDeposit(const int i) const { return TotalEnergy[i]; };
+  int GetEventTrigger() const {return EventTrigger;};
+
+
+  //double GetEnergyDeposit(const int i) const { return TotalEnergy[i]; };
 
   TVector3 GetPositionOfInteraction(const int i,bool random=false) ;
   TVector3 GetDetectorNormal(const int i) ;
@@ -214,7 +224,7 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   bool m_Take_E_Y; //!
   bool m_Take_T_Y; //!
 
-  UShort_t StripLimit = 10;
+  UShort_t StripLimit = 0; //!
 
   //   Event over this value after pre-treatment are not treated / avoid long
   //   treatment time on spurious event
@@ -231,6 +241,7 @@ class TMUSETTPhysics : public TObject, public NPL::VDetector {
   double m_DSSD_X_E_Threshold; //!
   double m_DSSD_Y_E_Threshold; //!
   double m_SecondLayer_E_Threshold; //!
+
 
   private: //   Root Input and Output tree classes
   TMUSETTData*    m_EventData; //!
@@ -276,7 +287,7 @@ namespace MUSETT_LOCAL {
   double fDSSD_Y_E(const TMUSETTData* Data, const int& i);
   double fDSSD_Y_T(const TMUSETTData* Data, const int& i);
 
-  //  Second Layer 
+  //  Second Layer
   double fSecondLayer_E(const TMUSETTData* Data, const int& i);
   double fSecondLayer_T(const TMUSETTData* Data, const int& i);
 }
