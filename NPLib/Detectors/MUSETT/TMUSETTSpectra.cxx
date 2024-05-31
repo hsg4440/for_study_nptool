@@ -31,7 +31,7 @@ using namespace NPUNITS;
 
 // STL
 #include <stdexcept>
-#include <iostream>  
+#include <iostream>
 #include <cstdlib>
 #include <string>
 #include <map>
@@ -49,13 +49,13 @@ TMUSETTSpectra::TMUSETTSpectra(){
 TMUSETTSpectra::TMUSETTSpectra(std::map<int,int> DetectorIndex){
   if(NPOptionManager::getInstance()->GetVerboseLevel()>0)
     std::cout << "************************************************" << std::endl
-      << "TMUSETTSpectra : Initalising control spectra for " 
+      << "TMUSETTSpectra : Initalising control spectra for "
       << DetectorIndex.size() << " Detectors" << std::endl
       << "************************************************" << std::endl ;
 
   SetName("MUSETT");
   for(std::map<int,int>::iterator it=DetectorIndex.begin() ; it!=DetectorIndex.end() ; it++){
-    fDetectorToIndex[it->second-1]=it->first; 
+    fDetectorToIndex[it->second-1]=it->first;
     }
 
   fIndexToDetector=DetectorIndex;
@@ -79,7 +79,7 @@ void TMUSETTSpectra::InitRawSpectra(){
   static string name;
   for (unsigned int i = 0; i < fDetectorToIndex.size(); i++) { // loop on number of detectors
     TString nbr = NPL::itoa(fDetectorToIndex[i]);
-    
+
     // STRX_E_RAW
     name = "MG"+NPL::itoa(fDetectorToIndex[i])+"_STRX_E_RAW";
     // AddHisto2D(name, name, fStripX, 1, fStripX+1, 512, 8192, 16384,  "MUSETT/RAW/STRXE");
@@ -196,14 +196,14 @@ void TMUSETTSpectra::FillRawSpectra(TMUSETTData* RawData){
   static string name;
   static string family;
 
-  // STRX_E 
+  // STRX_E
   unsigned int size = RawData->GetDSSDXEMult();
   for (unsigned int i = 0; i < size ; i++) {
     name = "MG"+NPL::itoa( RawData->GetDSSDXEDetectorNbr(i))+"_STRX_E_RAW";
     family = "MUSETT/RAW/STRXE";
 
     FillSpectra(family,name
-        ,RawData->GetDSSDXEStripNbr(i), 
+        ,RawData->GetDSSDXEStripNbr(i),
         RawData->GetDSSDXEEnergy(i));
   }
 
@@ -254,7 +254,7 @@ void TMUSETTSpectra::FillPreTreatedSpectra(TMUSETTData* PreTreatedData){
     family = "MUSETT/CAL/STRXE";
 
     FillSpectra(family,name
-        ,PreTreatedData->GetDSSDXEStripNbr(i), 
+        ,PreTreatedData->GetDSSDXEStripNbr(i),
         PreTreatedData->GetDSSDXEEnergy(i));
   }
   // STRY_E
@@ -264,7 +264,7 @@ void TMUSETTSpectra::FillPreTreatedSpectra(TMUSETTData* PreTreatedData){
     family = "MUSETT/CAL/STRYE";
 
     FillSpectra(family,name
-        ,PreTreatedData->GetDSSDYEStripNbr(i), 
+        ,PreTreatedData->GetDSSDYEStripNbr(i),
         PreTreatedData->GetDSSDYEEnergy(i));
   }
 
@@ -288,7 +288,7 @@ void TMUSETTSpectra::FillPreTreatedSpectra(TMUSETTData* PreTreatedData){
     family = "MUSETT/CAL/STRXT";
 
     FillSpectra(family,name
-        ,PreTreatedData->GetDSSDXTStripNbr(i), 
+        ,PreTreatedData->GetDSSDXTStripNbr(i),
         PreTreatedData->GetDSSDXTTime(i));
   }
   // STRY_T
@@ -298,7 +298,7 @@ void TMUSETTSpectra::FillPreTreatedSpectra(TMUSETTData* PreTreatedData){
     family = "MUSETT/CAL/STRYT";
 
     FillSpectra(family,name
-        ,PreTreatedData->GetDSSDYTStripNbr(i), 
+        ,PreTreatedData->GetDSSDYTStripNbr(i),
         PreTreatedData->GetDSSDYTTime(i));
   }
 }
@@ -325,4 +325,3 @@ void TMUSETTSpectra::FillPhysicsSpectra(TMUSETTPhysics* Physics){
   }
 
 }
-

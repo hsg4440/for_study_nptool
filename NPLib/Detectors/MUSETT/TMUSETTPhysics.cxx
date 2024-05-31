@@ -16,7 +16,7 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
@@ -51,6 +51,7 @@ ClassImp(TMUSETTPhysics)
   ///////////////////////////////////////////////////////////////////////////
   TMUSETTPhysics::TMUSETTPhysics() {
     EventMultiplicity                  = 0;
+    EventTrigger                       = 0;
     m_EventData                        = new TMUSETTData;
     m_PreTreatedData                   = new TMUSETTData;
     m_random                           = new TRandom3();
@@ -70,6 +71,7 @@ ClassImp(TMUSETTPhysics)
 
     m_Take_E_Y = false;
     m_Take_T_Y = true;
+
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -86,52 +88,103 @@ void TMUSETTPhysics::PreTreat() {
   DSSDY_EMult = m_EventData->GetDSSDYEMult();
   DSSDX_TMult = m_EventData->GetDSSDXTMult();
   DSSDY_TMult = m_EventData->GetDSSDYTMult();
+  m_PreTreatedData->SetTRIGGER(m_EventData->GetDSSDTRIG());
   //   X
   //   E
+
   for (unsigned int i = 0; i < DSSDX_EMult; ++i) {
-    if (m_EventData->GetDSSDXEEnergy(i) > m_DSSD_X_E_RAW_Threshold
-        && IsValidChannel(0, m_EventData->GetDSSDXEDetectorNbr(i),
-          m_EventData->GetDSSDXEStripNbr(i))) {
+    if (m_EventData->GetDSSDXEEnergy(i) > m_DSSD_X_E_RAW_Threshold){
+        //&& IsValidChannel(0, m_EventData->GetDSSDXEDetectorNbr(i),
+          //m_EventData->GetDSSDXEStripNbr(i))) {
       double EX = fDSSD_X_E(m_EventData, i);
       if (EX > m_DSSD_X_E_Threshold)
-        m_PreTreatedData->SetDSSDXE(false,
+      {
+
+        //Fo r DATA
+        /*
+        m_PreTreatedData->SetDSSDXE(true,
             m_EventData->GetDSSDXEDetectorNbr(i),
             m_EventData->GetDSSDXEStripNbr(i), EX);
+        */
+
+
+
+        //For Simu
+        m_PreTreatedData->SetDSSDXE(false,
+            m_EventData->GetDSSDXEDetectorNbr(i),
+            m_EventData->GetDSSDXEStripNbr(i)-1, EX);
+
+      }
     }
   }
 
   //   T
   for (unsigned int i = 0; i < DSSDX_TMult; ++i) {
-    if (IsValidChannel(0, m_EventData->GetDSSDXTDetectorNbr(i),
-          m_EventData->GetDSSDXTStripNbr(i)))
-      m_PreTreatedData->SetDSSDXT(false,
+    //if (IsValidChannel(0, m_EventData->GetDSSDXTDetectorNbr(i),
+    //      m_EventData->GetDSSDXTStripNbr(i)))
+
+    //For Data
+    /*
+      m_PreTreatedData->SetDSSDXT(true,
           m_EventData->GetDSSDXTDetectorNbr(i),
           m_EventData->GetDSSDXTStripNbr(i),
           fDSSD_X_T(m_EventData, i));
+    */
+    //For Simu
+
+      m_PreTreatedData->SetDSSDXT(false,
+          m_EventData->GetDSSDXTDetectorNbr(i),
+          m_EventData->GetDSSDXTStripNbr(i)-1,
+          fDSSD_X_T(m_EventData, i));
+
   }
 
   //   Y
   //   E
   for (unsigned int i = 0; i < DSSDY_EMult; ++i) {
-    if (m_EventData->GetDSSDYEEnergy(i) < m_DSSD_Y_E_RAW_Threshold
-        && IsValidChannel(1, m_EventData->GetDSSDYEDetectorNbr(i),
-          m_EventData->GetDSSDYEStripNbr(i))) {
+    //std::cout << "EY = " << m_EventData->GetDSSDYEEnergy(i) ;
+    if (m_EventData->GetDSSDYEEnergy(i) < m_DSSD_Y_E_RAW_Threshold){
+        //&& IsValidChannel(1, m_EventData->GetDSSDYEDetectorNbr(i),
+          //m_EventData->GetDSSDYEStripNbr(i))) {
+          //std::cout << "-> OK  " << std::endl;
       double EY = fDSSD_Y_E(m_EventData, i);
       if (EY > m_DSSD_Y_E_Threshold)
+
+      //For DATA
+      /*
+      m_PreTreatedData->SetDSSDYE(true,
+          m_EventData->GetDSSDYEDetectorNbr(i),
+          m_EventData->GetDSSDYEStripNbr(i), EY);
+
+      */
+      //For Simu
         m_PreTreatedData->SetDSSDYE(false,
             m_EventData->GetDSSDYEDetectorNbr(i),
-            m_EventData->GetDSSDYEStripNbr(i), EY);
+            m_EventData->GetDSSDYEStripNbr(i)-1, EY);
+
     }
   }
 
   //   T
   for (unsigned int i = 0; i < DSSDY_TMult; ++i) {
-    if (IsValidChannel(1, m_EventData->GetDSSDYTDetectorNbr(i),
-          m_EventData->GetDSSDYTStripNbr(i)))
-      m_PreTreatedData->SetDSSDYT(false,
+    //if (IsValidChannel(1, m_EventData->GetDSSDYTDetectorNbr(i),
+    //      m_EventData->GetDSSDYTStripNbr(i)))
+    double TY = fDSSD_Y_T(m_EventData, i);
+
+    //For Data
+    /*
+      m_PreTreatedData->SetDSSDYT(true,
           m_EventData->GetDSSDYTDetectorNbr(i),
-          m_EventData->GetDSSDYTStripNbr(i),
-          fDSSD_Y_T(m_EventData, i));
+          m_EventData->GetDSSDYTStripNbr(i),TY);
+
+
+    */
+    //For Simu
+    m_PreTreatedData->SetDSSDYT(false,
+        m_EventData->GetDSSDYTDetectorNbr(i),
+        m_EventData->GetDSSDYTStripNbr(i)-1,TY);
+    
+
   }
 
   return;
@@ -142,21 +195,19 @@ void TMUSETTPhysics::PreTreat() {
 
 void TMUSETTPhysics::BuildPhysicalEvent() {
   PreTreat();
-
   bool check_SecondLayer  = false;
-  static unsigned int DSSDXEMult, DSSDYEMult, DSSDXTMult, DSSDYTMult,SecondLayerEMult,SecondLayerTMult; 
+  static unsigned int DSSDXEMult, DSSDYEMult, DSSDXTMult, DSSDYTMult,SecondLayerEMult,SecondLayerTMult;
   DSSDXEMult = m_PreTreatedData->GetDSSDXEMult();
   DSSDYEMult = m_PreTreatedData->GetDSSDYEMult();
   DSSDXTMult = m_PreTreatedData->GetDSSDXTMult();
   DSSDYTMult = m_PreTreatedData->GetDSSDYTMult();
-
   // random->SetSeed(42);
 
   // srand(time(NULL));
 
   if (1 /*CheckEvent() == 1*/) {
     vector<TVector2> couple = Match_X_Y();
-
+    EventTrigger = m_PreTreatedData->GetDSSDTRIG();
     EventMultiplicity = couple.size();
     for (unsigned int i = 0; i < couple.size(); ++i) {
       check_SecondLayer  = false;
@@ -165,9 +216,14 @@ void TMUSETTPhysics::BuildPhysicalEvent() {
 
       int X = m_PreTreatedData->GetDSSDXEStripNbr(couple[i].X());
       int Y = m_PreTreatedData->GetDSSDYEStripNbr(couple[i].Y());
-
       double DSSD_X_E = m_PreTreatedData->GetDSSDXEEnergy(couple[i].X());
       double DSSD_Y_E = m_PreTreatedData->GetDSSDYEEnergy(couple[i].Y());
+      /*
+      int TRIG_X_E = m_PreTreatedData->GETDSSDXETrig(couple[i].X());
+      int TRIG_X_T = m_PreTreatedData->GETDSSDXTTrig(couple[i].X());
+      int TRIG_Y_E = m_PreTreatedData->GETDSSDYETrig(couple[i].Y());
+      int TRIG_Y_T = m_PreTreatedData->GETDSSDYTTrig(couple[i].Y());
+      */
 
       //  Search for associate Time
       double DSSD_X_T = -1000;
@@ -177,10 +233,10 @@ void TMUSETTPhysics::BuildPhysicalEvent() {
             && m_PreTreatedData->GetDSSDXTDetectorNbr(couple[i].X())
             == m_PreTreatedData->GetDSSDXTDetectorNbr(t)) {
           DSSD_X_T = m_PreTreatedData->GetDSSDXTTime(t);
+          //  std::cout << "X :  " << DSSD_X_T << std::endl;
           break;
         }
       }
-
       double DSSD_Y_T = -1000;
       for (unsigned int t = 0; t < DSSDYTMult; ++t) {
         if (m_PreTreatedData->GetDSSDYTStripNbr(couple[i].Y())
@@ -188,27 +244,37 @@ void TMUSETTPhysics::BuildPhysicalEvent() {
             && m_PreTreatedData->GetDSSDYTDetectorNbr(couple[i].Y())
             == m_PreTreatedData->GetDSSDYTDetectorNbr(t)) {
           DSSD_Y_T = m_PreTreatedData->GetDSSDYTTime(t);
+          //cout << DSSD_Y_T << endl;
           break;
         }
       }
-
       DSSD_X.push_back(X);
       DSSD_Y.push_back(Y);
       DetectorNumber.push_back(N);
 
-      
+
       PosX.push_back(GetPositionOfInteraction(i).x());
       PosY.push_back(GetPositionOfInteraction(i).y());
       PosZ.push_back(GetPositionOfInteraction(i).z());
-      
+
+
+      DSSD_E_X.push_back(DSSD_X_E);
+      DSSD_E_Y.push_back(DSSD_Y_E);
+      DSSD_T_X.push_back(DSSD_X_T);
+      DSSD_T_Y.push_back(DSSD_Y_T);
+
+      /*
+      DSSD_E_X_TRIG.push_back(TRIG_X_E);
+      DSSD_E_Y_TRIG.push_back(TRIG_Y_E);
+      DSSD_T_X_TRIG.push_back(TRIG_X_T);
+      DSSD_T_Y_TRIG.push_back(TRIG_Y_T);
+      */
 
       if (m_Take_E_Y){
         DSSD_E.push_back(DSSD_Y_E);
-        TotalEnergy.push_back(DSSD_Y_E);
       }
       else{
         DSSD_E.push_back(DSSD_X_E);
-        TotalEnergy.push_back(DSSD_X_E);
       }
 
       if (m_Take_T_Y)
@@ -218,11 +284,7 @@ void TMUSETTPhysics::BuildPhysicalEvent() {
       }
 
     } // loop on couples
-    if(EventMultiplicity == 2){
-      RelativeAngle = GetRelativeAngle();
-      SRa220 = GetS(220,15.79);
-      SRn216 = GetS(216,17.15);
-    }
+
   } // if (CheckEvent)
   return;
 }
@@ -260,6 +322,8 @@ vector<TVector2> TMUSETTPhysics::Match_X_Y() {
     return ArrayOfGoodCouple;
   }
 
+
+  //std::cout << "multX = " << m_DSSDXEMult << ", multY = " << m_DSSDYEMult << std::endl;
   for (unsigned int i = 0; i < m_DSSDXEMult; i++) {
     for (unsigned int j = 0; j < m_DSSDYEMult; j++) {
 
@@ -275,7 +339,7 @@ vector<TVector2> TMUSETTPhysics::Match_X_Y() {
         double DSSDXNbr    = m_PreTreatedData->GetDSSDXEStripNbr(i);
         double DSSDYEnergy = m_PreTreatedData->GetDSSDYEEnergy(j);
         double DSSDYNbr    = m_PreTreatedData->GetDSSDYEStripNbr(j);
-        
+
 
         //   Look if energy match
         if (abs((DSSDXEnergy - DSSDYEnergy) / 2.)
@@ -293,20 +357,33 @@ vector<TVector2> TMUSETTPhysics::Match_X_Y() {
     }
   }
 
+  //std::cout << "Size before treatment : " << ArrayOfGoodCouple.size() << std::endl;
+  //m_all+=ArrayOfGoodCouple.size();
   // Prevent to treat event with ambiguous matching beetween X and Y
+  /*
   map<int, int>::iterator itX = m_HitDSSDX.begin();
   for (; itX != m_HitDSSDX.end(); itX++) {
     if (itX->second > 1) {
+      m_rejected+=ArrayOfGoodCouple.size();
       ArrayOfGoodCouple.clear();
     }
   }
 
+  //std::cout << "    Size after X : " << ArrayOfGoodCouple.size() << std::endl;
+
+
   map<int, int>::iterator itY = m_HitDSSDY.begin();
   for (; itY != m_HitDSSDY.end(); itY++) {
     if (itY->second > 1) {
+      m_rejected+=ArrayOfGoodCouple.size();
       ArrayOfGoodCouple.clear();
     }
   }
+  */
+
+  //std::cout << "    Size after Y : " << ArrayOfGoodCouple.size() << std::endl;
+  //std::cout << "-> rej/all = " << (double) m_rejected/m_all << std::endl;
+  //std::cout << std::endl;
 
   m_HitDSSDX.clear();
   m_HitDSSDY.clear();
@@ -316,7 +393,7 @@ vector<TVector2> TMUSETTPhysics::Match_X_Y() {
 
 ////////////////////////////////////////////////////////////////////////////
 bool TMUSETTPhysics::IsValidChannel(const int& Type, const int& telescope, const int& channel) {
-  
+
   if (Type == 0 && channel >= StripLimit && channel <= 127 - StripLimit){
     return *(m_XChannelStatus[telescope].begin() + channel);
   }
@@ -339,20 +416,20 @@ void TMUSETTPhysics::ReadAnalysisConfig() {
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if(blocks[i]->HasToken("MAX_STRIP_MULTIPLICITY"))
       m_MaximumStripMultiplicityAllowed = blocks[i]->GetInt("MAX_STRIP_MULTIPLICITY");
-    
+
     if(blocks[i]->HasToken("STRIP_ENERGY_MATCHING"))
       m_StripEnergyMatching = blocks[i]->GetDouble("STRIP_ENERGY_MATCHING","MeV");
-    
+
     if(blocks[i]->HasToken("DISABLE_CHANNEL_X")){
       vector<int> v = blocks[i]->GetVectorInt("DISABLE_CHANNEL_X");
       *(m_XChannelStatus[v[0]].begin() + v[1] - 1) = false;
     }
-    
+
     if(blocks[i]->HasToken("DISABLE_CHANNEL_Y")){
       vector<int> v = blocks[i]->GetVectorInt("DISABLE_CHANNEL_Y");
       *(m_YChannelStatus[v[0]].begin() + v[1] - 1) = false;
     }
-    
+
     if(blocks[i]->HasToken("DISABLE_ALL")){
       int telescope = blocks[i]->GetInt("DISABLE_ALL");
       vector<bool> ChannelStatus;
@@ -396,23 +473,28 @@ void TMUSETTPhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TMUSETTPhysics::Clear() {
   EventMultiplicity = 0;
-  RelativeAngle = -1000;
+  EventTrigger = 0;
   DetectorNumber.clear();
-  EventType.clear();
-  TotalEnergy.clear();
 
   PosX.clear();
   PosY.clear();
   PosZ.clear();
 
-  // DSSD 
+  // DSSD
   DSSD_E.clear();
+  DSSD_E_X.clear();
+  DSSD_E_Y.clear();
   DSSD_T.clear();
+  DSSD_T_X.clear();
+  DSSD_T_Y.clear();
   DSSD_X.clear();
   DSSD_Y.clear();
-  SRa220 = -1000;
-  SRn216 = -1000;
-
+  /*
+  DSSD_E_X_TRIG.clear();
+  DSSD_E_Y_TRIG.clear();
+  DSSD_T_X_TRIG.clear();
+  DSSD_T_Y_TRIG.clear();
+  */
 
 }
 
@@ -508,6 +590,7 @@ void TMUSETTPhysics::AddParameterToCalibrationManager() {
   vector<double> standardT    = {-1000, 1000. / 8192.};
 
 
+
   for (int i = 0; i < m_NumberOfDetector; i++) {
 
     for (int j = 0; j < 128; j++) {
@@ -547,6 +630,7 @@ void TMUSETTPhysics::InitializeRootInputPhysics() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchStatus("MUSETT", true);
   inputChain->SetBranchStatus("EventMultiplicity", true);
+  inputChain->SetBranchStatus("EventTrigger", true);
   inputChain->SetBranchStatus("EventType", true);
   inputChain->SetBranchStatus("DetectorNumber", true);
   inputChain->SetBranchStatus("Si_E", true);
@@ -594,7 +678,7 @@ void TMUSETTPhysics::AddDetector(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
   double Base,Height;
   Base          = 100.00; // mm
   Height        = 100.00; // mm
-  
+
   //double Face          = 98; // mm
   double NumberOfStrip = 128;
   double StripPitchBase    = Base / NumberOfStrip; // mm
@@ -610,12 +694,12 @@ void TMUSETTPhysics::AddDetector(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
 
   //   Moving StripCenter to 1.1 corner:
  // Strip_1_1 = C_X1_Y1 + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
-  // This calculation recenter the strip around the detector center. 
+  // This calculation recenter the strip around the detector center.
   // This account for cases where the provided corner coordinates
   // does not match the detector size
   TVector3 Center = 0.25*(C_X1_Y128 + C_X128_Y128 + C_X1_Y1 + C_X128_Y1);
   Strip_1_1 = Center-(0.5*Base*U+0.5*Height*V) + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
- 
+
   for (int i = 0; i < 128; ++i) {
     lineX.clear();
     lineY.clear();
@@ -750,33 +834,33 @@ TVector3 TMUSETTPhysics::GetPositionOfInteraction(const int i,bool random) {
     = TVector3(GetStripPositionX(DetectorNumber[i], DSSD_X[i], DSSD_Y[i]),
         GetStripPositionY(DetectorNumber[i], DSSD_X[i], DSSD_Y[i]),
         GetStripPositionZ(DetectorNumber[i], DSSD_X[i], DSSD_Y[i]));
-
   return Position;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double TMUSETTPhysics::GetRelativeAngle() {
+/*double TMUSETTPhysics::GetRelativeAngle() {
   TVector3 Position0= TVector3(PosX[0],PosY[0],PosZ[0]);
   TVector3 Position1= TVector3(PosX[1],PosY[1],PosZ[1]);
-  
+
   //std::cout << Position0.Angle(Position1)/(TMath::Pi())*180 << std::endl;
   //std::cout << DetectorNumber[0] << " " << DetectorNumber[0] << std::endl;
   //std::cout << DetectorNumber[1] << " " << DetectorNumber[1] << std::endl;
-  
+
   //std::cout << PosX[0] << " " << PosY[0] << " " << PosZ[0] << std::endl;
   //std::cout << PosX[1] << " " << PosY[1] << " " << PosZ[1] << std::endl;
   //std::cout << std::endl;
   return Position0.Angle(Position1)/(TMath::Pi())*180;
 }
-
+*/
+/*
 double TMUSETTPhysics::GetS(const unsigned int A, const unsigned int Q2A) {
   double eta = DSSD_E[0]/DSSD_E[1];
   if(eta > 1) eta = 1./eta;
   double epsilon = 4./A;
-  return Q2A/(1.+epsilon+ (2.*epsilon*pow(eta,1./2.)*cos(RelativeAngle*TMath::Pi()/180.))/(eta + 1.));  
-  
-}
+  return Q2A/(1.+epsilon+ (2.*epsilon*pow(eta,1./2.)*cos(RelativeAngle*TMath::Pi()/180.))/(eta + 1.));
 
+}
+*/
 ///////////////////////////////////////////////////////////////////////////////
 TVector3 TMUSETTPhysics::GetDetectorNormal(const int i) {
   TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i], 128, 1),
@@ -812,7 +896,7 @@ namespace MUSETT_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDXEStripNbr(i));
     name += "_E";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDXEEnergy(i),1);
+        name, m_EventData->GetDSSDXEEnergy(i),0);
   }
 
   double fDSSD_X_T(const TMUSETTData* m_EventData, const int& i) {
@@ -823,7 +907,7 @@ namespace MUSETT_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDXTStripNbr(i));
     name += "_T";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDXTTime(i),1);
+        name, m_EventData->GetDSSDXTTime(i),0);
   }
 
   //   Y
@@ -835,7 +919,7 @@ namespace MUSETT_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDYEStripNbr(i));
     name += "_E";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDYEEnergy(i),1);
+        name, m_EventData->GetDSSDYEEnergy(i),0);
   }
 
   double fDSSD_Y_T(const TMUSETTData* m_EventData, const int& i) {
@@ -846,7 +930,7 @@ namespace MUSETT_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDYTStripNbr(i));
     name += "_T";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDYTTime(i),1);
+        name, m_EventData->GetDSSDYTTime(i),0);
   }
 }
 
