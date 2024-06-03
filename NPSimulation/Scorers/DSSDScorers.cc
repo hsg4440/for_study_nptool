@@ -22,6 +22,21 @@
 #include "DSSDScorers.hh"
 #include "G4UnitsTable.hh"
 using namespace DSSDScorers;
+/*
+vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index, const double& time , const double TimeThreshold = 0) {
+  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
+    G4bool checkIndex =(*it).GetIndex() == index;
+    G4bool checkTime = 1;
+    if (TimeThreshold>0)
+    {
+      checkTime = std::abs((*it).GetTime() - time) < TimeThreshold;
+    };
+    if (checkIndex & checkTime)
+      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
+  }
+  return m_Data.end();
+}
+*/
 vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
   for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
     if ((*it).GetIndex() == index)
@@ -29,10 +44,31 @@ vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
   }
   return m_Data.end();
 }
+/*
+vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
+  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
+    G4bool checkIndex =(*it).GetIndex() == index;
+    if (checkIndex)
+      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
+  }
+  return m_Data.end();
+}
+*/
+/*
+vector<DSSDData>::iterator DSSDDataVector::findTime(const unsigned int& index, const double& time, const double thresh = 1000* ns) {
+  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
+    G4bool checkIndex =(*it).GetIndex() == index;
+    G4bool checkTime = std::abs((*it).GetTime() - time) < thresh;
+    if ( checkIndex && checkTime)
+      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
+  }
+  return m_Data.end();
+}
+*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PS_Images::PS_Images(G4String name, string imageFront, string imageBack, double scalingFront, double scalingBack,
-                     double centerOffsetX, double centerOffsetY, unsigned int ignoreValue, G4int depth)
+                     double centerOffsetX, double centerOffsetY, unsigned int ignoreValue, G4int depth,bool saveAll)
     : G4VPrimitiveScorer(name, depth) {
   m_ImageFront = new NPL::Image(imageFront, scalingFront, scalingFront);
   m_ImageBack = new NPL::Image(imageBack, scalingBack, scalingBack);
@@ -42,6 +78,7 @@ PS_Images::PS_Images(G4String name, string imageFront, string imageBack, double 
   m_CenterOffsetY = centerOffsetY;
   m_IgnoreValue = ignoreValue;
   m_Level = depth;
+  m_SaveAll = saveAll;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -49,44 +86,68 @@ G4bool PS_Images::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   // contain Energy Time, DetNbr, PixelFront and PixelBack
   t_Energy = aStep->GetTotalEnergyDeposit();
+  G4Track* track = aStep->GetTrack();
+
+  // Get the track ID
+  t_trackID = track->GetTrackID();
+
+
+  if(t_Energy == 0)
+  {
+    return FALSE;
+  }
+  //std::cout << "In scrorer, energy = " << t_Energy << std::endl;
   t_Time = aStep->GetPreStepPoint()->GetGlobalTime();
 
   t_DetectorNbr = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(m_Level);
+
   t_Position = aStep->GetPreStepPoint()->GetPosition();
 
   // transforming the position to the local volume
   t_Position =
       aStep->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(t_Position);
-  t_PixelFront = m_ImageFront->GetPixelAtCoordinate(t_Position.x(), t_Position.y());
-  t_PixelBack = m_ImageBack->GetPixelAtCoordinate(t_Position.x(), t_Position.y());
+  t_PixelFront = m_ImageFront->GetPixelAtCoordinate(t_Position.x()-m_CenterOffsetX, t_Position.y()-m_CenterOffsetY);
+  t_PixelBack = m_ImageBack->GetPixelAtCoordinate(t_Position.x()-m_CenterOffsetX, t_Position.y()-m_CenterOffsetY);
 
   // If front and back are in inactive part of the wafer,
   // nothing is added to the unordered_map
   if (t_PixelFront == m_IgnoreValue && t_PixelBack == m_IgnoreValue)
     return FALSE;
 
-  // Check if the particle has interact before, if yes, add up the energies.
+
   vector<DSSDData>::iterator it;
 
   it = m_HitFront.find(DSSDData::CalculateIndex(t_PixelFront, t_DetectorNbr));
-  if (it != m_HitFront.end()) {
-    it->Add(t_Energy);
+  if(m_SaveAll) // In that case, save every energy deposit
+  {
+  m_HitFront.Set(t_Energy, t_Time, t_PixelFront, t_DetectorNbr);
+  m_TrackId.push_back(t_trackID);
+  }
+  else //Add up energies if necessary
+  {
+    if (it != m_HitFront.end()) {// Check if the particle has interact before, if yes, add up the energies.
+      it->Add(t_Energy);
+    }
+    else {
+      m_HitFront.Set(t_Energy, t_Time, t_PixelFront, t_DetectorNbr);
+    }
   }
 
-  else {
-    m_HitFront.Set(t_Energy, t_Time, t_PixelFront, t_DetectorNbr);
-  }
 
-  // Check if the particle has interact before, if yes, add up the energies.
   it = m_HitBack.find(DSSDData::CalculateIndex(t_PixelBack, t_DetectorNbr));
-  if (it != m_HitBack.end()) {
-    it->Add(t_Energy);
+  if(m_SaveAll) // Save every step
+  {
+  m_HitBack.Set(t_Energy, t_Time, t_PixelBack, t_DetectorNbr);
   }
-
-  else {
-    m_HitBack.Set(t_Energy, t_Time, t_PixelBack, t_DetectorNbr);
+  else // Add up energies if conditions are met
+  {
+    if (it != m_HitBack.end()) {// Check if the particle has interact before, if yes, add up the energies.
+      it->Add(t_Energy);
+    }
+    else {
+      m_HitBack.Set(t_Energy, t_Time, t_PixelBack, t_DetectorNbr);
+    }
   }
-
   return TRUE;
 }
 
@@ -100,6 +161,7 @@ void PS_Images::EndOfEvent(G4HCofThisEvent*) {}
 void PS_Images::clear() {
   m_HitFront.clear();
   m_HitBack.clear();
+  m_TrackId.clear();
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PS_Images::GetARGBFront(unsigned int& i, unsigned int& a, unsigned int& r, unsigned int& g, unsigned int& b) {
@@ -120,15 +182,20 @@ void PS_Images::GetARGBBack(unsigned int& i, unsigned int& a, unsigned int& r, u
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PS_Rectangle::PS_Rectangle(G4String name, G4int Level, G4double StripPlaneLength, G4double StripPlaneWidth,
-                           G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth, G4String axis)
+                           G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth, G4String axis,
+                           G4double TimeThreshold, G4double InterStripLength, G4double InterStripWidth)
     : G4VPrimitiveScorer(name, depth) {
+
   m_StripPlaneLength = StripPlaneLength;
   m_StripPlaneWidth = StripPlaneWidth;
   m_NumberOfStripLength = NumberOfStripLength;
   m_NumberOfStripWidth = NumberOfStripWidth;
-  m_StripPitchLength = m_StripPlaneLength / m_NumberOfStripLength;
+  m_StripPitchLength = m_StripPlaneLength / m_NumberOfStripLength ;
   m_StripPitchWidth = m_StripPlaneWidth / m_NumberOfStripWidth;
   m_Level = Level;
+  m_TimeThreshold = TimeThreshold;
+  m_InterStripLength = InterStripLength;
+  m_InterStripWidth = InterStripWidth;
   if (axis == "xy")
     m_Axis = ps_xy;
   else if (axis == "yz")
@@ -142,7 +209,6 @@ PS_Rectangle::~PS_Rectangle() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
-
   // contain Energy Time, DetNbr, StripFront and StripBack
   t_Energy = aStep->GetTotalEnergyDeposit();
   t_Time = aStep->GetPreStepPoint()->GetGlobalTime();
@@ -152,11 +218,21 @@ G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   t_Position =
       aStep->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(t_Position);
-
+  G4bool checkInterStrip_x = 1;
+  G4bool checkInterStrip_y = 1;
   if (m_Axis == ps_xy) {
+
     t_StripLengthNumber = (int)((t_Position.x() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
     t_StripWidthNumber = (int)((t_Position.y() + m_StripPlaneWidth / 2.) / m_StripPitchWidth) + 1;
-  }
+
+    G4double x0 =t_Position.x() + m_StripPlaneLength / 2.;
+    G4double middle_x = (2*t_StripLengthNumber-1) * m_StripPitchLength/2;
+    checkInterStrip_x =std::abs(x0-middle_x)<(m_StripPitchLength - m_InterStripLength)/2 ;
+
+    G4double y0 = t_Position.y() + m_StripPlaneWidth/2.;
+    G4double middle_y = (2*t_StripWidthNumber-1) * m_StripPitchWidth/2;
+    checkInterStrip_y =std::abs(y0-middle_y)<(m_StripPitchWidth - m_InterStripWidth)/2 ;
+    }
   else if (m_Axis == ps_yz) {
     t_StripLengthNumber = (int)((t_Position.y() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
     t_StripWidthNumber = (int)((t_Position.z() + m_StripPlaneWidth / 2.) / m_StripPitchWidth) + 1;
@@ -165,30 +241,42 @@ G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
     t_StripLengthNumber = (int)((t_Position.x() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
     t_StripWidthNumber = (int)((t_Position.z() + m_StripPlaneWidth / 2.) / m_StripPitchWidth) + 1;
   }
-
   // Rare case where particle is close to edge of silicon plan
   if (t_StripLengthNumber > m_NumberOfStripLength)
     t_StripLengthNumber = m_NumberOfStripLength;
   if (t_StripWidthNumber > m_NumberOfStripWidth)
     t_StripWidthNumber = m_NumberOfStripWidth;
 
+
   // Check if the particle has interact before, if yes, add up the energies.
   vector<DSSDData>::iterator it;
   // Length
+  //it = m_HitLength.find(DSSDData::CalculateIndex(t_StripLengthNumber, t_DetectorNumber),t_Time,m_TimeThreshold);
   it = m_HitLength.find(DSSDData::CalculateIndex(t_StripLengthNumber, t_DetectorNumber));
+  //if(checkInterStrip_x!=0)
+  //{
+    /*
   if (it != m_HitLength.end()) {
-    it->Add(t_Energy);
   }
   else
+  */
     m_HitLength.Set(t_Energy, t_Time, t_StripLengthNumber, t_DetectorNumber);
-  // Width
+
+  //it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber),t_Time,m_TimeThreshold);
   it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
+
+  //if(checkInterStrip_y!=0)
+  //{
+  // Width
+  //it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
+  /*
   if (it != m_HitWidth.end()) {
     it->Add(t_Energy);
   }
   else
+  */
     m_HitWidth.Set(t_Energy, t_Time, t_StripWidthNumber, t_DetectorNumber);
-
+  //}
   return TRUE;
 }
 
@@ -356,7 +444,7 @@ G4bool PS_Resistive::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   else if (m_dir == "z")
     P = (t_Position.z()) / (0.5 * m_StripPlaneLength);
   else {
-    std::cout << "Error : Resistive strip DSSD scorer direction incorrect, should be x,y, or z " << std::endl;
+    G4cout << "Error : Resistive strip DSSD scorer direction incorrect, should be x,y, or z " << G4endl;
     exit(1);
   }
 

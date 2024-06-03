@@ -1,0 +1,61 @@
+\documentclass[a4paper,6pt]{article}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\topmargin = 0pt
+\headsep = 0pt
+\begin{document}
+\title{MUSETT DSSD Energy Calibration Report}
+\date{}
+\maketitle
+\section{Calibration Summary}
+\begin{itemize}
+	 \item[{\bf Experiment:}] double_alpha
+	 \item[{\bf Operator:}] Hugo
+	 \item[{\bf App. Date:}] 21/06/2023
+	 \item[{\bf Source:}] 3 alpha peaks $^{222}$Ra, $^{218}$Rn, $^{214}$Po
+	 \item[{\bf Dead Layer:}] Al 0.3$\mu$m + Si 0$\mu$m
+	 \item[{\bf Comment:}] MUSETT
+	 \item[] 
+	 \item[{\bf Calibration Method:}]  ZeroExtrapolation 
+	 \item[{\bf Telescope Treated:}]  3
+	 \item[{\bf Strip Treated:}]  1 to 128 
+	 \item[{\bf DSSD Side:}]  X
+\end{itemize}
+\begin{itemize}
+	 \item[] 
+	 \item[] 
+\end{itemize}
+{\bf Source Description:} 
+\begin{center}
+\begin{tabular}{ | c | c | c | } 
+\hline 
+Isotope & Original Energy (MeV) & Branching Ratio \\ \hline 
+$^{222}$Ra & 6.558 & 96.95 \\ \hline
+$^{222}$Ra & 6.239 & 3.05 \\ \hline
+$^{218}$Rn & 7.1291 & 100 \\ \hline
+$^{214}$Po & 7.68682 & 100 \\ \hline
+\end{tabular} 
+\end{center}
+\pagebreak
+\section{Telescope 3 }
+ Bad Strip:
+\begin{center}
+\begin{tabular}{ | c | c | } 
+\hline 
+ Strip Number & Problem \\ \hline 
+69 &  0 peak(s) found; zero extrapolation too high:8200.68channels;  \\ \hline 
+\end{tabular} 
+\end{center}
+\begin{figure}[htcb!]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{./Calibration/double_alpha_run_244_X_MM3_E/latex/pictures/Telescope3Summary.pdf}
+\end{center}
+\end{figure}
+\pagebreak
+Sigma fit centroid: 2.25851
+
+Sigma fit sigma: 0.518519
+
+\end{document}

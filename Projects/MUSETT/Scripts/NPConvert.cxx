@@ -34,24 +34,24 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
     const bool SetMap = false;
 
     TChain *Chain ;
-    TString path = "./RootRaw/";
+    TString path = "RootRaw/";
     Chain = new TChain("T");
-    std::cout << "Initial file " << path+runNr+".root" << std::endl;
-    Chain->Add(path+runNr+"*.root");
+    std::cout << "Initial file " << path+ "run_0" +runNr+"_label.root" << std::endl;
+    Chain->Add(path + "run_0" +runNr+"_label.root");
     ULong64_t GetEntries = Chain->GetEntries();
     if (!GetEntries){
         printf("ERROR in the Chain !! \n");
         return;
     }
     TTreeReader TreeReader(Chain);
-    
+
     UShort_t MUMU_D;
     TTreeReaderArray<UShort_t> *MUMU_C_;
     //for(unsigned int i = 0; i < NDet; i++){
     //    for(unsigned int j = 0; j < 512; j++){
     //        //std::cout << "test " << i << " " << j << std::endl;
     //        MUMU_C_[i][j] = new TTreeReaderArray<UShort_t>(TreeReader,Form("Event"));
-    //    } 
+    //    }
     //}
     TTreeReaderValue<std::vector<UShort_t>> *label_= new TTreeReaderValue<std::vector<UShort_t>>(TreeReader,"label");
     TTreeReaderValue<std::vector<UShort_t>> *value_= new TTreeReaderValue<std::vector<UShort_t>>(TreeReader,"value");
@@ -87,7 +87,7 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
     //outtree->Branch("TML_UP",&TML_UP,"TML_UP/s");
     //outtree->Branch("TML",&TML,"TML/s");
     //outtree->Branch("DATATRIG",&DATATRIG,"DATATRIG/s");
-    
+
     outtree->Branch("MUSETT", "TMUSETTData", &MUMUData);
 
     clock_t start = clock(), current, end;
@@ -122,8 +122,8 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
         //TimeX = **TimeX_;
         // std::cout << "test 2 " << StripX.size() << " " << EnergyX.size() << " " << TimeX.size() << std::endl;
         // std::cout << "test 2 " << StripY.size() << " " << EnergyY.size() << " " << TimeY.size() << std::endl;
-        //unsigned short multX = DetX.size(); 
-        //unsigned short multY = DetY.size(); 
+        //unsigned short multX = DetX.size();
+        //unsigned short multY = DetY.size();
         // std::cout << "test 3" << std::endl;
         /*for(unsigned short i = 0; i < multX; i++){
             // std::cout << "test 4 " << i << std::endl;
@@ -139,17 +139,29 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
                 MUMUData->SetDSSDYT(SetMap,DetY[i], StripY[i], TimeY[i/2]);
         }
                     //    else
-                    //        MUMUData->SetDSSDYE(SetMap,i+FirstDet,(j-256)/2 + 1,MUMU_D); 
+                    //        MUMUData->SetDSSDYE(SetMap,i+FirstDet,(j-256)/2 + 1,MUMU_D);
                     //else{
                     //    if(j < 256)
                     //        MUMUData->SetDSSDXT(SetMap,i+FirstDet,(j-1)/2 + 1,MUMU_D);
                     //    else
-                    //        MUMUData->SetDSSDYT(SetMap,i+FirstDet,(j-256-1)/2 + 1,MUMU_D); 
-    
+                    //        MUMUData->SetDSSDYT(SetMap,i+FirstDet,(j-256-1)/2 + 1,MUMU_D);
+
     */
-    
+
     label = **label_;
-    for(unsigned int i = 0; i < label.size(); i++) 
+    int TRIG = 0;
+    unsigned int k = 0;
+    while (k< label.size() && label[k] != 5)
+    {
+      k++;
+      if( k< label.size() && label[k] == 5)
+      {
+        value = **value_;
+        TRIG = value[k];
+      }
+    }
+    MUMUData->SetTRIGGER(TRIG);
+    for(unsigned int i = 0; i < label.size(); i++)
         if(label[i] >= FIRSTMUSETTDAT)
             {
                 label[i] -= FIRSTMUSETTDAT;
@@ -169,7 +181,7 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
                     else{
                         MUMUData->SetDSSDXT(SetMap,det_numb, strip_numb,value[i]);
                     }
-                } 
+                }
                 else{
                     if(val_E){
                         MUMUData->SetDSSDYE(SetMap,det_numb, strip_numb - NBSTRIP,value[i]);
@@ -177,16 +189,24 @@ void NPConvert(const TString runNr, const unsigned short int NDet, const unsigne
                     else{
                         MUMUData->SetDSSDYT(SetMap,det_numb, strip_numb - NBSTRIP,value[i]);
                     }
-                } 
+                }
 
             }
     outtree->Fill();
     MUMUData->Clear();
     }
-    TFile *fout = new TFile(Form("./RootR/%s.root",runNr.Data()),"RECREATE");
+    TFile *fout = new TFile(Form("./RootR/run_0%s.root",runNr.Data()),"RECREATE");
     //TFile *fout = new TFile(Form("./RootR/run_0273_0276.root"),"RECREATE");
     std::cout << ">>File Openned : " << "\n"<< fout->GetName() << "\n" << std::endl;
     outtree->Write();
     fout->Close();
 
+}
+
+
+void NPConvertSeveral(int RunMin, int RunMax) {
+    for (int k = RunMin; k <= RunMax; ++k) {
+        std::string filename =  std::to_string(k);
+        NPConvert(filename.c_str(), 4, 0, 3);
+    }
 }

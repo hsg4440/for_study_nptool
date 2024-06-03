@@ -1,0 +1,4 @@
+t_max=1e+09
+coinc_time=100
+T_ADC=1000
+FileName=/Users/lh270370/Software/nptool/Outputs/Simulation/Isolde/TestDeadLayer/222Ra__1e6__DL_0_2um_offsetTargetXm3__offsetTargetY6_0__offsetBeamXm6__offsetBeamYm150__sigmaBeamX0_2__sigmaBeamY0_2__holderShift0_5

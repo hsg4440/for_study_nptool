@@ -1,0 +1,72 @@
+\documentclass[a4paper,6pt]{article}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\topmargin = 0pt
+\headsep = 0pt
+\begin{document}
+\title{MUSETT DSSD Energy Calibration Report}
+\date{}
+\maketitle
+\section{Calibration Summary}
+\begin{itemize}
+	 \item[{\bf Experiment:}] double_alpha
+	 \item[{\bf Operator:}] Hugo
+	 \item[{\bf App. Date:}] 21/06/2023
+	 \item[{\bf Source:}] 3 alpha peaks $^{222}$Ra, $^{218}$Rn, $^{214}$Po
+	 \item[{\bf Dead Layer:}] Al 0.3$\mu$m + Si 0$\mu$m
+	 \item[{\bf Comment:}] MUSETT
+	 \item[] 
+	 \item[{\bf Calibration Method:}]  ZeroExtrapolation 
+	 \item[{\bf Telescope Treated:}]  4
+	 \item[{\bf Strip Treated:}]  1 to 128 
+	 \item[{\bf DSSD Side:}]  X
+\end{itemize}
+\begin{itemize}
+	 \item[] 
+	 \item[] 
+\end{itemize}
+{\bf Source Description:} 
+\begin{center}
+\begin{tabular}{ | c | c | c | } 
+\hline 
+Isotope & Original Energy (MeV) & Branching Ratio \\ \hline 
+$^{222}$Ra & 6.558 & 96.95 \\ \hline
+$^{222}$Ra & 6.239 & 3.05 \\ \hline
+$^{218}$Rn & 7.1291 & 100 \\ \hline
+$^{214}$Po & 7.68682 & 100 \\ \hline
+\end{tabular} 
+\end{center}
+\pagebreak
+\section{Telescope 4 }
+ Bad Strip:
+\begin{center}
+\begin{tabular}{ | c | c | } 
+\hline 
+ Strip Number & Problem \\ \hline 
+33 &  zero extrapolation too high:35.9519channels;  \\ \hline 
+34 &  zero extrapolation too high:34.3338channels;  \\ \hline 
+35 &  zero extrapolation too high:39.1134channels;  \\ \hline 
+37 &  zero extrapolation too high:34.1042channels;  \\ \hline 
+39 &  zero extrapolation too high:31.1979channels;  \\ \hline 
+44 &  0 peak(s) found; zero extrapolation too high:8200.68channels;  \\ \hline 
+59 &  zero extrapolation too high:30.9983channels;  \\ \hline 
+60 &  zero extrapolation too high:32.1426channels;  \\ \hline 
+61 &  zero extrapolation too high:34.1756channels;  \\ \hline 
+62 &  zero extrapolation too high:37.2374channels;  \\ \hline 
+63 &  zero extrapolation too high:46.4195channels;  \\ \hline 
+64 &  zero extrapolation too high:49.5439channels;  \\ \hline 
+\end{tabular} 
+\end{center}
+\begin{figure}[htcb!]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{./Calibration/double_alpha_run_244_X_MM4_E/latex/pictures/Telescope4Summary.pdf}
+\end{center}
+\end{figure}
+\pagebreak
+Sigma fit centroid: 1.94304
+
+Sigma fit sigma: 0.256664
+
+\end{document}

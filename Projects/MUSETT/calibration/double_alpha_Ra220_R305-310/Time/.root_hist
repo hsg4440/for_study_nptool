@@ -1,0 +1,35 @@
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0012","MUST2")
+.ls
+.q
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0012","MUST2")
+.q
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0012","MUST2")
+.q
+.L TimeCalibrator.C+
+TimeCalibrator("r0012","X")
+.q
+.L TimeCalibrator.C+
+TimeCalibrator("r0013","Y")
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0013","MUST2")
+TimeCalibrator("r0013","Y")
+.q
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0015","MUST2")
+.L TimeCalibrator.C+
+TimeCalibrator("r0015","X",32,"MUST2",3,3)
+.q
+.L ExtractRawHisto_T.C+
+ExtractMust2Histos("r0016","MUST2")
+.L TimeCalibrator.C+
+TimeCalibrator("r0016","Y",32,"MUST2",3,3)
+ExtractMust2Histos("r0017","MUST2")
+TimeCalibrator("r0017","Y",32,"MUST2",3,3)
+TimeCalibrator("r0017","X",32,"MUST2",4,4)
+ExtractMust2Histos("r0018","MUST2")
+TimeCalibrator("r0018","Y",32,"MUST2",4,4)
+.q
+.q

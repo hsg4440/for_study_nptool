@@ -87,7 +87,10 @@ namespace DSSDScorers {
     vector<DSSDData> m_Data;
 
    public:
+    //vector<DSSDData>::iterator find(const unsigned int& index, const double& time, const double TimeThreshold);
     vector<DSSDData>::iterator find(const unsigned int& index);
+    //vector<DSSDData>::iterator findTime(const unsigned int& index, const double& time, const double thresh) ;
+    //const unsigned int& index, const double& time, const double TimeThreshold
     inline void clear() { m_Data.clear(); };
     inline vector<DSSDData>::iterator end() { return m_Data.end(); };
     inline vector<DSSDData>::iterator begin() { return m_Data.begin(); };
@@ -104,7 +107,7 @@ namespace DSSDScorers {
 
    public: // with description
     PS_Images(G4String name, string imageFront, string imageBack, double scalingFront, double scalingBack,
-              double centerOffsetX, double centerOffsetY, unsigned int ignoreValue, G4int depth = 0);
+              double centerOffsetX, double centerOffsetY, unsigned int ignoreValue, G4int depth = 0, bool saveAll = false);
     ~PS_Images(){};
 
    protected: // with description
@@ -125,6 +128,7 @@ namespace DSSDScorers {
     double m_CenterOffsetX;
     double m_CenterOffsetY;
     unsigned int m_IgnoreValue;
+    bool m_SaveAll;
 
     // Level at which to find the copy number linked to the detector number
     G4int m_Level;
@@ -132,11 +136,13 @@ namespace DSSDScorers {
    private: // inherited from G4VPrimitiveScorer
     DSSDDataVector m_HitFront;
     DSSDDataVector m_HitBack;
+    std::vector<int> m_TrackId;
 
    private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
     G4ThreeVector t_Position;
     double t_Energy;
     double t_Time;
+    int t_trackID;
     unsigned int t_DetectorNbr;
     unsigned int t_PixelFront;
     unsigned int t_PixelBack;
@@ -152,6 +158,7 @@ namespace DSSDScorers {
     inline unsigned int GetDetectorBack(const unsigned int& i) { return m_HitBack[i]->GetDetector(); };
     inline double GetEnergyBack(const unsigned int& i) { return m_HitBack[i]->GetEnergy(); };
     inline double GetTimeBack(const unsigned int& i) { return m_HitBack[i]->GetTime(); };
+    inline int GetTrackId(const unsigned int& i){return m_TrackId[i]; };
 
     void GetARGBFront(unsigned int& i, unsigned int& a, unsigned int& r, unsigned int& g, unsigned int& b);
     void GetARGBBack(unsigned int& i, unsigned int& a, unsigned int& r, unsigned int& g, unsigned int& b);
@@ -162,7 +169,8 @@ namespace DSSDScorers {
 
    public: // with description
     PS_Rectangle(G4String name, G4int Level, G4double StripPlaneLength, G4double StripPlaneWidth,
-                 G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth = 0, G4String axis = "xy");
+                 G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth = 0, G4String axis = "xy",
+               G4double TimeThreshold = 0, G4double InterStripLength = 0,G4double InterStripWidth = 0);
     ~PS_Rectangle();
 
    private:
@@ -186,6 +194,9 @@ namespace DSSDScorers {
     unsigned int m_NumberOfStripWidth;
     double m_StripPitchLength;
     double m_StripPitchWidth;
+    double m_TimeThreshold;
+    double m_InterStripLength;
+    double m_InterStripWidth;
     // Level at which to find the copy number linked to the detector number
     int m_Level;
 

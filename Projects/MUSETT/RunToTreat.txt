@@ -1,4 +1,4 @@
-TTreeName 
-	RD
-RootFileName 
-  ~/npTreeReader/np-tree-reader/Projects/MUSETT/RootR/run_030*_label.root
+TTreeName
+	SimulatedTree
+RootFileName
+	/Users/lh270370/Software/nptool/Outputs/Simulation/Isolde/BranchingRatio_test/222Ra_ChangedBR_p3_1e6__energyBeam30_MUSETT_tau1000_T1e+09_TADC1000.root
