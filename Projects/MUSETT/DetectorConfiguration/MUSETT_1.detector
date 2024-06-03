@@ -1,0 +1,17 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 88 nanometer
+ ANGLE= 0 deg
+ RADIUS=  15 mm
+ MATERIAL= C
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+
+
+MUSETT
+ X1_Y1=   18.16  92.38  -39.51 mm
+ X1_Y128= 18.05  92.32  60.09 mm
+ X128_Y128= 88.66  22.07  60.12 mm
+ X128_Y1= 88.77  22.13  -39.47 mm

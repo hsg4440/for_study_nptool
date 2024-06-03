@@ -1,0 +1,4 @@
+t_max=1e+09
+coinc_time= 1000
+T_ADC=1000
+FileName= "/Users/lh270370/Software/nptool/Outputs/Simulation/Isolde/testSmall/blabla"

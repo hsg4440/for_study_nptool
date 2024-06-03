@@ -1,0 +1,3 @@
+t_max=1e+09
+coinc_time= 100
+T_ADC=1000
