@@ -65,7 +65,9 @@ EventGeneratorIsotropic::SourceParameters::SourceParameters(){
   m_z0           =  0  ;
   m_SigmaX       =  0  ;
   m_SigmaY       =  0  ;
+  m_SigmaZ       =  0  ;
   m_particle     = NULL;
+  m_direction    = 'z' ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,7 +75,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Isotropic");
   m_Parameters.reserve(blocks.size());
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << endl << "\033[1;35m//// Isotropic reaction found " << endl; 
+    cout << endl << "\033[1;35m//// Isotropic reaction found " << endl;
 
   vector<string> token = {"EnergyLow","EnergyHigh","HalfOpenAngleMin","HalfOpenAngleMax","x0","y0","z0","Particle"};
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
@@ -89,6 +91,8 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         vector<string> file = blocks[i]->GetVectorString("EnergyDistributionHist");
         m_EnergyDistributionHist = NPL::Read1DProfile(file[0],file[1]);
       }
+      if(blocks[i]->HasToken("Direction"))
+        it->m_direction=blocks[i]->GetString("Direction");
       it->m_HalfOpenAngleMin  =blocks[i]->GetDouble("HalfOpenAngleMin","deg");
       it->m_HalfOpenAngleMax  =blocks[i]->GetDouble("HalfOpenAngleMax","deg");
       it->m_x0                =blocks[i]->GetDouble("x0","mm");
@@ -96,7 +100,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
       it->m_z0                =blocks[i]->GetDouble("z0","mm");
       vector<string> particleName =blocks[i]->GetVectorString("Particle");
       for(unsigned int j = 0 ; j < particleName.size() ; j++){
-        if(particleName[j]=="proton"){ it->m_particleName.push_back("1H")  ;} 
+        if(particleName[j]=="proton"){ it->m_particleName.push_back("1H")  ;}
         else if(particleName[j]=="deuton"){ it->m_particleName.push_back("2H")  ; }
         else if(particleName[j]=="triton"){ it->m_particleName.push_back("3H")  ; }
         else if(particleName[j]=="3He" || particleName[j]=="He3") { it->m_particleName.push_back("3He") ; }
@@ -116,11 +120,13 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         it->m_SigmaX=blocks[i]->GetDouble("SigmaX","mm");
       if(blocks[i]->HasToken("SigmaY"))
         it->m_SigmaY=blocks[i]->GetDouble("SigmaY","mm");
+      if(blocks[i]->HasToken("SigmaZ"))
+        it->m_SigmaZ=blocks[i]->GetDouble("SigmaZ","mm");
       if(blocks[i]->HasToken("Multiplicity"))
         it->m_Multiplicty=blocks[i]->GetVectorInt("Multiplicity");
     }
     else{
-      cout << "ERROR: check your input file formatting \033[0m" << endl; 
+      cout << "ERROR: check your input file formatting \033[0m" << endl;
       exit(1);
     }
   }
@@ -138,7 +144,7 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         fEnergyDist = new TF1("fDist", par.m_EnergyDistribution, par.m_EnergyLow, par.m_EnergyHigh);
       }
 
-    }	
+    }
   }
 }
 
@@ -181,19 +187,37 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
           particle_energy = fEnergyDist->GetRandom();
         }
 
+        G4double x0, y0, z0;
+        G4double momentum_x, momentum_y, momentum_z;
+
+        x0 = RandGauss::shoot(par.m_x0,par.m_SigmaX);
+        y0 = RandGauss::shoot(par.m_y0,par.m_SigmaY);
+        z0 = RandGauss::shoot(par.m_z0,par.m_SigmaZ);
+        if(par.m_direction == 'z')
+        {
+          // Direction of particle, energy and laboratory angle
+          momentum_x = sin(theta) * cos(phi)  ;
+          momentum_y = sin(theta) * sin(phi)  ;
+          momentum_z = cos(theta)             ;
+
+        }
+        else if(par.m_direction == 'y')
+        {
+          // Direction of particle, energy and laboratory angle
+          momentum_z = sin(theta) * cos(phi)  ;
+          momentum_x = sin(theta) * sin(phi)  ;
+          momentum_y = cos(theta)             ;
+        }
+        else // = 'x'
+        {
+          // Direction of particle, energy and laboratory angle
+          momentum_y = sin(theta) * cos(phi)  ;
+          momentum_z = sin(theta) * sin(phi)  ;
+          momentum_x = cos(theta)             ;
+        }
 
 
-        // Direction of particle, energy and laboratory angle
-        G4double momentum_x = sin(theta) * cos(phi)  ;
-        G4double momentum_y = sin(theta) * sin(phi)  ;
-        G4double momentum_z = cos(theta)             ;
-
-        G4double x0 = RandGauss::shoot(par.m_x0,par.m_SigmaX);
-        G4double y0 = RandGauss::shoot(par.m_y0,par.m_SigmaY);
-
-        Particle particle(par.m_particle, theta,particle_energy,G4ThreeVector(momentum_x, momentum_y, momentum_z),G4ThreeVector(x0, y0, par.m_z0));
-
-
+        Particle particle(par.m_particle, theta,particle_energy,G4ThreeVector(momentum_x, momentum_y, momentum_z),G4ThreeVector(x0, y0, z0));
         m_ParticleStack->AddParticleToStack(particle);
       }
     }
