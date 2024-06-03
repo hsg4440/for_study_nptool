@@ -22,21 +22,7 @@
 #include "DSSDScorers.hh"
 #include "G4UnitsTable.hh"
 using namespace DSSDScorers;
-/*
-vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index, const double& time , const double TimeThreshold = 0) {
-  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
-    G4bool checkIndex =(*it).GetIndex() == index;
-    G4bool checkTime = 1;
-    if (TimeThreshold>0)
-    {
-      checkTime = std::abs((*it).GetTime() - time) < TimeThreshold;
-    };
-    if (checkIndex & checkTime)
-      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
-  }
-  return m_Data.end();
-}
-*/
+
 vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
   for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
     if ((*it).GetIndex() == index)
@@ -44,27 +30,7 @@ vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
   }
   return m_Data.end();
 }
-/*
-vector<DSSDData>::iterator DSSDDataVector::find(const unsigned int& index) {
-  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
-    G4bool checkIndex =(*it).GetIndex() == index;
-    if (checkIndex)
-      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
-  }
-  return m_Data.end();
-}
-*/
-/*
-vector<DSSDData>::iterator DSSDDataVector::findTime(const unsigned int& index, const double& time, const double thresh = 1000* ns) {
-  for (vector<DSSDData>::iterator it = m_Data.begin(); it != m_Data.end(); it++) {
-    G4bool checkIndex =(*it).GetIndex() == index;
-    G4bool checkTime = std::abs((*it).GetTime() - time) < thresh;
-    if ( checkIndex && checkTime)
-      return it; //Autre possibilité : rajouter Temps en argument, + check *it.GetTime() == Temps)
-  }
-  return m_Data.end();
-}
-*/
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PS_Images::PS_Images(G4String name, string imageFront, string imageBack, double scalingFront, double scalingBack,
@@ -192,9 +158,6 @@ PS_Rectangle::PS_Rectangle(G4String name, G4int Level, G4double StripPlaneLength
   m_StripPitchLength = m_StripPlaneLength / m_NumberOfStripLength ;
   m_StripPitchWidth = m_StripPlaneWidth / m_NumberOfStripWidth;
   m_Level = Level;
-  m_TimeThreshold = TimeThreshold;
-  m_InterStripLength = InterStripLength;
-  m_InterStripWidth = InterStripWidth;
   if (axis == "xy")
     m_Axis = ps_xy;
   else if (axis == "yz")
@@ -217,8 +180,6 @@ G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   t_Position =
       aStep->GetPreStepPoint()->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(t_Position);
-  G4bool checkInterStrip_x = 1;
-  G4bool checkInterStrip_y = 1;
   if (m_Axis == ps_xy) {
 
     t_StripLengthNumber = (int)((t_Position.x() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
