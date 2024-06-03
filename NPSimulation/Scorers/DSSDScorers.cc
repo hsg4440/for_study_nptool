@@ -182,8 +182,7 @@ void PS_Images::GetARGBBack(unsigned int& i, unsigned int& a, unsigned int& r, u
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PS_Rectangle::PS_Rectangle(G4String name, G4int Level, G4double StripPlaneLength, G4double StripPlaneWidth,
-                           G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth, G4String axis,
-                           G4double TimeThreshold, G4double InterStripLength, G4double InterStripWidth)
+                           G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth, G4String axis)
     : G4VPrimitiveScorer(name, depth) {
 
   m_StripPlaneLength = StripPlaneLength;
@@ -224,14 +223,6 @@ G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
     t_StripLengthNumber = (int)((t_Position.x() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
     t_StripWidthNumber = (int)((t_Position.y() + m_StripPlaneWidth / 2.) / m_StripPitchWidth) + 1;
-
-    G4double x0 =t_Position.x() + m_StripPlaneLength / 2.;
-    G4double middle_x = (2*t_StripLengthNumber-1) * m_StripPitchLength/2;
-    checkInterStrip_x =std::abs(x0-middle_x)<(m_StripPitchLength - m_InterStripLength)/2 ;
-
-    G4double y0 = t_Position.y() + m_StripPlaneWidth/2.;
-    G4double middle_y = (2*t_StripWidthNumber-1) * m_StripPitchWidth/2;
-    checkInterStrip_y =std::abs(y0-middle_y)<(m_StripPitchWidth - m_InterStripWidth)/2 ;
     }
   else if (m_Axis == ps_yz) {
     t_StripLengthNumber = (int)((t_Position.y() + m_StripPlaneLength / 2.) / m_StripPitchLength) + 1;
@@ -251,30 +242,22 @@ G4bool PS_Rectangle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   // Check if the particle has interact before, if yes, add up the energies.
   vector<DSSDData>::iterator it;
   // Length
-  //it = m_HitLength.find(DSSDData::CalculateIndex(t_StripLengthNumber, t_DetectorNumber),t_Time,m_TimeThreshold);
   it = m_HitLength.find(DSSDData::CalculateIndex(t_StripLengthNumber, t_DetectorNumber));
-  //if(checkInterStrip_x!=0)
-  //{
-    /*
+
   if (it != m_HitLength.end()) {
+    it->Add(t_Energy);
   }
   else
-  */
-    m_HitLength.Set(t_Energy, t_Time, t_StripLengthNumber, t_DetectorNumber);
+  {
+  m_HitLength.Set(t_Energy, t_Time, t_StripLengthNumber, t_DetectorNumber);
+  }
 
-  //it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber),t_Time,m_TimeThreshold);
   it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
 
-  //if(checkInterStrip_y!=0)
-  //{
-  // Width
-  //it = m_HitWidth.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
-  /*
   if (it != m_HitWidth.end()) {
     it->Add(t_Energy);
   }
   else
-  */
     m_HitWidth.Set(t_Energy, t_Time, t_StripWidthNumber, t_DetectorNumber);
   //}
   return TRUE;
