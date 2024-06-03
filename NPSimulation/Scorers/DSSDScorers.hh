@@ -169,8 +169,7 @@ namespace DSSDScorers {
 
    public: // with description
     PS_Rectangle(G4String name, G4int Level, G4double StripPlaneLength, G4double StripPlaneWidth,
-                 G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth = 0, G4String axis = "xy",
-               G4double TimeThreshold = 0, G4double InterStripLength = 0,G4double InterStripWidth = 0);
+                 G4int NumberOfStripLength, G4int NumberOfStripWidth, G4int depth = 0, G4String axis = "xy");
     ~PS_Rectangle();
 
    private:
@@ -194,9 +193,6 @@ namespace DSSDScorers {
     unsigned int m_NumberOfStripWidth;
     double m_StripPitchLength;
     double m_StripPitchWidth;
-    double m_TimeThreshold;
-    double m_InterStripLength;
-    double m_InterStripWidth;
     // Level at which to find the copy number linked to the detector number
     int m_Level;
 
