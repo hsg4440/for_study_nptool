@@ -795,7 +795,7 @@ void MUSETT::InitializeScorers() {
   string nptool = getenv("NPTOOL");
   G4VPrimitiveScorer* SiScorer = new DSSDScorers::PS_Images(
         "SquareScorer", nptool + "/NPLib/Detectors/MUSETT/ressources/maskFront.png",
-        nptool + "/NPLib/Detectors/MUSETT/ressources/maskBack.png", 97.22 / 12800, 97.22 / 12800, 0, 0, 0xffff0000, 1);
+        nptool + "/NPLib/Detectors/MUSETT/ressources/maskBack.png", 97.22 / 12800, 97.22 / 12800, 0, 0, 0xffff0000, 1,true);
 
   G4VPrimitiveScorer* InterScorer = new InteractionScorers::PS_Interactions("SiScorer", ms_InterCoord, 0);
 
