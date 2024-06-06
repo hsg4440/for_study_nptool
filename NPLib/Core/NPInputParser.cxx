@@ -221,7 +221,23 @@ TVector3 NPL::InputBlock::GetTVector3(std::string Token, std::string default_uni
   return TVector3(x, y, z);
 }
 ////////////////////////////////////////////////////////////////////////////////
-std::vector<std::string> NPL::InputBlock::GetVectorString(std::string Token) {
+std::vector<std::string> NPL::InputBlock::GetVectorList(std::string Token, std::string separator) {
+  auto line = GetValue(Token);
+  std::vector<std::string> val;
+  while (line.find("(") != std::string::npos) {
+    auto start = line.find_first_of("(");
+    auto stop = line.find_first_of(")");
+    auto b = line.begin();
+    auto v = line.substr(start, stop - start + 1);
+    v.replace(v.find("("), 1, "");
+    v.replace(v.find(")"), 1, "");
+    val.push_back(v);
+    line.erase(b + start, b + stop + 1);
+  }
+  return val;
+}
+////////////////////////////////////////////////////////////////////////////////
+std::vector<std::string> NPL::InputBlock::GetVectorString(std::string Token, std::string separator) {
   int verbose = 1; // NPOptionManager::getInstance()->GetVerboseLevel();
 
   std::stringstream iss(GetValue(Token));
@@ -397,6 +413,9 @@ void NPL::InputParser::TreatAliases() {
     name += alias[i]->GetMainValue();
     std::string action = alias[i]->GetString("Action");
     std::vector<std::string> value = alias[i]->GetVectorString("Value");
+    if (value[0].find("(") != std::string::npos)
+      value = alias[i]->GetVectorList("Value");
+
     if (action == "Replace" && value.size() != 1)
       NPL::SendErrorAndExit("NPL::InputParser", "Inplace alias can only take one value");
 

@@ -80,7 +80,8 @@ namespace NPL {
     TVector3 GetTVector3(std::string Token, std::string default_unit);
     std::vector<double> GetVectorDouble(std::string Token, std::string default_unit);
     std::vector<int> GetVectorInt(std::string Token);
-    std::vector<std::string> GetVectorString(std::string Token);
+    std::vector<std::string> GetVectorString(std::string Token, std::string separator = " ");
+    std::vector<std::string> GetVectorList(std::string Token, std::string separator = " ");
     std::vector<NPL::InputBlock*> GetSubBlock(std::string Token);
     std::vector<std::string> GetLines() { return m_Lines; };
 
