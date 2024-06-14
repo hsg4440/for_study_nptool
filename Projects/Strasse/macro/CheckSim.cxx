@@ -11,8 +11,9 @@
   //  TFile* file = new TFile("../../Outputs/Simulation/configJune2022_100MeV_pencil.root");
   //
   // TFile* file = new TFile("../../Outputs/Simulation/test_newtar.root");
-  TFile* file = new TFile("../../Outputs/Simulation/test_oldtar.root");
-  TTree* tree = (TTree*)file->Get("SimulatedTree");
+  // TFile* file = new TFile("../../Outputs/Simulation/test_oldtar.root");
+  //  TTree* tree = (TTree*)file->Get("SimulatedTree");
+  TTree* tree = (TTree*)gDirectory->Get("SimulatedTree");
 
   TCanvas* c1 = new TCanvas("c1", "c1", 1000, 1000);
   c1->Divide(4, 4);
