@@ -25,6 +25,7 @@
 #include "TPISTAPhysics.h"
 #include "TFPMWPhysics.h"
 #include "TICPhysics.h"
+#include "TExogamPhysics.h"
 #include "TVamosReconstruction.h"
 #include "TInitialConditions.h"
 #include "TReactionConditions.h"
@@ -51,8 +52,10 @@ class Analysis: public NPL::VAnalysis{
     void LoadCalibParameter();
     void PistaAnalysis();
     void VamosAnalysis(); 
+    void ExogamAnalysis(); 
     void TwoAlphaAnalysis();
     void ReadAnalysisConfig();
+    void LoadTimeOffset();
 
     static NPL::VAnalysis* Construct();
 
@@ -91,6 +94,7 @@ class Analysis: public NPL::VAnalysis{
     double Ex236U;
     double Ex238U;
     double PID;
+    double Beta_pista;
 
     ULong64_t fVAMOS_TS_sec;
     ULong64_t fPISTA_TS_sec;
@@ -98,9 +102,14 @@ class Analysis: public NPL::VAnalysis{
     double PISTA_TS_hour;
 
     int FPMW_Section;
+    double FF_DE;
+    double FF_Eres;
+    double FF_Z;
     double FF_Brho;
     double FF_Path;
-    
+    double FF_Theta;
+    double FF_Phi;
+
     double FF_D13;
     double FF_T13;
     double FF_V13;
@@ -139,6 +148,13 @@ class Analysis: public NPL::VAnalysis{
     double FF_Qav;
     double FF_Massav;
 
+    double Exo_cosa;
+    double Exo_E;
+    double Exo_EDC_vamos;
+    double Exo_EDC_pista;
+    double Exo_Theta;
+    double Exo_Phi;
+
     int m_2alpha;
     vector<double> Elab1;
     vector<double> Elab2;
@@ -175,11 +191,6 @@ class Analysis: public NPL::VAnalysis{
     float T24;
     UShort_t FPMWPat_0RawNr[20];
     Int_t FPMWPat_0RawM;
-    int Exo_Mult;
-    vector<float>* Exo_Energy;
-    vector<int>* Exo_Crystal;
-    double Exogam_Energy;
-    int Exogam_Crystal;
 
   private:
     double Xmean;
@@ -190,11 +201,14 @@ class Analysis: public NPL::VAnalysis{
 
     double m_Q_p0[20];
     double m_Q_p1[20];
+    double m_T13_Offset[20];
+    double m_T14_Offset[20];
 
   private:
     TPISTAPhysics* PISTA;
     TFPMWPhysics* FPMW;
     TICPhysics* IC;
+    TExogamPhysics* EXOGAM;
     TVamosReconstruction* Tracking;
     TChain* chain;
 };

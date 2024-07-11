@@ -40,6 +40,7 @@ void Analysis::Init(){
   PISTA = (TPISTAPhysics*) m_DetectorManager->GetDetector("PISTA");
   FPMW  = (TFPMWPhysics*) m_DetectorManager->GetDetector("FPMW");
   IC  = (TICPhysics*) m_DetectorManager->GetDetector("IC");
+  EXOGAM  = (TExogamPhysics*) m_DetectorManager->GetDetector("Exogam");
   Tracking = new TVamosReconstruction();
   Tracking->ReadMatrix("MRec.mat");
 
@@ -69,6 +70,7 @@ void Analysis::Init(){
   Rand = TRandom3();
   LoadCalibParameter();
   ReadAnalysisConfig();
+  LoadTimeOffset();
 
   TargetThickness = 0.44*micrometer;
 
@@ -87,9 +89,6 @@ void Analysis::Init(){
   Be10 = new NPL::Particle("10Be");
 
   chain = RootInput::getInstance()->GetChain();
-
-  Exo_Energy = new vector<float>();
-  Exo_Crystal = new vector<int>();
 
   Xmean = 0;
   Ymean = 0;
@@ -116,6 +115,34 @@ void Analysis::LoadCalibParameter(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadTimeOffset(){
+  ifstream ifile;
+  // T13
+  string filename = "./macro/AoQ/T13_offset.cal";
+  ifile.open(filename.c_str());
+  string token;
+  double offset;
+  int section=0;
+  while(ifile>>token>>offset){
+    m_T13_Offset[section] = offset;
+    section++;
+  }
+  ifile.close();
+
+  // T14
+  filename = "./macro/AoQ/T14_offset.cal";
+  ifile.open(filename.c_str());
+  section=0;
+  while(ifile>>token>>offset){
+    m_T14_Offset[section] = offset;
+    section++;
+  }
+  ifile.close();
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
 
@@ -124,6 +151,31 @@ void Analysis::TreatEvent(){
 
   VamosAnalysis();
   PistaAnalysis();
+  ExogamAnalysis();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ExogamAnalysis(){
+  unsigned int size = EXOGAM->E_AB.size();
+
+  //for(unsigned int i=0; i<size; i++){
+  if(size==1){
+    Exo_Theta = EXOGAM->Theta[0];
+    Exo_Phi   = EXOGAM->Phi[0];
+    Exo_E     = EXOGAM->E_AB[0];
+
+    if(Exo_Theta!=-1000){
+      if(FF_Theta!=-100){
+        Exo_cosa  = sin(FF_Theta)*cos(FF_Phi)*sin(Exo_Theta)*cos(Exo_Phi) + sin(FF_Theta)*sin(FF_Phi)*sin(Exo_Theta)*sin(Exo_Phi) + cos(FF_Theta)*cos(Exo_Theta);
+        //Exo_cosa  = sin(0)*cos(0)*sin(Exo_Theta)*cos(Exo_Phi) + sin(0)*sin(0)*sin(Exo_Theta)*sin(Exo_Phi) + cos(0)*cos(Exo_Theta);
+        Exo_EDC_vamos = EXOGAM->CorrectionDoppler(Exo_Theta,Exo_Phi,FF_Theta,FF_Phi,FF_Beta13,Exo_E);
+      }
+      if(ThetaLab!=-1000){
+        Exo_EDC_pista = EXOGAM->CorrectionDoppler(Exo_Theta,Exo_Phi,ThetaLab,PhiLab,Beta_pista,Exo_E);
+      }
+    }
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,15 +230,7 @@ void Analysis::PistaAnalysis(){
     PID = pow(DeltaEcorr+Eres,1.78)-pow(Eres,1.78);
 
     ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
-    Elab = Energy;//Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
-    
-    C12->SetKineticEnergy(Elab);
-    Be10->SetKineticEnergy(Elab);
-
-    double distance_to_hit = HitDirection.Mag()/1000;
-    double C12_tof = C12->GetTimeOfFlight();
-    double time_to_hit = distance_to_hit*C12_tof*1e9;
-    Pista_Time_Target = Time_E - time_to_hit;
+    Elab = Energy;
 
     // 12C case //
     double Elab_12C;
@@ -195,6 +239,7 @@ void Analysis::PistaAnalysis(){
     Elab_12C += DeltaE;
     Elab_12C = geloss_C12Al->Eval(Elab_12C);
     Elab_12C = geloss_C12C->Eval(Elab_12C);
+    C12->SetKineticEnergy(Elab_12C);
 
     // 120Be case //
     double Elab_10Be;
@@ -203,13 +248,19 @@ void Analysis::PistaAnalysis(){
     Elab_10Be += DeltaE;
     Elab_10Be = geloss_Be10Al->Eval(Elab_10Be);
     Elab_10Be = geloss_Be10C->Eval(Elab_10Be);
+    Be10->SetKineticEnergy(Elab_10Be);
+    Beta_pista = Be10->GetBeta();
 
-
-    Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab, ThetaLab);
+    Ex240Pu = Transfer10Be->ReconstructRelativistic(Elab_10Be, ThetaLab);
     Ex236U  = Transfer14C->ReconstructRelativistic(Elab, ThetaLab);
     Ex238U  = Elastic->ReconstructRelativistic(Elab_12C, ThetaLab);
     ThetaCM = Transfer10Be->EnergyLabToThetaCM(Elab, ThetaLab)/deg;
-    ThetaLab = ThetaLab/deg;
+    //ThetaLab = ThetaLab/deg;
+
+    double distance_to_hit = HitDirection.Mag()/1000;
+    double C12_tof = C12->GetTimeOfFlight();
+    double time_to_hit = distance_to_hit*C12_tof*1e9;
+    Pista_Time_Target = Time_E - time_to_hit;
   }
 
   if(PISTA->EventMultiplicity==4){
@@ -237,7 +288,7 @@ void Analysis::TwoAlphaAnalysis(){
   // couple1 // 
   Elab1.push_back(DE1+E1);
   Elab2.push_back(DE3+E2);
-  
+
   // couple2 //
   Elab1.push_back(DE1+E2);
   Elab2.push_back(DE3+E1);
@@ -307,6 +358,9 @@ void Analysis::VamosAnalysis(){
     YTarget = FPMW->Yt;
     ZTarget = 0;
 
+    FF_Theta = FPMW->Theta_in+m_Vamos_Angle*deg;
+    FF_Phi = FPMW->Phi_in;
+
     Xmean_iter += XTarget;
     Ymean_iter += YTarget;
     iteration++;
@@ -332,28 +386,23 @@ void Analysis::VamosAnalysis(){
   PositionOnTarget = TVector3(XTarget,YTarget,ZTarget);
   if(FPMWPat_0RawM==1){
 
-    if(Exo_Mult==1){
-      Exogam_Crystal = Exo_Crystal->at(0);
-      Exogam_Energy = Exo_Energy->at(0);
-    }
-
     UShort_t FPMWPat = FPMWPat_0RawNr[0];
     FPMW_Section = FPMWPat;
     IC->SetFPMWSection(FPMW_Section);
     IC->BuildSimplePhysicalEvent();
     double Theta = -1000;
     if(FPMW->Xf!=-1000){
+      FF_DE   = IC->DE;
+      FF_Eres = IC->Eres;
+
       Tracking->CalculateReconstruction(FPMW->Xf, 1000*FPMW->Thetaf, m_Brho_ref, FF_Brho, Theta, FF_Path);
       // FF_Path is in cm ! 
 
       // T13 //
-      double Toff13[20] = {0,0,0,0,1.3,1.7,1.2,0.6,0.5,2.5,2.1,0.9,1.2,1.7,1.1,1.1,1.2,0,0,0};
       double path1 = FPMW->GetDetectorPositionZ(0)/10./cos(FPMW->Theta_in)/cos(FPMW->Phi_in);
       double path2 = (FPMW->GetDetectorPositionZ(2)-7600)/10./cos(FPMW->Thetaf);
-      //double path2 = (7965.6-7600)/cos(FPMW->Thetaf)/10;
       FF_D13 = FF_Path - path1 + path2;
-      //FF_T13 = T13 - 22.6 + Toff13[FPMWPat];// - 0.3;
-      FF_T13 = T13*0.99 - 22.6 + 2.6 + Toff13[FPMWPat];// - 0.3;
+      FF_T13 = T13 - 20 + m_T13_Offset[FPMWPat];
       FF_V13 = FF_D13/FF_T13;
       FF_Beta13 = FF_V13/29.9792458;
       FF_Gamma13 = 1./sqrt(1.0 - FF_Beta13*FF_Beta13);
@@ -361,24 +410,18 @@ void Analysis::VamosAnalysis(){
       FF_Etot13 = IC->Etot;
       FF_M113 = FF_Etot13/931.5016/(FF_Gamma13-1);
       FF_Q13 = FF_M113/FF_AoQ13;
-      FF_Q13 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q13;
+      //FF_Q13 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q13;
       int iQ13 = (int) round(FF_Q13);
       FF_Mass13 = iQ13*FF_AoQ13;
       //FF_Mass = int(FF_Q+0.5)*FF_AoQ;
 
       Vamos_Time_Target = FF_T13 - FPMW->GetDetectorPositionZ(0)/10./FF_V13;
 
-      //cout << "******************" << endl;
-      //cout << FPMW->GetDetectorPositionZ(0)/10 << " " << FF_V13 << endl;
-      //cout << T13 << " " << Vamos_Time_Target << endl;
-
       // T14 //
-      double Toff14[20] = {0,0,0,0,2.2,2.5,2.6,2.2,0,2.2,3.0,2.5,1.5,2.0,1.8,2.0,1.,0,0,0};
       path1 = FPMW->GetDetectorPositionZ(0)/10./cos(FPMW->Theta_in)/cos(FPMW->Phi_in);
       path2 = (FPMW->GetDetectorPositionZ(3)-7600)/10./cos(FPMW->Thetaf);
       FF_D14 = FF_Path - path1 + path2;
-      //FF_T14 = T14 - 13.45 + Toff14[FPMWPat];
-      FF_T14 = T14*0.99 - 13.45 + 2.5 + Toff14[FPMWPat];
+      FF_T14 = T14 - 11 + m_T14_Offset[FPMWPat];
       FF_V14 = FF_D14/FF_T14;
       double FF_Beta14 = FF_V14/29.9792458;
       double FF_Gamma14 = 1./sqrt(1.0 - FF_Beta14*FF_Beta14);
@@ -386,16 +429,15 @@ void Analysis::VamosAnalysis(){
       double FF_Etot14 = IC->Etot;
       FF_M114 = FF_Etot14/931.5016/(FF_Gamma14-1);
       FF_Q14 = FF_M114/FF_AoQ14;
-      FF_Q14 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q14;
+      //FF_Q14 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q14;
       int iQ14 = (int) round(FF_Q14);
       FF_Mass14 = iQ14*FF_AoQ14;
 
       // T23 //
-      double Toff23[20] = {0,0,0,0,0.8,1.2,0.6,0,0,0.2,0,-1.2,-1.1,-0.4,-1.1,-1.2,0.8,0,0,0};
       path1 = FPMW->GetDetectorPositionZ(1)/10./cos(FPMW->Theta_in)/cos(FPMW->Phi_in);
       path2 = (FPMW->GetDetectorPositionZ(2)-7600)/10./cos(FPMW->Thetaf);
       FF_D23 = FF_Path - path1 + path2;
-      FF_T23 = T23 + 72 + Toff23[FPMWPat];
+      FF_T23 = T23 + 72;
       FF_V23 = FF_D23/FF_T23;
       double FF_Beta23 = FF_V23/29.9792358;
       double FF_Gamma23 = 1./sqrt(1.0 - FF_Beta23*FF_Beta23);
@@ -403,16 +445,15 @@ void Analysis::VamosAnalysis(){
       double FF_Etot23 = IC->Etot;
       FF_M123 = FF_Etot23/931.5016/(FF_Gamma23-1);
       FF_Q23 = FF_M123/FF_AoQ23;
-      FF_Q23 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q23;
+      //FF_Q23 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q23;
       int iQ23 = (int) round(FF_Q23);
       FF_Mass23 = iQ23*FF_AoQ23;
 
       // T24 //
-      double Toff24[20] = {0,0,0,0,2.2,2.5,2.6,2.2,0,0.2,1.2,0.5,1.3,2.1,0.1,2.1,0.5,0,0,0};
       path1 = FPMW->GetDetectorPositionZ(1)/10./cos(FPMW->Theta_in)/cos(FPMW->Phi_in);
       path2 = (FPMW->GetDetectorPositionZ(3)-7600)/10./cos(FPMW->Thetaf);
       FF_D24 = FF_Path - path1 + path2;
-      FF_T24 = T24 + 81.7 + Toff24[FPMWPat];
+      FF_T24 = T24 + 81.7;
       FF_V24 = FF_D24/FF_T24;
       double FF_Beta24 = FF_V24/29.9792458;
       double FF_Gamma24 = 1./sqrt(1.0 - FF_Beta24*FF_Beta24);
@@ -420,7 +461,7 @@ void Analysis::VamosAnalysis(){
       double FF_Etot24 = IC->Etot;
       FF_M124 = FF_Etot24/931.5016/(FF_Gamma24-1);
       FF_Q24 = FF_M124/FF_AoQ24;
-      FF_Q24 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q24;
+      //FF_Q24 = m_Q_p0[FPMW_Section] + m_Q_p1[FPMW_Section]*FF_Q24;
       int iQ24 = (int) round(FF_Q24);
       FF_Mass24 = iQ24*FF_AoQ24;
 
@@ -463,6 +504,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("PID",&PID,"PID/D");
   RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab,"Elab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
+  RootOutput::getInstance()->GetTree()->Branch("Beta_pista",&Beta_pista,"Beta_pista/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaDetectorSurface",&ThetaDetectorSurface,"ThetaDetectorSurface/D");
   RootOutput::getInstance()->GetTree()->Branch("PhiLab",&PhiLab,"PhiLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
@@ -476,6 +518,11 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Pista_Time_Target",&Pista_Time_Target,"Pista_Time_Target/D");
   RootOutput::getInstance()->GetTree()->Branch("Vamos_Time_Target",&Vamos_Time_Target,"Vamos_Time_Target/D");
 
+  RootOutput::getInstance()->GetTree()->Branch("FF_DE",&FF_DE,"FF_DE/D");
+  RootOutput::getInstance()->GetTree()->Branch("FF_Eres",&FF_Eres,"FF_Eres/D");
+  RootOutput::getInstance()->GetTree()->Branch("FF_Z",&FF_Z,"FF_Z/D");
+  RootOutput::getInstance()->GetTree()->Branch("FF_Theta",&FF_Theta,"FF_Theta/D");
+  RootOutput::getInstance()->GetTree()->Branch("FF_Phi",&FF_Phi,"FF_Phi/D");
   RootOutput::getInstance()->GetTree()->Branch("FF_Brho",&FF_Brho,"FF_Brho/D");
   RootOutput::getInstance()->GetTree()->Branch("FF_Path",&FF_Path,"FF_Path/D");
 
@@ -520,12 +567,16 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("FF_Etot13",&FF_Etot13,"FF_Etot13/D");
   RootOutput::getInstance()->GetTree()->Branch("FPMW_Section",&FPMW_Section,"FPMW_Section/I");
 
-  RootOutput::getInstance()->GetTree()->Branch("Exogam_Energy",&Exogam_Energy,"Exogam_Energy/D");
-  RootOutput::getInstance()->GetTree()->Branch("Exogam_Crystal",&Exogam_Crystal,"Exogam_Crystal/I");
-
   RootOutput::getInstance()->GetTree()->Branch("Elab1",&Elab1);
   RootOutput::getInstance()->GetTree()->Branch("Elab2",&Elab2);
   RootOutput::getInstance()->GetTree()->Branch("m_2alpha",&m_2alpha,"m_2alpha/I");
+
+  RootOutput::getInstance()->GetTree()->Branch("Exo_cosa",&Exo_cosa,"Exo_cosa/D");
+  RootOutput::getInstance()->GetTree()->Branch("Exo_E",&Exo_E,"Exo_E/D");
+  RootOutput::getInstance()->GetTree()->Branch("Exo_EDC_vamos",&Exo_EDC_vamos,"Exo_EDC_vamos/D");
+  RootOutput::getInstance()->GetTree()->Branch("Exo_EDC_pista",&Exo_EDC_pista,"Exo_EDC_pista/D");
+  RootOutput::getInstance()->GetTree()->Branch("Exo_Theta",&Exo_Theta,"Exo_Theta/D");
+  RootOutput::getInstance()->GetTree()->Branch("Exo_Phi",&Exo_Phi,"Exo_Phi/D");
 
   RootOutput::getInstance()->GetTree()->Branch("VAMOS_TS_hour",&VAMOS_TS_hour,"VAMOS_TS_hour/D");
   RootOutput::getInstance()->GetTree()->Branch("PISTA_TS_hour",&PISTA_TS_hour,"PISTA_TS_hour/D");
@@ -552,14 +603,6 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchStatus("FPMWPat_0RawM",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("FPMWPat_0RawM",&FPMWPat_0RawM);
 
-
-  RootInput::getInstance()->GetChain()->SetBranchStatus("Exo_Mult",true);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("Exo_Mult",&Exo_Mult);
-  RootInput::getInstance()->GetChain()->SetBranchStatus("Exo_Energy",true);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("Exo_Energy",&Exo_Energy);
-  RootInput::getInstance()->GetChain()->SetBranchStatus("Exo_Crystal",true);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("Exo_Crystal",&Exo_Crystal);
-
   RootInput::getInstance()->GetChain()->SetBranchStatus("fVAMOS_TS_sec",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("fVAMOS_TS_sec",&fVAMOS_TS_sec);
   RootInput::getInstance()->GetChain()->SetBranchStatus("fPISTA_TS_sec",true);
@@ -578,6 +621,7 @@ void Analysis::ReInitValue(){
   Eres = -1000;
   Elab = -1000;
   ThetaLab = -1000;
+  Beta_pista = -1;
   ThetaDetectorSurface = -1000;
   PhiLab = -1000;
   ThetaCM = -1000;
@@ -595,6 +639,15 @@ void Analysis::ReInitValue(){
   Pista_Time_Target = -1000;
   Vamos_Time_Target = -1000;
 
+  Exo_cosa = -100;
+  Exo_E = -100;
+  Exo_EDC_vamos = -100;
+  Exo_EDC_pista = -100;
+  Exo_Theta = -100;
+  Exo_Phi = -100;
+
+  FF_Theta = -100;
+  FF_Phi = -100;
   FF_Brho = -1;
   FF_Path = -1;
   FF_D13 = -1;
@@ -636,9 +689,6 @@ void Analysis::ReInitValue(){
 
   FF_Qav = -1;
   FF_Massav = -1;
-
-  Exogam_Crystal = -1;
-  Exogam_Energy = -1;
 
   m_2alpha = 0;
   Elab1.clear();
