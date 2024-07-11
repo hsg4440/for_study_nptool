@@ -63,16 +63,27 @@ namespace PISTA_NS{
   const double DE_ResoEnergy = 0.040*MeV ;
   const double E_ResoEnergy  = 0.018*MeV ;
 
-  // Trapezoid dimension
-  const double TrapezoidBaseLarge = 72.3*mm;
-  const double TrapezoidBaseSmall = 41.0*mm;
-  const double TrapezoidHeight = 57.7*mm;
+  // Trapezoid dimension PISTA1
+  //const double TrapezoidBaseLarge = 72.3*mm;
+  //const double TrapezoidBaseSmall = 41.0*mm;
+  //const double TrapezoidHeight = 57.7*mm;
+  //const double TrapezoidLength = 1*cm;
+  //const double FirstStageThickness = 300*um;
+  //const double SecondStageThickness = 1.5*mm;
+  //const double DistanceBetweenSi = 4*mm;
+  //const double FirstStageNbrOfStrips = 91;
+  //const double SecondStageNbrOfStrips = 57;
+
+  // Trapezoid dimension PISTA2
+  const double TrapezoidBaseLarge = 57*mm;
+  const double TrapezoidBaseSmall = 38.0*mm;
+  const double TrapezoidHeight = 31*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 300*um;
-  const double SecondStageThickness = 1.5*mm;
+  const double SecondStageThickness = 1.2*mm;
   const double DistanceBetweenSi = 4*mm;
-  const double FirstStageNbrOfStrips = 91;
-  const double SecondStageNbrOfStrips = 57;
+  const double FirstStageNbrOfStrips = 49;
+  const double SecondStageNbrOfStrips = 45;
 }
 using namespace PISTA_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
