@@ -12,7 +12,7 @@ void GAnaToNPTool(){
   list_filename[6] = "FPMW1_X.cal";
   list_filename[7] = "FPMW1_Y.cal";
 
-  for(int i=4; i<8; i++){
+  for(int i=0; i<4; i++){
     string input_filename = rootfilename + list_filename[i];
     ifile.open(input_filename.c_str());
 
@@ -38,11 +38,11 @@ void GAnaToNPTool(){
     getline(ifile,buffer);
     double p0, p1, p2, scale;
     int strip=0;
-    while(ifile>>p0>>p1>>p2>>scale>>buffer>>buffer){
-      strip++;
+    while(ifile>>p0>>p1>>p2>>scale>>buffer){
       string token = "FPMW_DET" + to_string(det) + "_STRIP"+ XorY + to_string(strip);
 
       ofile << token << " " << p0 << " " << p1 << " " << p2 << " " << scale << endl;
+      strip++;
     }
 
     ifile.close();

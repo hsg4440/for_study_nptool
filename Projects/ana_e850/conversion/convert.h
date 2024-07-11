@@ -1,6 +1,7 @@
 TPISTAData* m_pista;
 TFPMWData* m_fpmw;
 TICData* m_ic;
+TExogamData* m_exogam;
 //TFile* ofile;
 TChain* input_tree;
 //TTree* output_tree;
@@ -10,11 +11,6 @@ float T_TMW0_FPMW0;
 float T_TMW0_FPMW1;
 float T_TMW1_FPMW0;
 float T_TMW1_FPMW1;
-
-// Exogam //
-int Exo_Mult;
-vector<float> Exo_Energy;
-vector<int> Exo_Crystal;
 
 // Pat
 UShort_t fFPMWPat_0RawNr[20];
@@ -64,6 +60,11 @@ Int_t Inner6MVM;
 Float_t Inner6MV[12];
 UShort_t Inner6MVN[12];
 ULong64_t Inner6MVTS[12];
+Float_t Inner20MV[12];
+Float_t DeltaTV[12];
+Float_t OutersV[12];
+UShort_t OutersVN[12];
+Int_t OutersVM;
 
 void InitInputTree();
 void InitOutputTree();

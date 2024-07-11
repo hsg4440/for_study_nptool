@@ -8,6 +8,7 @@ int FPMW_Section;
 TICPhysics* IC;
 
 TCutG* cut[20];
+TCutG* cut1;
 
 /////////////////////////////////////////////////////////
 void LoadCuts(){
@@ -25,14 +26,14 @@ void LoadRootFile(){
 
   IC = new TICPhysics();
 
-  chain->SetBranchStatus("FF_Q","true");
-  chain->SetBranchAddress("FF_Q",&FF_Q);
+  chain->SetBranchStatus("FF_Q13","true");
+  chain->SetBranchAddress("FF_Q13",&FF_Q);
 
-  chain->SetBranchStatus("FF_Gamma","true");
-  chain->SetBranchAddress("FF_Gamma",&FF_Gamma);
+  chain->SetBranchStatus("FF_Gamma13","true");
+  chain->SetBranchAddress("FF_Gamma13",&FF_Gamma);
 
-  chain->SetBranchStatus("FF_AoQ","true");
-  chain->SetBranchAddress("FF_AoQ",&FF_AoQ);
+  chain->SetBranchStatus("FF_AoQ13","true");
+  chain->SetBranchAddress("FF_AoQ13",&FF_AoQ);
   
   chain->SetBranchStatus("FPMW_Section","true");
   chain->SetBranchAddress("FPMW_Section",&FPMW_Section);

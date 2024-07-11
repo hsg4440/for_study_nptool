@@ -98,8 +98,8 @@ int NumericalMinimization(const char* minName, const char* algoName){
     string par1_name = "p1_E" + to_string(i+1);
     string par2_name = "p2_E" + to_string(i+1);
 
-    min->SetLimitedVariable(indice,par0_name,0,0.01,-3,3);
-    min->SetLimitedVariable(indice+1,par1_name,0.0029,0.0001,0.95*0.0029,1.05*0.0029);
+    min->SetLimitedVariable(indice,par0_name,0,0.01,-2,2);
+    min->SetLimitedVariable(indice+1,par1_name,0.0028,0.0001,0.97*0.0029,1.03*0.0029);
     min->SetLimitedVariable(indice+2,par2_name,0.0,0.0001,0,1e-8);
   }
   min->SetLimitedVariable(24,"Xt",0,0.01,-2,2);
@@ -127,6 +127,8 @@ int NumericalMinimization(const char* minName, const char* algoName){
   string filename2 = "AnalysisConfig_min.dat";
   ofile2.open(filename2.c_str());
   ofile2 <<  "AnalysisConfig" << endl;
+  ofile2 <<  " VAMOS_ANGLE 20 " << endl;
+  ofile2 <<  " BRHO_REF 1.1 " << endl;
   ofile2 <<  " XTARGET_OFFSET " << xs[24] << endl;
   ofile2 <<  " YTARGET_OFFSET " << xs[25] << endl;
   ofile2 <<  " ZTARGET_OFFSET " << xs[26] << endl;
@@ -194,7 +196,8 @@ double ConstantFactor(const double* parameter){
     chain->GetEntry(i);
     int indice = 3*(Telescope-1);
     Ecal = parameter[indice] + parameter[indice+1]*Eres + parameter[indice+2]*Eres*Eres;
-    
+   
+    //Elab = DeltaE + Ecal;
     Elab = geloss_C12Al->Eval(Ecal);
     Elab = geloss_C12Al->Eval(Elab);
     Elab += DeltaE;
@@ -213,7 +216,7 @@ double ConstantFactor(const double* parameter){
       ThetaLab = HitDirection.Angle(BeamDirection);
 
       double Ex = elastic->ReconstructRelativistic(Elab,ThetaLab);
-      if(abs(Ex)<10){
+      if(abs(Ex)<5){
         hEx->Fill(iteration,Ex);
         hEx_Theta->Fill(ThetaLab*180./3.1415,Ex);
         hEx_Tel->Fill(Telescope,Ex);
@@ -228,14 +231,14 @@ double ConstantFactor(const double* parameter){
   for(int i=0; i<8; i++){
     hExmean = hEx_Tel->ProjectionY(Form("hExmean_%d",i+1),i+1,i+1);
     Emean[i] = hExmean->GetMean();
-    double Emin = Emean[i]-6;
+    double Emin = Emean[i]-3;
     double Emax = Emean[i]+3;
     hExmean->GetXaxis()->SetRangeUser(Emin,Emax);
 
     Emean[i] = hExmean->GetMean();
     sigma[i] = hExmean->GetRMS();
 
-    distance += pow(Emean[i],2) + pow(sigma[i]-0.3, 2);
+    distance += pow(Emean[i],2) + pow(sigma[i]-0.6, 2);
     AvEmean += Emean[i]; 
   }
 

@@ -29,10 +29,7 @@ void LoadCuts(){
 /////////////////////////////////////////////////////////
 void LoadRootFile(){
   chain = new TChain("PhysicsTree");
-  //chain->Add("../../../root/analysis/run_29_calib.root");
-  //chain->Add("../../../root/analysis/run_41_calib.root");
-  chain->Add("../../../root/analysis/run_49_calib.root");
-  //chain->Add("../../../root/analysis/run_55_calib.root");
+  chain->Add("../../../root/analysis/run_43_calib.root");
 
   pista = new TPISTAPhysics();
   NPL::InputParser parser("../../../pista_e850_part1.detector");

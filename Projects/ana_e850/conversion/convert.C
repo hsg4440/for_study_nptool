@@ -1,10 +1,11 @@
 #include "convert.h"
 
 ///////////////////////////////////////////////////
-void convert(int run=29){
+void convert(int run=43){
   m_pista = new TPISTAData();
   m_fpmw = new TFPMWData();
   m_ic = new TICData();
+  m_exogam = new TExogamData();
 
   // input tree //
   input_tree = new TChain("AD");
@@ -21,6 +22,7 @@ void convert(int run=29){
   output_tree->Branch("PISTA","TPISTAData",&m_pista);
   output_tree->Branch("FPMW","TFPMWData",&m_fpmw);
   output_tree->Branch("IC","TICData",&m_ic);
+  output_tree->Branch("Exogam","TExogamData",&m_exogam);
   output_tree->Branch("T_TMW0_FPMW0",&T_TMW0_FPMW0,"T_TMW0_FPMW0/F");
   output_tree->Branch("T_TMW0_FPMW1",&T_TMW0_FPMW1,"T_TMW0_FPMW1/F");
   output_tree->Branch("T_TMW1_FPMW0",&T_TMW1_FPMW0,"T_TMW1_FPMW0/F");
@@ -30,9 +32,6 @@ void convert(int run=29){
   //output_tree->Branch("TMWPat_0TS",&TMWPat_0TS);
   output_tree->Branch("fVAMOS_TS_sec",&fVAMOS_TS_sec);
   output_tree->Branch("fPISTA_TS_sec",&fPISTA_TS_sec);
-  output_tree->Branch("Exo_Mult",&Exo_Mult,"Exo_Mult/I");
-  output_tree->Branch("Exo_Energy",&Exo_Energy);
-  output_tree->Branch("Exo_Crystal",&Exo_Crystal);
 
 
   int nentries = input_tree->GetEntries();
@@ -97,14 +96,29 @@ void convert(int run=29){
       m_fpmw->SetFPMW_Y(4,strip,charge);
     }
 
-    if(FPMW0_XRawM>0 && FPMW1_XRawM>2 ){
-      for(int p=0;p<Inner6MVM; p++){
-        Exo_Mult = Inner6MVM;
-        Exo_Energy.push_back(Inner6MV[p]);
-        Exo_Crystal.push_back(Inner6MVN[p]);;
+    if(fVAMOS_TS_sec>0 || fPISTA_TS_sec>0){
+      if(Inner6MVM==1){
+        int crystal = Inner6MVN[0];
+        double E = Inner6MV[0];
+        double EHG = Inner20MV[0];
+        double TDC = DeltaTV[0];
+        unsigned long long TS = Inner6MVTS[0];
+        int seg = -1;
+        double outers1 = -1000;
+        double outers2 = -1000;
+        double outers3 = -1000;
+        double outers4 = -1000;
+        for(int i=0; i<OutersVM; i++){
+          seg = OutersVN[i] - 4*crystal;
+          if(seg==0) outers1 = OutersV[i];
+          else if(seg==1) outers2 = OutersV[i];
+          else if(seg==2) outers3 = OutersV[i];
+          else if(seg==3) outers4 = OutersV[i];
+        }
+        m_exogam->SetExo(crystal,E,EHG,TS,TDC,0,0,outers1,outers2,outers3,outers4);
       }
     }
- 
+
     if(fPISTA_TS_sec>0 || fVAMOS_TS_sec>0)
       output_tree->Fill();
   }
@@ -121,9 +135,7 @@ void Clear(){
   m_fpmw->Clear();
   m_ic->Clear();
   m_pista->Clear();
-  Exo_Mult=0;
-  Exo_Energy.clear();
-  Exo_Crystal.clear();
+  m_exogam->Clear();
 }
 
 
@@ -221,9 +233,18 @@ void InitInputTree(){
   input_tree->SetBranchStatus("Inner6MVTS","true");
   input_tree->SetBranchAddress("Inner6MVTS",Inner6MVTS);
 
+  input_tree->SetBranchStatus("OutersVM","true");
+  input_tree->SetBranchAddress("OutersVM",&OutersVM);
+  input_tree->SetBranchStatus("OutersV","true");
+  input_tree->SetBranchAddress("OutersV",OutersV);
+  input_tree->SetBranchStatus("OutersVN","true");
+  input_tree->SetBranchAddress("OutersVN",OutersVN);
 
+  input_tree->SetBranchStatus("Inner20MV","true");
+  input_tree->SetBranchAddress("Inner20MV",Inner20MV);
 
-
+  input_tree->SetBranchStatus("DeltaTV","true");
+  input_tree->SetBranchAddress("DeltaTV",DeltaTV);
 
 }
 
