@@ -48,7 +48,7 @@ ClassImp(TPISTAPhysics)
     m_EventPhysics = this;
     m_Spectra = NULL;
     m_E_RAW_Threshold = 0; // adc channels
-    m_E_Threshold = 0;     // MeV
+    m_E_Threshold = 1;     // MeV
     m_NumberOfDetectors = 0;
     m_NumberOfStripsX = 57;
     m_NumberOfStripsY = 91;
@@ -553,10 +553,6 @@ void TPISTAPhysics::ReadAnalysisConfig() {
         m_CALIB_BACK_E_PER_STRIP = atoi(DataBuffer.c_str());
         cout << whatToDo << " " << m_CALIB_BACK_E_PER_STRIP << endl;
       }
-
-
-
-
       else if(whatToDo=="DISABLE_CHANNEL"){
         AnalysisConfigFile >> DataBuffer;
         cout << whatToDo << " " << DataBuffer << endl;
