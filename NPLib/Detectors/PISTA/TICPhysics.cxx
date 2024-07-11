@@ -47,6 +47,7 @@ TICPhysics::TICPhysics()
   m_PreTreatedData(new TICData),
   m_EventPhysics(this),
   m_FPMW_Section(-1),
+  m_Z_SPLINE_CORRECTION(false),
   m_NumberOfDetectors(0){
   }
 
@@ -91,28 +92,33 @@ void TICPhysics::BuildPhysicalEvent() {
 
     fIC_raw[i] = m_PreTreatedData->GetIC_Charge(i);
     fIC[i] = gain*m_PreTreatedData->GetIC_Charge(i);
-
+    //fIC[i] = m_PreTreatedData->GetIC_Charge(i);
   }
 
   if(fIC[1]>0 && fIC[5]>0){
     DE = 0.5*(fIC_raw[0] + fIC_raw[1] + fIC_raw[2] + fIC_raw[3]) + fIC_raw[4];
     Eres = fIC_raw[5] + fIC_raw[6] + fIC_raw[7] + fIC_raw[8] + fIC_raw[9];
 
-    double scalor = Cal->GetValue("IC/ETOT_SCALING",0);
+    double scalor = Cal->GetValue("IC/ETOT_SCALING_SEC"+NPL::itoa(m_FPMW_Section),0);
 
     for(int i=0; i<10; i++){
       Etot += fIC[i];
     }
+    Etot = scalor*Etot;
 
-    //DE = 0.5*(fIC[0] + fIC[1] + fIC[2] + fIC[3]) + fIC[4];
-    //Eres = fIC[5] + fIC[6] + fIC[7] + fIC[8] + fIC[9];
     //Etot = 0.02411*(0.8686*fIC_raw[0]+0.7199*fIC_raw[1]+0.6233*fIC_raw[2]+0.4697*fIC_raw[3]+0.9787*fIC_raw[4]+0.9892*fIC_raw[5]+2.1038*fIC_raw[6]+1.9429*fIC_raw[7]+1.754*fIC_raw[8]+2.5*fIC_raw[9]); 
+    
+    if(m_Z_SPLINE_CORRECTION && Eres>3000 && Eres<15000){
+      Chio_Z = DE*m_Zspline->Eval(8000)/m_Zspline->Eval(Eres);
+    }
+    else Chio_Z = -1000;
 
   }
   else{
     DE = -100;
     Eres = -100;
     Etot = -100;
+    Chio_Z = -1000;
   }
 
   m_FPMW_Section = -1;
@@ -191,7 +197,12 @@ void TICPhysics::ReadAnalysisConfig() {
         m_E_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_E_Threshold << endl;
       }
-
+      else if (whatToDo=="LOAD_Z_SPLINE"){
+        AnalysisConfigFile >> DataBuffer;
+        m_Z_SPLINE_PATH = DataBuffer;
+        cout << "*** Loading Z spline ***" << endl;
+        LoadZSpline();
+      }
       else {
         ReadingStatus = false;
       }
@@ -201,10 +212,27 @@ void TICPhysics::ReadAnalysisConfig() {
 
 
 ///////////////////////////////////////////////////////////////////////////
+void TICPhysics::LoadZSpline(){
+  TString filename = m_Z_SPLINE_PATH;
+  TFile* ifile = new TFile(filename,"read");
+
+  if(ifile->IsOpen()){
+    m_Z_SPLINE_CORRECTION = true;
+    m_Zspline = (TSpline3*) ifile->FindObjectAny("Z_spline");
+    cout << "*** " << m_Zspline->GetName() << " is loaded!" << endl;
+      
+  }
+  else
+    cout << "File " << filename << " not found!" << endl;
+  ifile->Close();
+}
+
+///////////////////////////////////////////////////////////////////////////
 void TICPhysics::Clear() {
   DE = 0;
   Eres = 0;
   Etot = 0;
+  Chio_Z = 0;
   for(int i=0; i<11; i++){
     fIC[i] = 0;
     fIC_raw[i] = 0;
@@ -253,11 +281,11 @@ void TICPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
 
   for(int section = 0; section<20; section++){
+  Cal->AddParameter("IC","ETOT_SCALING_SEC"+NPL::itoa(section),"IC_ETOT_SCALING_SEC"+NPL::itoa(section));
     for(int segment = 0; segment<11; segment++){
       Cal->AddParameter("IC","SEC"+NPL::itoa(section)+"_SEG"+NPL::itoa(segment+1)+"_ALIGN","IC_SEC"+NPL::itoa(section)+"_SEG"+NPL::itoa(segment+1)+"_ALIGN");
     }
   }
-  Cal->AddParameter("IC","ETOT_SCALING","IC_ETOT_SCALING");
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -64,6 +64,7 @@ class TICPhysics : public TObject, public NPL::VDetector {
     double DE;
     double Eres;
     double Etot;
+    double Chio_Z;
     double fIC[11];
     double fIC_raw[11];//! 
   private:
@@ -128,6 +129,7 @@ class TICPhysics : public TObject, public NPL::VDetector {
 
     void SetFPMWSection(int section) {m_FPMW_Section = section;}
     int GetFPMWSection() {return m_FPMW_Section;}
+    void LoadZSpline();
 
   // objects are not written in the TTree
   private:
@@ -148,6 +150,9 @@ class TICPhysics : public TObject, public NPL::VDetector {
   private:
     int m_NumberOfDetectors;  //!
     int m_FPMW_Section; //!
+    string m_Z_SPLINE_PATH; //!
+    bool m_Z_SPLINE_CORRECTION; //!
+    TSpline3* m_Zspline; //!
 
   // Static constructor to be passed to the Detector Factory
   public:
